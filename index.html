@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <style>
-        body { margin: 0; padding: 0; background-color: #1a1d24; }
+        body { margin: 0; padding: 0; background-color: #1a1d24; font-family: Arial, sans-serif; }
         #map { width: 100vw; height: 100vh; }
         .leaflet-container { background-color: #1a1d24 !important; }
 
@@ -44,9 +44,31 @@
             border: 2px solid #ffffff !important;
             border-radius: 50%;
         }
+
+        /* --- TAMBAHAN BARU: LAYAR MAINTENANCE --- */
+        #maintenance-screen {
+            display: none; /* Disembunyikan secara default */
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #000000;
+            color: white;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        #maintenance-screen h1 { color: #e74c3c; font-size: 3rem; margin-bottom: 10px; }
+        #maintenance-screen p { color: #a5b1c2; font-size: 1.2rem; }
     </style>
 </head>
 <body>
+
+    <!-- --- TAMBAHAN BARU: KOTAK MAINTENANCE --- -->
+    <div id="maintenance-screen">
+        <h1>🛠️ SEDANG PERBAIKAN 🛠️</h1>
+        <p>Sistem sedang diupdate besar-besaran. Server dinonaktifkan sementara.<br>Silakan kembali lagi nanti!</p>
+    </div>
 
     <div id="map"></div>
 
@@ -57,6 +79,8 @@
         // 1. Inisialisasi Peta
         var map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
         var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+        
+        // PENTING: Pastikan apiUrl ini sesuai sama link Google Script lu yang aktif sekarang
         var apiUrl = 'https://script.google.com/macros/s/AKfycbyvAC2vpgKNoaDCl89Tm7GiPi09qIqvHbYeG79vVC66XTAQypK-eQi48-aOo3XWJQ/exec'; 
 
         var dataMakro = [];
@@ -127,14 +151,37 @@
         fetch(apiUrl)
             .then(r => r.json())
             .then(data => {
+                
+                // --- TAMBAHAN BARU: CEK MAINTENANCE MODE ---
+                var isMaintenance = false;
+                
+                // Cek kemungkinan format JSON dari Google Script lu
+                if (data.maintenance === "ON" || data.Maintenance_Mode === "ON") {
+                    isMaintenance = true;
+                } else if (data.config && data.config.Maintenance_Mode === "ON") {
+                    isMaintenance = true;
+                }
+
+                if (isMaintenance) {
+                    // Kalau ON, munculin layar hitam, sembunyiin peta
+                    document.getElementById('maintenance-screen').style.display = 'flex';
+                    document.getElementById('map').style.display = 'none';
+                    return; // Stop proses loading peta sampai di sini
+                }
+                // -------------------------------------------
+
                 if (data.status === "success") dataMakro = data.data;
                 return fetch(geojsonUrl);
             })
-            .then(r => r.json())
+            .then(r => {
+                if(r) return r.json();
+            })
             .then(geo => {
-                L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
-                addStrategicPoints();
-                addOceanLabels();
+                if(geo) {
+                    L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
+                    addStrategicPoints();
+                    addOceanLabels();
+                }
             })
             .catch(e => console.error('Error:', e));
     </script>
