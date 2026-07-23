@@ -14,22 +14,25 @@
       padding: 0;
       height: 100%;
       width: 100%;
-      background-color: #1e272e;
+      /* WARNA PERAIRAN / LAUT DIUBAH JADI BIRU SAMUDRA */
+      background-color: #1b365d;
       font-family: Arial, sans-serif;
     }
     #map {
       width: 100%;
       height: 100vh;
+      /* Background peta Leaflet transparan agar warna laut body kelihatan */
+      background: transparent !important;
     }
     
     .country-label {
       background: transparent;
       border: none;
       box-shadow: none;
-      color: #2f3542;
+      color: #ffffff;
       font-weight: bold;
       font-size: 10px;
-      text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff;
+      text-shadow: 1px 1px 2px #000, -1px -1px 2px #000;
     }
     .ocean-label {
       background: transparent;
@@ -183,13 +186,17 @@
       return { icon: "🌍", name: "Iklim Normal / Subtropis" };
     }
 
+    // WARNA DARATAN: HIJAU ELEGAN JIKA STABIL, MERAH JIKA KONFLIK ON
     function getColor(isoCode) {
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-      return (negara && negara.Status_Konflik === 'ON') ? '#e74c3c' : '#d1d8e0'; 
+      if (negara && negara.Status_Konflik === 'ON') {
+        return '#e74c3c'; // Merah Konflik
+      }
+      return '#26af5f'; // Hijau Daratan Stabil
     }
 
     function styleNegara(feature) {
-      return { fillColor: getColor(feature.id), weight: 1, opacity: 1, color: '#a5b1c2', fillOpacity: 1 };
+      return { fillColor: getColor(feature.id), weight: 1, opacity: 1, color: '#1e3799', fillOpacity: 0.9 };
     }
 
     function onEachFeature(feature, layer) {
@@ -304,7 +311,6 @@
       });
     }
 
-    // Fetch API & Detektor Maintenance Disesuaikan dengan Kolom Sheet (Parameter & Value)
     fetch(apiUrl)
       .then(r => r.json())
       .then(data => {
@@ -325,9 +331,10 @@
                 <div style="font-size: 60px; margin-bottom: 20px;">🛠️</div>
                 <h1 style="font-size: 26px; margin-bottom: 10px; color: #ffa801; font-weight: bold;">WEBSITE SEDANG DALAM PEMELIHARAAN</h1>
                 <p style="font-size: 15px; color: #dcdde1; max-width: 520px; line-height: 1.6; text-align: center;">
-  Mohon maaf atas ketidaknyamanan Anda. Saat ini website sedang<br>
-  dalam proses pemeliharaan. Silakan akses kembali beberapa saat lagi.
-</p> </div>
+                  Mohon maaf atas ketidaknyamanan Anda. Saat ini website sedang<br>
+                  dalam proses pemeliharaan. Silakan akses kembali beberapa saat lagi.
+                </p>
+              </div>
             `;
             return;
           }
