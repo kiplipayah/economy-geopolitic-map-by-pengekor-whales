@@ -22,7 +22,6 @@
       height: 100vh;
     }
     
-    /* Custom Map Tooltips & Labels */
     .country-label {
       background: transparent;
       border: none;
@@ -48,7 +47,6 @@
       border-radius: 50%;
     }
 
-    /* Modal Styling */
     #news-modal {
       display: none;
       position: fixed;
@@ -143,20 +141,15 @@
 </head>
 <body>
 
-  <!-- Peta Utama -->
   <div id="map"></div>
 
-  <!-- Modal Popup Berita & Analisis -->
   <div id="news-modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
-      <div id="modal-body">
-        <!-- Konten dinamis masuk sini -->
-      </div>
+      <div id="modal-body"></div>
     </div>
   </div>
 
-  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
@@ -168,7 +161,6 @@
     var dataNews = []; 
     var dataConfig = [];
 
-    // Algoritma Penghitung Musim Real-Time
     function getSeasonInfo(zoneType) {
       var month = new Date().getMonth(); 
       if (zoneType === "TROPICAL_MONSOON") {
@@ -237,7 +229,6 @@
       }
     }
 
-    // Modal UI Dinamis (Clean Look tanpa pin berulang & auto-fix link)
     function openModal(isoCode) {
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       if (!negara) return;
@@ -313,7 +304,7 @@
       });
     }
 
-    // Fetch API & Detektor Maintenance Aman
+    // Fetch API & Detektor Maintenance Disesuaikan dengan Kolom Sheet (Parameter & Value)
     fetch(apiUrl)
       .then(r => r.json())
       .then(data => {
@@ -323,9 +314,9 @@
           dataConfig = data.dataConfig || [];
 
           var isMaintenance = dataConfig.some(c => {
-            var key = (c.Setting || c.Key || "").toString().trim().toLowerCase();
-            var val = (c.Status || c.Value || "").toString().trim().toUpperCase();
-            return key === "maintenance" && val === "ON";
+            var param = (c.Parameter || "").toString().trim().toLowerCase();
+            var val = (c.Value || "").toString().trim().toUpperCase();
+            return param === "maintenance_mode" && val === "ON";
           });
 
           if (isMaintenance) {
