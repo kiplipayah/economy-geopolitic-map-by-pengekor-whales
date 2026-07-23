@@ -1,189 +1,357 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Economy Map - Geopolitic Dashboard</title>
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economy Map & Geopolitical Dashboard</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      background-color: #1e272e;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      width: 100%;
+      height: 100vh;
+    }
     
-    <style>
-        body { margin: 0; padding: 0; background-color: #1a1d24; font-family: Arial, sans-serif; }
-        #map { width: 100vw; height: 100vh; }
-        .leaflet-container { background-color: #1a1d24 !important; }
+    /* Custom Map Tooltips & Labels */
+    .country-label {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: #2f3542;
+      font-weight: bold;
+      font-size: 10px;
+      text-shadow: 1px 1px 2px #fff, -1px -1px 2px #fff;
+    }
+    .ocean-label {
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      color: #74b9ff;
+      font-weight: bold;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .strategic-point {
+      background-color: #f39c12;
+      border: 2px solid #fff;
+      border-radius: 50%;
+    }
 
-        /* Label Negara */
-        .country-label {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            font-weight: bold;
-            color: #ffffff !important;
-            font-size: 10px;
-            text-shadow: 1px 1px 3px #000000, -1px -1px 3px #000000 !important;
-            pointer-events: none;
-        }
-        .leaflet-tooltip::before { display: none !important; }
-
-        /* Label Samudra */
-        .ocean-label {
-            background: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            color: rgba(255, 255, 255, 0.2) !important;
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            pointer-events: none;
-        }
-
-        /* Titik Strategis */
-        .strategic-point {
-            background-color: #f1c40f !important;
-            border: 2px solid #ffffff !important;
-            border-radius: 50%;
-        }
-
-        /* --- TAMBAHAN BARU: LAYAR MAINTENANCE --- */
-        #maintenance-screen {
-            display: none; /* Disembunyikan secara default */
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #000000;
-            color: white;
-            z-index: 9999;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-        #maintenance-screen h1 { color: #e74c3c; font-size: 3rem; margin-bottom: 10px; }
-        #maintenance-screen p { color: #a5b1c2; font-size: 1.2rem; }
-    </style>
+    /* Modal Styling */
+    #news-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .modal-content {
+      background: #2f3640;
+      color: #f5f6fa;
+      width: 100%;
+      max-width: 600px;
+      max-height: 85vh;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      overflow-y: auto;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #f5f6fa;
+    }
+    .modal-header-title {
+      font-size: 18px;
+      border-bottom: 2px solid #485460;
+      padding-bottom: 8px;
+      margin-top: 0;
+      color: #00d2d3;
+    }
+    .climate-badge-box {
+      background: #353b48;
+      padding: 10px 14px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      border-left: 4px solid #00d2d3;
+    }
+    .news-card {
+      background: #353b48;
+      border-radius: 6px;
+      padding: 12px 15px;
+      margin-bottom: 12px;
+      border-left: 4px solid #ffa801;
+    }
+    .news-title {
+      margin: 0 0 6px 0;
+      font-size: 15px;
+      color: #f5f6fa;
+    }
+    .news-desc {
+      margin: 0 0 10px 0;
+      font-size: 13px;
+      color: #dcdde1;
+      line-height: 1.4;
+    }
+    .news-link {
+      display: inline-block;
+      font-size: 12px;
+      color: #00d2d3;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .news-link:hover {
+      text-decoration: underline;
+    }
+    .btn-news {
+      display: block;
+      width: 100%;
+      background: #009432;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 10px;
+      text-align: center;
+    }
+    .btn-news:hover {
+      background: #10ac84;
+    }
+  </style>
 </head>
 <body>
 
-    <!-- --- TAMBAHAN BARU: KOTAK MAINTENANCE --- -->
-    <div id="maintenance-screen">
-        <h1>🛠️ SEDANG PERBAIKAN 🛠️</h1>
-        <p>Sistem sedang diupdate besar-besaran. Server dinonaktifkan sementara.<br>Silakan kembali lagi nanti!</p>
+  <!-- Peta Utama -->
+  <div id="map"></div>
+
+  <!-- Modal Popup Berita & Analisis -->
+  <div id="news-modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal()">&times;</span>
+      <div id="modal-body">
+        <!-- Konten dinamis masuk sini -->
+      </div>
     </div>
+  </div>
 
-    <div id="map"></div>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+    var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+    var apiUrl = 'https://script.google.com/macros/s/AKfycbyvAC2vpgKNoaDCl89Tm7GiPi09qIqvHbYeG79vVC66XTAQypK-eQi48-aOo3XWJQ/exec'; 
 
-    <script>
-        // 1. Inisialisasi Peta
-        var map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
-        var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
+    var dataMakro = [];
+    var dataNews = []; 
+    var dataConfig = [];
+
+    // Algoritma Penghitung Musim Real-Time
+    function getSeasonInfo(zoneType) {
+      var month = new Date().getMonth(); 
+      if (zoneType === "TROPICAL_MONSOON") {
+        if (month >= 4 && month <= 9) return { icon: "☀️", name: "Musim Kemarau (Dry Season)" };
+        return { icon: "🌧️", name: "Musim Hujan (Wet Season)" };
+      } else if (zoneType === "NORTH_4SEASONS") {
+        if (month === 11 || month === 0 || month === 1) return { icon: "❄️", name: "Musim Dingin (Winter)" };
+        if (month >= 2 && month <= 4) return { icon: "🌱", name: "Musim Semi (Spring)" };
+        if (month >= 5 && month <= 7) return { icon: "☀️", name: "Musim Panas (Summer)" };
+        return { icon: "🍁", name: "Musim Gugur (Autumn)" };
+      } else if (zoneType === "SOUTH_4SEASONS") {
+        if (month === 11 || month === 0 || month === 1) return { icon: "☀️", name: "Musim Panas (Summer)" };
+        if (month >= 2 && month <= 4) return { icon: "🍁", name: "Musim Gugur (Autumn)" };
+        if (month >= 5 && month <= 7) return { icon: "❄️", name: "Musim Dingin (Winter)" };
+        return { icon: "🌱", name: "Musim Semi (Spring)" };
+      } else if (zoneType === "DESERT") {
+        if (month >= 4 && month <= 8) return { icon: "🌵", name: "Gurun Panas Ekstrem" };
+        return { icon: "🏜️", name: "Gurun Hangat/Sejuk" };
+      }
+      return { icon: "🌍", name: "Iklim Normal / Subtropis" };
+    }
+
+    function getColor(isoCode) {
+      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
+      return (negara && negara.Status_Konflik === 'ON') ? '#e74c3c' : '#d1d8e0'; 
+    }
+
+    function styleNegara(feature) {
+      return { fillColor: getColor(feature.id), weight: 1, opacity: 1, color: '#a5b1c2', fillOpacity: 1 };
+    }
+
+    function onEachFeature(feature, layer) {
+      var negara = dataMakro.find(n => n.Kode_ISO === feature.id);
+      var customCenters = {
+        "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], 
+        "FRA": [46.2, 2.2], "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], 
+        "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], "ZAF": [-30.5, 22.9],
+        "JPN": [36.2, 138.2], "MYS": [4.2, 101.9], "VNM": [16.0, 108.0],
+        "NOR": [60.4, 8.4], "PRK": [40.3, 127.5], "SOM": [5.1, 46.1],
+        "IRQ": [33.2, 43.6], "IRN": [32.4, 53.6], "UKR": [48.3, 31.1],
+        "CHE": [46.8, 8.2], "THA": [15.8, 100.9], "TWN": [23.7, 121.0], 
+        "GRL": [72.0, -40.0], "EGY": [26.8, 30.8], "ITA": [42.0, 12.5], 
+        "GRC": [38.5, 22.5], "SYR": [34.8, 38.0], "JOR": [30.5, 36.5]
+      };
+      
+      var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
+
+      if (negara) {
+        L.tooltip({ permanent: true, direction: 'center', className: 'country-label', opacity: 0.9 })
+        .setLatLng(centerLatLng).setContent(negara.Negara).addTo(map);
+
+        layer.bindPopup(`
+          <div style="font-family: Arial, sans-serif; min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; border-bottom: 1px solid #ddd; padding-bottom: 4px;">${negara.Negara}</h3>
+            <p style="margin: 4px 0; font-size: 13px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor || '-'}</p>
+            <p style="margin: 4px 0; font-size: 13px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor || '-'}</p>
+            <p style="margin: 4px 0; font-size: 13px;"><strong>Rantai Pasok:</strong> ${negara.Korelasi_Rantai_Pasok || '-'}</p>
+            <p style="margin: 8px 0 0 0; font-size: 12px; text-align: center; border-radius: 4px; padding: 4px; background-color: ${negara.Status_Konflik === 'ON' ? '#ffeaa7' : '#dff9fb'};">
+              Status: <strong>${negara.Status_Konflik === 'ON' ? '⚠️ KONFLIK' : '✅ STABIL'}</strong>
+            </p>
+            <button class="btn-news" onclick="openModal('${feature.id}')">📰 Lihat Berita & Analisis Terbaru</button>
+          </div>
+        `);
+      } else {
+        layer.bindPopup("<b style='font-family:Arial;'>" + feature.properties.name + "</b><br/>Data belum dipantau.");
+      }
+    }
+
+    // Modal UI Dinamis (Clean Look tanpa pin berulang & auto-fix link)
+    function openModal(isoCode) {
+      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
+      if (!negara) return;
+
+      var regionAcuan = negara.Region_Acuan || "Belum Diatur di Sheet";
+      var tipeZona = negara.Tipe_Zona_Iklim || "TROPICAL_MONSOON";
+      var catatanGeo = negara.Catatan_Geografi || "Belum ada catatan geografi di Sheet.";
+      
+      var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode);
+      var beritaHtml = "";
+
+      if (listBerita.length > 0) {
+        listBerita.forEach(b => {
+          let finalLink = (b.Link_Berita || "").trim();
+          if (finalLink !== "" && finalLink !== "#" && !finalLink.startsWith("http")) {
+            finalLink = "https://" + finalLink;
+          }
+
+          beritaHtml += `
+            <div class="news-card">
+              <h4 class="news-title">${b.Judul_Berita || "Tanpa Judul"}</h4>
+              <p class="news-desc">${b.Ringkasan_Berita || ""}</p>
+              ${(finalLink !== "") ? `<a href="${finalLink}" target="_blank" class="news-link">Baca Artikel Selengkapnya &rarr;</a>` : ''}
+            </div>
+          `;
+        });
+      } else {
+        beritaHtml = `
+          <div class="news-card">
+            <h4 class="news-title">BELUM ADA BERITA TERBARU</h4>
+            <p class="news-desc">Belum ada pembaruan geopolitik untuk negara ini.</p>
+          </div>
+        `;
+      }
+
+      var season = getSeasonInfo(tipeZona);
+      var modalBody = document.getElementById('modal-body');
+
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${negara.Negara}</h2>
         
-        // PENTING: Pastikan apiUrl ini sesuai sama link Google Script lu yang aktif sekarang
-        var apiUrl = 'https://script.google.com/macros/s/AKfycbyvAC2vpgKNoaDCl89Tm7GiPi09qIqvHbYeG79vVC66XTAQypK-eQi48-aOo3XWJQ/exec'; 
+        <div class="climate-badge-box">
+          <div><strong>🌡️ Status Musim Saat Ini:</strong> ${season.icon} ${season.name}</div>
+          <div><strong>📍 Region Acuan:</strong> ${regionAcuan}</div>
+          <div style="color: #95a5a6; margin-top: 4px;"><em>ℹ️ Note: ${catatanGeo}</em></div>
+        </div>
 
-        var dataMakro = [];
+        <h3 style="color: #ecf0f1; font-size: 16px; margin-bottom: 12px;">📰 Berita & Isu Strategis Terupdate:</h3>
+        ${beritaHtml}
+      `;
 
-        function getColor(isoCode) {
-            var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-            return (negara && negara.Status_Konflik === 'ON') ? '#e74c3c' : '#d1d8e0'; 
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('news-modal').style.display = 'none';
+    }
+
+    function addStrategicPoints() {
+      [{name:"Selat Hormuz", lat:26.5, lng:56.3}, {name:"Terusan Suez", lat:30.6, lng:32.3}, {name:"Selat Malaka", lat:3.0, lng:101.5}]
+      .forEach(function(p) {
+        L.circleMarker([p.lat, p.lng], {radius: 5, className: 'strategic-point'})
+        .bindTooltip(p.name, {permanent: true, direction: 'auto', offset: [0, -10], className: 'country-label'})
+        .addTo(map);
+      });
+    }
+
+    function addOceanLabels() {
+      [{name:"Samudra Pasifik", lat:0, lng:-150}, {name:"Samudra Atlantik", lat:20, lng:-35}, {name:"Samudra Hindia", lat:-15, lng:75}]
+      .forEach(function(o) {
+        L.tooltip({permanent: true, direction: 'center', className: 'ocean-label'})
+        .setLatLng([o.lat, o.lng]).setContent(o.name).addTo(map);
+      });
+    }
+
+    // Fetch API & Detektor Maintenance Aman
+    fetch(apiUrl)
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === "success") {
+          dataMakro = data.dataMakro || [];
+          dataNews = data.dataNews || [];
+          dataConfig = data.dataConfig || [];
+
+          var isMaintenance = dataConfig.some(c => {
+            var key = (c.Setting || c.Key || "").toString().trim().toLowerCase();
+            var val = (c.Status || c.Value || "").toString().trim().toUpperCase();
+            return key === "maintenance" && val === "ON";
+          });
+
+          if (isMaintenance) {
+            document.body.innerHTML = `
+              <div style="background-color: #1e272e; color: #f5f6fa; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: Arial, sans-serif; text-align: center; padding: 20px; margin: 0;">
+                <div style="font-size: 60px; margin-bottom: 20px;">🛠️</div>
+                <h1 style="font-size: 26px; margin-bottom: 10px; color: #ffa801; font-weight: bold;">WEBSITE SEDANG DALAM PEMELIHARAAN</h1>
+                <p style="font-size: 15px; color: #dcdde1; max-width: 450px; line-height: 1.6;">Dashboard Geopolitik sedang diperbarui dengan data intelijen terbaru. Silakan akses kembali beberapa saat lagi.</p>
+              </div>
+            `;
+            return;
+          }
         }
-
-        function styleNegara(feature) {
-            return { fillColor: getColor(feature.id), weight: 1, opacity: 1, color: '#a5b1c2', fillOpacity: 1 };
-        }
-
-        function onEachFeature(feature, layer) {
-            var negara = dataMakro.find(n => n.Kode_ISO === feature.id);
-            var customCenters = {
-                "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], 
-                "FRA": [46.2, 2.2], "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], 
-                "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], "ZAF": [-30.5, 22.9],
-                "JPN": [36.2, 138.2], "MYS": [4.2, 101.9], "VNM": [16.0, 108.0],
-                "NOR": [60.4, 8.4], "PRK": [40.3, 127.5], "SOM": [5.1, 46.1],
-                "IRQ": [33.2, 43.6], "IRN": [32.4, 53.6], "UKR": [48.3, 31.1],
-                "CHE": [46.8, 8.2], "THA": [15.8, 100.9], "TWN": [23.7, 121.0], 
-                "GRL": [72.0, -40.0], "EGY": [26.8, 30.8], "ITA": [42.0, 12.5], 
-                "GRC": [38.5, 22.5], "SYR": [34.8, 38.0], "JOR": [30.5, 36.5]
-            };
-            
-            var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
-
-            if (negara) {
-                L.tooltip({ permanent: true, direction: 'center', className: 'country-label', opacity: 0.9 })
-                .setLatLng(centerLatLng).setContent(negara.Negara).addTo(map);
-
-                layer.bindPopup(`
-                    <div style="font-family: Arial, sans-serif; min-width: 200px;">
-                        <h3 style="margin: 0 0 8px 0; border-bottom: 1px solid #ddd; padding-bottom: 4px;">${negara.Negara}</h3>
-                        <p style="margin: 4px 0; font-size: 13px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor}</p>
-                        <p style="margin: 4px 0; font-size: 13px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor}</p>
-                        <p style="margin: 4px 0; font-size: 13px;"><strong>Rantai Pasok:</strong> ${negara.Korelasi_Rantai_Pasok}</p>
-                        <p style="margin: 8px 0 0 0; font-size: 12px; text-align: center; border-radius: 4px; padding: 4px; background-color: ${negara.Status_Konflik === 'ON' ? '#ffeaa7' : '#dff9fb'};">
-                        Status: <strong>${negara.Status_Konflik === 'ON' ? '⚠️ KONFLIK' : '✅ STABIL'}</strong>
-                        </p>
-                    </div>
-                `);
-            } else {
-                layer.bindPopup("<b style='font-family:Arial;'>" + feature.properties.name + "</b><br/>Data belum dipantau.");
-            }
-        }
-
-        function addStrategicPoints() {
-            [{name:"Selat Hormuz", lat:26.5, lng:56.3}, {name:"Terusan Suez", lat:30.6, lng:32.3}, {name:"Selat Malaka", lat:3.0, lng:101.5}]
-            .forEach(function(p) {
-                L.circleMarker([p.lat, p.lng], {radius: 5, className: 'strategic-point'})
-                .bindTooltip(p.name, {permanent: true, direction: 'auto', offset: [0, -10], className: 'country-label'})
-                .addTo(map);
-            });
-        }
-
-        function addOceanLabels() {
-            [{name:"Samudra Pasifik", lat:0, lng:-150}, {name:"Samudra Atlantik", lat:20, lng:-35}, {name:"Samudra Hindia", lat:-15, lng:75}]
-            .forEach(function(o) {
-                L.tooltip({permanent: true, direction: 'center', className: 'ocean-label'})
-                .setLatLng([o.lat, o.lng]).setContent(o.name).addTo(map);
-            });
-        }
-
-        // Jalankan fetch data
-        fetch(apiUrl)
-            .then(r => r.json())
-            .then(data => {
-                
-                // --- TAMBAHAN BARU: CEK MAINTENANCE MODE ---
-                var isMaintenance = false;
-                
-                // Cek kemungkinan format JSON dari Google Script lu
-                if (data.maintenance === "ON" || data.Maintenance_Mode === "ON") {
-                    isMaintenance = true;
-                } else if (data.config && data.config.Maintenance_Mode === "ON") {
-                    isMaintenance = true;
-                }
-
-                if (isMaintenance) {
-                    // Kalau ON, munculin layar hitam, sembunyiin peta
-                    document.getElementById('maintenance-screen').style.display = 'flex';
-                    document.getElementById('map').style.display = 'none';
-                    return; // Stop proses loading peta sampai di sini
-                }
-                // -------------------------------------------
-
-                if (data.status === "success") dataMakro = data.data;
-                return fetch(geojsonUrl);
-            })
-            .then(r => {
-                if(r) return r.json();
-            })
-            .then(geo => {
-                if(geo) {
-                    L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
-                    addStrategicPoints();
-                    addOceanLabels();
-                }
-            })
-            .catch(e => console.error('Error:', e));
-    </script>
+        return fetch(geojsonUrl);
+      })
+      .then(r => {
+        if (!r) return;
+        return r.json();
+      })
+      .then(geo => {
+        if (!geo) return;
+        L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
+        addStrategicPoints();
+        addOceanLabels();
+      })
+      .catch(e => console.error('Error Loading Data:', e));
+  </script>
 </body>
 </html>
