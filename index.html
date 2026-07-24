@@ -244,7 +244,8 @@
       var tipeZona = negara.Tipe_Zona_Iklim || "TROPICAL_MONSOON";
       var catatanGeo = negara.Catatan_Geografi || "Belum ada catatan geografi di Sheet.";
       
-      var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode);
+      // BERITA DIBALIK PAKAI .REVERSE() SUPAYA YANG TERBARU NAIK KE PALING ATAS
+      var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode).reverse();
       var beritaHtml = "";
 
       if (listBerita.length > 0) {
