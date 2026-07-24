@@ -66,7 +66,8 @@
     .ticker-move {
       display: inline-block;
       white-space: nowrap;
-      animation: ticker 35s linear infinite;
+      /* KECEPATAN DIPELANIN DARI 35s MENJADI 85s (LEBIH SANTAI & NYAMAN DIBACA) */
+      animation: ticker 85s linear infinite;
       padding-left: 100%;
     }
     .ticker-move:hover {
@@ -74,7 +75,7 @@
     }
     .ticker-item {
       display: inline-block;
-      padding: 0 20px;
+      padding: 0 25px;
       font-size: 13px;
       color: #f1f2f6;
       cursor: pointer;
@@ -385,7 +386,6 @@
         return;
       }
 
-      // Ambil 12 berita paling baru dari dataNews
       var recentNews = newsList.slice(-12).reverse();
       var html = "";
 
@@ -427,7 +427,6 @@
           dataNews = data.dataNews || [];
           dataConfig = data.dataConfig || [];
 
-          // Render Ticker Berita Berjalan
           renderTicker(dataNews);
 
           var isMaintenance = dataConfig.some(c => {
