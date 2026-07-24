@@ -491,7 +491,7 @@
       document.getElementById('search-results').style.display = 'none';
 
       if (isoCode === "GLOBAL") {
-        alert("Berita ini berkaitan dengan Isu Makro Global (tidak terikat pada satu wilayah negara spesifik).");
+        openGlobalModal();
         return;
       }
 
@@ -519,7 +519,13 @@
       }
     });
 
+    /* FUNGSI HANDLER MODAL NEGARA & GLOBAL */
     function openModal(isoCode) {
+      if (isoCode === "GLOBAL") {
+        openGlobalModal();
+        return;
+      }
+
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       if (!negara) return;
 
@@ -588,11 +594,72 @@
       document.getElementById('news-modal').style.display = 'flex';
     }
 
+    /* MODAL KHUSUS BERITA GLOBAL */
+    function openGlobalModal() {
+      var listBerita = dataNews.filter(b => b.Kode_ISO === "GLOBAL").reverse();
+      var beritaHtml = "";
+
+      if (listBerita.length > 0) {
+        listBerita.forEach(b => {
+          let finalLink = (b.Link_Berita || "").trim();
+          if (finalLink !== "" && finalLink !== "#" && !finalLink.startsWith("http")) {
+            finalLink = "https://" + finalLink;
+          }
+
+          var threat = (b.Threat_Level || b.threat_level || "LOW").toUpperCase();
+          var borderStyle = "border-left: 4px solid #26af5f;";
+          var tagBadge = `<span class="threat-tag threat-low">🟢 STABIL</span>`;
+
+          if (threat === "HIGH") {
+            borderStyle = "border-left: 4px solid #e74c3c;";
+            tagBadge = `<span class="threat-tag threat-high">🔴 HIGH RISK</span>`;
+          } else if (threat === "MEDIUM") {
+            borderStyle = "border-left: 4px solid #f39c12;";
+            tagBadge = `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>`;
+          }
+
+          beritaHtml += `
+            <div class="news-card" style="${borderStyle}">
+              <div class="news-header-flex">
+                <h4 class="news-title">${b.Judul_Berita || "Tanpa Judul"}</h4>
+                ${tagBadge}
+              </div>
+              <p class="news-desc">${b.Ringkasan_Berita || ""}</p>
+              ${(finalLink !== "") ? `<a href="${finalLink}" target="_blank" class="news-link">Baca Artikel Selengkapnya &rarr;</a>` : ''}
+            </div>
+          `;
+        });
+      } else {
+        beritaHtml = `
+          <div class="news-card" style="border-left: 4px solid #00d2d3;">
+            <h4 class="news-title">BELUM ADA BERITA GLOBAL</h4>
+            <p class="news-desc">Belum ada isu makro dunia saat ini.</p>
+          </div>
+        `;
+      }
+
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">🌐 LAPORAN INTELIJEN MAKRO GLOBAL</h2>
+        
+        <div class="climate-badge-box">
+          <div><strong>📍 Cakupan Isu:</strong> Perdagangan Internasional, Komoditas Global, & Organisasi Multinegara</div>
+          <div style="color: #95a5a6; margin-top: 4px;"><em>ℹ️ Berita makro ini mempengaruhi iklim ekonomi dunia secara umum.</em></div>
+        </div>
+
+        <h3 style="color: #ecf0f1; font-size: 16px; margin-bottom: 12px;">📰 Isu Strategis Global Terupdate:</h3>
+        ${beritaHtml}
+      `;
+
+      map.setView([20, 0], 2); // Zoom out ke pandangan seluruh dunia
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
     function closeModal() {
       document.getElementById('news-modal').style.display = 'none';
     }
 
-    /* RENDER TICKER BERITA (DIRECT LINK KE SUMBER ARTIKEL) */
+    /* RENDER TICKER BERITA */
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
       if (!newsList || newsList.length === 0) {
