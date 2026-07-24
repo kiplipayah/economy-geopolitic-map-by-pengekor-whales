@@ -14,7 +14,6 @@
       padding: 0;
       height: 100%;
       width: 100%;
-      /* WARNA PERAIRAN / LAUT DIUBAH JADI BIRU SAMUDRA */
       background-color: #1b365d;
       font-family: Arial, sans-serif;
       overflow: hidden;
@@ -25,9 +24,7 @@
       background: transparent !important;
     }
     
-    /* ==========================================
-       BREAKING NEWS TICKER BAR (STYLE TV BERITA)
-       ========================================== */
+    /* BREAKING NEWS TICKER BAR */
     #news-ticker-container {
       position: fixed;
       top: 0;
@@ -66,12 +63,11 @@
     .ticker-move {
       display: inline-block;
       white-space: nowrap;
-      /* KECEPATAN DIPELANIN DARI 35s MENJADI 85s (LEBIH SANTAI & NYAMAN DIBACA) */
       animation: ticker 85s linear infinite;
       padding-left: 100%;
     }
     .ticker-move:hover {
-      animation-play-state: paused; /* Berhenti saat kursor diatasnya */
+      animation-play-state: paused;
     }
     .ticker-item {
       display: inline-block;
@@ -174,15 +170,31 @@
       border-radius: 6px;
       padding: 12px 15px;
       margin-bottom: 12px;
-      border-left: 4px solid #ffa801;
+    }
+    .news-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
     .news-title {
-      margin: 0 0 6px 0;
+      margin: 0;
       font-size: 15px;
       color: #f5f6fa;
     }
+    .threat-tag {
+      font-size: 10px;
+      font-weight: bold;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+    }
+    .threat-high { background: #e74c3c; color: white; }
+    .threat-medium { background: #f39c12; color: white; }
+    .threat-low { background: #26af5f; color: white; }
+
     .news-desc {
-      margin: 0 0 10px 0;
+      margin: 6px 0 10px 0;
       font-size: 13px;
       color: #dcdde1;
       line-height: 1.4;
@@ -271,12 +283,25 @@
       return { icon: "🌍", name: "Iklim Normal / Subtropis" };
     }
 
+    /* PEWARNAAN DINAMIS BERDASARKAN ANCAMAN AI */
     function getColor(isoCode) {
+      // 1. Cek berita terbaru untuk negara ini
+      var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
+      if (newsForCountry.length > 0) {
+        var latestNews = newsForCountry[newsForCountry.length - 1]; 
+        var level = (latestNews.Threat_Level || latestNews.threat_level || "").toUpperCase();
+        
+        if (level === 'HIGH') return '#e74c3c';   // Merah (Ancaman Perang / Krisis)
+        if (level === 'MEDIUM') return '#f39c12'; // Kuning/Oranye (Risiko Ekonomi / Ketegangan)
+        if (level === 'LOW') return '#26af5f';    // Hijau (Stabil)
+      }
+
+      // 2. Fallback ke Data_Makro jika belum ada berita AI
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       if (negara && negara.Status_Konflik === 'ON') {
-        return '#e74c3c'; // Merah Konflik
+        return '#e74c3c';
       }
-      return '#26af5f'; // Hijau Daratan Stabil
+      return '#26af5f'; 
     }
 
     function styleNegara(feature) {
@@ -338,9 +363,24 @@
             finalLink = "https://" + finalLink;
           }
 
+          var threat = (b.Threat_Level || b.threat_level || "LOW").toUpperCase();
+          var borderStyle = "border-left: 4px solid #26af5f;";
+          var tagBadge = `<span class="threat-tag threat-low">🟢 STABIL</span>`;
+
+          if (threat === "HIGH") {
+            borderStyle = "border-left: 4px solid #e74c3c;";
+            tagBadge = `<span class="threat-tag threat-high">🔴 HIGH RISK</span>`;
+          } else if (threat === "MEDIUM") {
+            borderStyle = "border-left: 4px solid #f39c12;";
+            tagBadge = `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>`;
+          }
+
           beritaHtml += `
-            <div class="news-card">
-              <h4 class="news-title">${b.Judul_Berita || "Tanpa Judul"}</h4>
+            <div class="news-card" style="${borderStyle}">
+              <div class="news-header-flex">
+                <h4 class="news-title">${b.Judul_Berita || "Tanpa Judul"}</h4>
+                ${tagBadge}
+              </div>
               <p class="news-desc">${b.Ringkasan_Berita || ""}</p>
               ${(finalLink !== "") ? `<a href="${finalLink}" target="_blank" class="news-link">Baca Artikel Selengkapnya &rarr;</a>` : ''}
             </div>
@@ -348,7 +388,7 @@
         });
       } else {
         beritaHtml = `
-          <div class="news-card">
+          <div class="news-card" style="border-left: 4px solid #00d2d3;">
             <h4 class="news-title">BELUM ADA BERITA TERBARU</h4>
             <p class="news-desc">Belum ada pembaruan geopolitik untuk negara ini.</p>
           </div>
@@ -378,7 +418,6 @@
       document.getElementById('news-modal').style.display = 'none';
     }
 
-    /* FUNGSI GENERATE TICKER BERITA BERJALAN */
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
       if (!newsList || newsList.length === 0) {
