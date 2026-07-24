@@ -75,6 +75,7 @@
       font-size: 13px;
       color: #f1f2f6;
       cursor: pointer;
+      text-decoration: none;
       transition: color 0.2s ease;
     }
     .ticker-item:hover {
@@ -414,7 +415,7 @@
       }
     }
 
-    /* FUNGSI DROPDOWN INTERAKTIF PENCARIAN & FLY-TO */
+    /* DROPDOWN INTERAKTIF PENCARIAN & FLY-TO */
     function handleSearchInput() {
       var query = document.getElementById('search-input').value.trim().toLowerCase();
       var resultsContainer = document.getElementById('search-results');
@@ -428,7 +429,6 @@
       var itemsHtml = '';
       var foundCount = 0;
 
-      // 1. Cari Kesesuaian Nama Negara / Kode ISO
       var matchedCountries = dataMakro.filter(n => 
         (n.Negara && n.Negara.toLowerCase().includes(query)) || 
         (n.Kode_ISO && n.Kode_ISO.toLowerCase() === query)
@@ -443,13 +443,11 @@
         `;
       });
 
-      // 2. Cari Kesesuaian Kata Kunci di Judul / Ringkasan Berita
       var matchedNews = dataNews.filter(b => 
         (b.Judul_Berita && b.Judul_Berita.toLowerCase().includes(query)) ||
         (b.Ringkasan_Berita && b.Ringkasan_Berita.toLowerCase().includes(query))
       );
 
-      // Tampilkan maksimal 8 berita terupdate yang cocok
       matchedNews.slice().reverse().slice(0, 8).forEach(b => {
         foundCount++;
         var countryLabel = b.Negara || b.Kode_ISO || "GLOBAL";
@@ -514,7 +512,6 @@
       }
     }
 
-    // Sembunyikan dropdown hasil pencarian jika pengguna mengklik di luar area pencarian
     document.addEventListener('click', function(e) {
       var container = document.getElementById('search-container');
       if (container && !container.contains(e.target)) {
@@ -595,6 +592,7 @@
       document.getElementById('news-modal').style.display = 'none';
     }
 
+    /* RENDER TICKER BERITA (DIRECT LINK KE SUMBER ARTIKEL) */
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
       if (!newsList || newsList.length === 0) {
@@ -608,11 +606,22 @@
       recentNews.forEach(b => {
         var country = b.Negara || "GLOBAL";
         var title = b.Judul_Berita || "Tanpa Judul";
-        var iso = b.Kode_ISO || "USA";
+        var link = (b.Link_Berita || "").trim();
 
-        html += `<span class="ticker-item" onclick="openModal('${iso}')">
-                   <span class="ticker-country">[${country}]</span> ${title}
-                 </span> &bull; `;
+        if (link && link !== "#" && !link.startsWith("http")) {
+          link = "https://" + link;
+        }
+
+        if (link && link !== "#") {
+          html += `<a href="${link}" target="_blank" class="ticker-item">
+                     <span class="ticker-country">[${country}]</span> ${title}
+                   </a> &bull; `;
+        } else {
+          var iso = b.Kode_ISO || "GLOBAL";
+          html += `<span class="ticker-item" onclick="openModal('${iso}')">
+                     <span class="ticker-country">[${country}]</span> ${title}
+                   </span> &bull; `;
+        }
       });
 
       tickerContent.innerHTML = html;
