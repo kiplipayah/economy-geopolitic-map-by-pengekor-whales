@@ -92,48 +92,69 @@
       100% { transform: translateX(-100%); }
     }
 
-    /* SEARCH BAR OVERLAY */
+    /* SEARCH BAR OVERLAY & DROPDOWN RESULT */
     #search-container {
       position: fixed;
       top: 50px;
       right: 20px;
       z-index: 998;
-      display: flex;
-      gap: 6px;
-      background: rgba(15, 23, 42, 0.9);
+      width: 320px;
+      background: rgba(15, 23, 42, 0.92);
       padding: 8px 12px;
       border-radius: 8px;
       backdrop-filter: blur(8px);
       border: 1px solid #485460;
       box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      box-sizing: border-box;
     }
     #search-input {
+      width: 100%;
       background: #2f3640;
       border: 1px solid #485460;
       color: #f5f6fa;
-      padding: 7px 12px;
+      padding: 8px 12px;
       border-radius: 6px;
       font-size: 13px;
       outline: none;
-      width: 220px;
+      box-sizing: border-box;
       transition: border-color 0.2s;
     }
     #search-input:focus {
       border-color: #00d2d3;
     }
-    #search-btn {
-      background: #00d2d3;
-      border: none;
-      color: #0f172a;
-      padding: 7px 14px;
+    #search-results {
+      display: none;
+      max-height: 260px;
+      overflow-y: auto;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid #00d2d3;
       border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      font-size: 13px;
-      transition: background 0.2s;
+      margin-top: 6px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.7);
     }
-    #search-btn:hover {
-      background: #48dbfb;
+    .search-result-item {
+      padding: 9px 12px;
+      font-size: 12px;
+      color: #f1f2f6;
+      cursor: pointer;
+      border-bottom: 1px solid #2f3640;
+      transition: background 0.2s, color 0.2s;
+      line-height: 1.4;
+    }
+    .search-result-item:last-child {
+      border-bottom: none;
+    }
+    .search-result-item:hover {
+      background: #00d2d3;
+      color: #0f172a;
+    }
+    .search-result-country {
+      font-weight: bold;
+      color: #ffa801;
+      margin-right: 6px;
+    }
+    .search-result-item:hover .search-result-country {
+      color: #0f172a;
     }
 
     /* MAP UI & LABELS */
@@ -283,10 +304,10 @@
     </div>
   </div>
 
-  <!-- SEARCH BAR OVERLAY -->
+  <!-- SEARCH BAR OVERLAY WITH DROPDOWN RESULTS -->
   <div id="search-container">
-    <input type="text" id="search-input" placeholder="Cari Negara / Isu (misal: Minyak)..." onkeypress="handleSearchKey(event)" />
-    <button id="search-btn" onclick="cariData()">Cari</button>
+    <input type="text" id="search-input" placeholder="Cari Negara / Isu (misal: Minyak)..." oninput="handleSearchInput()" />
+    <div id="search-results"></div>
   </div>
 
   <!-- PETA LEAFLET -->
@@ -393,69 +414,113 @@
       }
     }
 
-    /* FUNGSI Cerdas PENCARIAN & FLY-TO */
-    function handleSearchKey(event) {
-      if (event.key === 'Enter') {
-        cariData();
-      }
-    }
-
-    function cariData() {
+    /* FUNGSI DROPDOWN INTERAKTIF PENCARIAN & FLY-TO */
+    function handleSearchInput() {
       var query = document.getElementById('search-input').value.trim().toLowerCase();
-      if (!query) return;
+      var resultsContainer = document.getElementById('search-results');
 
-      // 1. Cari Berdasarkan Nama Negara atau Kode ISO
-      var targetMakro = dataMakro.find(n => 
+      if (!query || query.length < 2) {
+        resultsContainer.style.display = 'none';
+        resultsContainer.innerHTML = '';
+        return;
+      }
+
+      var itemsHtml = '';
+      var foundCount = 0;
+
+      // 1. Cari Kesesuaian Nama Negara / Kode ISO
+      var matchedCountries = dataMakro.filter(n => 
         (n.Negara && n.Negara.toLowerCase().includes(query)) || 
         (n.Kode_ISO && n.Kode_ISO.toLowerCase() === query)
       );
 
-      if (targetMakro && mapGeoJsonLayer) {
-        var targetLayer = null;
-        mapGeoJsonLayer.eachLayer(function(layer) {
-          if (layer.feature && layer.feature.id === targetMakro.Kode_ISO) {
-            targetLayer = layer;
-          }
-        });
+      matchedCountries.forEach(n => {
+        foundCount++;
+        itemsHtml += `
+          <div class="search-result-item" onclick="selectSearchCountry('${n.Kode_ISO}')">
+            <span class="search-result-country">[${n.Kode_ISO}]</span> <strong>${n.Negara}</strong> (Profil Negara)
+          </div>
+        `;
+      });
 
-        if (targetLayer) {
-          map.flyToBounds(targetLayer.getBounds(), { maxZoom: 5, duration: 1.5 });
-          setTimeout(() => { targetLayer.openPopup(); }, 1500);
-          return;
-        }
-      }
-
-      // 2. Jika Tidak Ditemukan di Nama Negara, Cari di Isi Judul / Ringkasan Berita
-      var matchingNews = dataNews.filter(b => 
+      // 2. Cari Kesesuaian Kata Kunci di Judul / Ringkasan Berita
+      var matchedNews = dataNews.filter(b => 
         (b.Judul_Berita && b.Judul_Berita.toLowerCase().includes(query)) ||
         (b.Ringkasan_Berita && b.Ringkasan_Berita.toLowerCase().includes(query))
       );
 
-      if (matchingNews.length > 0 && mapGeoJsonLayer) {
-        var lastNews = matchingNews[matchingNews.length - 1]; // Berita terbaru yang cocok
-        var targetIso = lastNews.Kode_ISO;
-        
-        var newsLayer = null;
-        mapGeoJsonLayer.eachLayer(function(layer) {
-          if (layer.feature && layer.feature.id === targetIso) {
-            newsLayer = layer;
-          }
-        });
+      // Tampilkan maksimal 8 berita terupdate yang cocok
+      matchedNews.slice().reverse().slice(0, 8).forEach(b => {
+        foundCount++;
+        var countryLabel = b.Negara || b.Kode_ISO || "GLOBAL";
+        var iso = b.Kode_ISO || "GLOBAL";
+        var title = b.Judul_Berita || "Tanpa Judul";
 
-        if (newsLayer) {
-          map.flyToBounds(newsLayer.getBounds(), { maxZoom: 5, duration: 1.5 });
-          setTimeout(() => { 
-            openModal(targetIso); 
-          }, 1500);
-          return;
-        } else if (targetIso === "GLOBAL") {
-          alert(`Ditemukan ${matchingNews.length} berita seputar "${query}" (Isu Makro Global).`);
-          return;
+        itemsHtml += `
+          <div class="search-result-item" onclick="selectSearchNews('${iso}')">
+            <span class="search-result-country">[${countryLabel}]</span> ${title}
+          </div>
+        `;
+      });
+
+      if (foundCount > 0) {
+        resultsContainer.innerHTML = itemsHtml;
+        resultsContainer.style.display = 'block';
+      } else {
+        resultsContainer.innerHTML = `<div class="search-result-item" style="cursor:default; color:#95a5a6;">Tidak ada hasil untuk "${query}"</div>`;
+        resultsContainer.style.display = 'block';
+      }
+    }
+
+    function selectSearchCountry(isoCode) {
+      document.getElementById('search-results').style.display = 'none';
+      if (!mapGeoJsonLayer) return;
+
+      var targetLayer = null;
+      mapGeoJsonLayer.eachLayer(function(layer) {
+        if (layer.feature && layer.feature.id === isoCode) {
+          targetLayer = layer;
         }
+      });
+
+      if (targetLayer) {
+        map.flyToBounds(targetLayer.getBounds(), { maxZoom: 5, duration: 1.5 });
+        setTimeout(() => { targetLayer.openPopup(); }, 1500);
+      }
+    }
+
+    function selectSearchNews(isoCode) {
+      document.getElementById('search-results').style.display = 'none';
+
+      if (isoCode === "GLOBAL") {
+        alert("Berita ini berkaitan dengan Isu Makro Global (tidak terikat pada satu wilayah negara spesifik).");
+        return;
       }
 
-      alert(`Kata kunci atau negara "${query}" tidak ditemukan.`);
+      if (!mapGeoJsonLayer) return;
+
+      var targetLayer = null;
+      mapGeoJsonLayer.eachLayer(function(layer) {
+        if (layer.feature && layer.feature.id === isoCode) {
+          targetLayer = layer;
+        }
+      });
+
+      if (targetLayer) {
+        map.flyToBounds(targetLayer.getBounds(), { maxZoom: 5, duration: 1.5 });
+        setTimeout(() => { 
+          openModal(isoCode); 
+        }, 1500);
+      }
     }
+
+    // Sembunyikan dropdown hasil pencarian jika pengguna mengklik di luar area pencarian
+    document.addEventListener('click', function(e) {
+      var container = document.getElementById('search-container');
+      if (container && !container.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
+    });
 
     function openModal(isoCode) {
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
