@@ -92,6 +92,50 @@
       100% { transform: translateX(-100%); }
     }
 
+    /* SEARCH BAR OVERLAY */
+    #search-container {
+      position: fixed;
+      top: 50px;
+      right: 20px;
+      z-index: 998;
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.9);
+      padding: 8px 12px;
+      border-radius: 8px;
+      backdrop-filter: blur(8px);
+      border: 1px solid #485460;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    }
+    #search-input {
+      background: #2f3640;
+      border: 1px solid #485460;
+      color: #f5f6fa;
+      padding: 7px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      outline: none;
+      width: 220px;
+      transition: border-color 0.2s;
+    }
+    #search-input:focus {
+      border-color: #00d2d3;
+    }
+    #search-btn {
+      background: #00d2d3;
+      border: none;
+      color: #0f172a;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    #search-btn:hover {
+      background: #48dbfb;
+    }
+
     /* MAP UI & LABELS */
     .country-label {
       background: transparent;
@@ -239,6 +283,12 @@
     </div>
   </div>
 
+  <!-- SEARCH BAR OVERLAY -->
+  <div id="search-container">
+    <input type="text" id="search-input" placeholder="Cari Negara / Isu (misal: Minyak)..." onkeypress="handleSearchKey(event)" />
+    <button id="search-btn" onclick="cariData()">Cari</button>
+  </div>
+
   <!-- PETA LEAFLET -->
   <div id="map"></div>
 
@@ -260,6 +310,7 @@
     var dataMakro = [];
     var dataNews = []; 
     var dataConfig = [];
+    var mapGeoJsonLayer = null;
 
     function getSeasonInfo(zoneType) {
       var month = new Date().getMonth(); 
@@ -283,20 +334,17 @@
       return { icon: "🌍", name: "Iklim Normal / Subtropis" };
     }
 
-    /* PEWARNAAN DINAMIS BERDASARKAN ANCAMAN AI */
     function getColor(isoCode) {
-      // 1. Cek berita terbaru untuk negara ini
       var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
       if (newsForCountry.length > 0) {
         var latestNews = newsForCountry[newsForCountry.length - 1]; 
         var level = (latestNews.Threat_Level || latestNews.threat_level || "").toUpperCase();
         
-        if (level === 'HIGH') return '#e74c3c';   // Merah (Ancaman Perang / Krisis)
-        if (level === 'MEDIUM') return '#f39c12'; // Kuning/Oranye (Risiko Ekonomi / Ketegangan)
-        if (level === 'LOW') return '#26af5f';    // Hijau (Stabil)
+        if (level === 'HIGH') return '#e74c3c';   
+        if (level === 'MEDIUM') return '#f39c12'; 
+        if (level === 'LOW') return '#26af5f';    
       }
 
-      // 2. Fallback ke Data_Makro jika belum ada berita AI
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       if (negara && negara.Status_Konflik === 'ON') {
         return '#e74c3c';
@@ -343,6 +391,70 @@
       } else {
         layer.bindPopup("<b style='font-family:Arial;'>" + feature.properties.name + "</b><br/>Data belum dipantau.");
       }
+    }
+
+    /* FUNGSI Cerdas PENCARIAN & FLY-TO */
+    function handleSearchKey(event) {
+      if (event.key === 'Enter') {
+        cariData();
+      }
+    }
+
+    function cariData() {
+      var query = document.getElementById('search-input').value.trim().toLowerCase();
+      if (!query) return;
+
+      // 1. Cari Berdasarkan Nama Negara atau Kode ISO
+      var targetMakro = dataMakro.find(n => 
+        (n.Negara && n.Negara.toLowerCase().includes(query)) || 
+        (n.Kode_ISO && n.Kode_ISO.toLowerCase() === query)
+      );
+
+      if (targetMakro && mapGeoJsonLayer) {
+        var targetLayer = null;
+        mapGeoJsonLayer.eachLayer(function(layer) {
+          if (layer.feature && layer.feature.id === targetMakro.Kode_ISO) {
+            targetLayer = layer;
+          }
+        });
+
+        if (targetLayer) {
+          map.flyToBounds(targetLayer.getBounds(), { maxZoom: 5, duration: 1.5 });
+          setTimeout(() => { targetLayer.openPopup(); }, 1500);
+          return;
+        }
+      }
+
+      // 2. Jika Tidak Ditemukan di Nama Negara, Cari di Isi Judul / Ringkasan Berita
+      var matchingNews = dataNews.filter(b => 
+        (b.Judul_Berita && b.Judul_Berita.toLowerCase().includes(query)) ||
+        (b.Ringkasan_Berita && b.Ringkasan_Berita.toLowerCase().includes(query))
+      );
+
+      if (matchingNews.length > 0 && mapGeoJsonLayer) {
+        var lastNews = matchingNews[matchingNews.length - 1]; // Berita terbaru yang cocok
+        var targetIso = lastNews.Kode_ISO;
+        
+        var newsLayer = null;
+        mapGeoJsonLayer.eachLayer(function(layer) {
+          if (layer.feature && layer.feature.id === targetIso) {
+            newsLayer = layer;
+          }
+        });
+
+        if (newsLayer) {
+          map.flyToBounds(newsLayer.getBounds(), { maxZoom: 5, duration: 1.5 });
+          setTimeout(() => { 
+            openModal(targetIso); 
+          }, 1500);
+          return;
+        } else if (targetIso === "GLOBAL") {
+          alert(`Ditemukan ${matchingNews.length} berita seputar "${query}" (Isu Makro Global).`);
+          return;
+        }
+      }
+
+      alert(`Kata kunci atau negara "${query}" tidak ditemukan.`);
     }
 
     function openModal(isoCode) {
@@ -496,7 +608,7 @@
       })
       .then(geo => {
         if (!geo) return;
-        L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
+        mapGeoJsonLayer = L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
         addStrategicPoints();
         addOceanLabels();
       })
