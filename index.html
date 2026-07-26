@@ -377,10 +377,20 @@
 
     function onEachFeature(feature, layer) {
       var negara = dataMakro.find(n => n.Kode_ISO === feature.id);
+      
+      // KAMUS KOORDINAT PRESISI TINGGI (MENGATASI BOUNDING BOX DI LUAR DARATAN/LAUT)
       var customCenters = {
         "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], "FRA": [46.2, 2.2], 
         "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], 
-        "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5], "MAR": [31.79, -7.09]
+        "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5], "MAR": [31.79, -7.09],
+        "MYS": [3.8, 102.3],   // Malaysia
+        "HRV": [45.1, 15.2],   // Kroasia
+        "BIH": [43.9, 17.6],   // Bosnia
+        "MNE": [42.7, 19.3],   // Montenegro
+        "SVN": [46.1, 14.9],   // Slovenia
+        "HTI": [19.1, -72.3],  // Haiti
+        "DOM": [18.7, -70.1],  // Republik Dominika
+        "CUB": [21.5, -79.5]   // Kuba
       };
       
       var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
@@ -388,7 +398,6 @@
 
       if (negara) {
         // HIERARKI MULTI-TIER ZOOM UNTUK PERFECTIONIST VISUAL (MENCEGAH TUMPUKAN KEPULAUAN & NEGARA KECIL)
-        // Tier 3: Pulau-pulau kecil / Karibia berdekatan (Republik Dominika, Jamaika, Puerto Riko, dll.) -> Muncul di Zoom >= 6
         var tier3Tiny = [
           "DOM", "JAM", "PRI", "BLZ", "SLV", "HND", "CRI", "PAN", "TTO", 
           "SGP", "BHR", "CYP", "GEO", "ARM", "AZE", "BTN", "NPL", "BDI", "RWA", 
@@ -398,7 +407,6 @@
           "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", "OMN", "YEM", "LUX", "LKA"
         ];
         
-        // Tier 2: Negara berukuran menengah / tetangga regional -> Muncul di Zoom >= 5 (Haiti berada di sini agar tampil lebih dulu, sementara Dominika di Tier 3 sehingga tidak bertumpuk)
         var tier2Medium = [
           "GBR", "DEU", "ITA", "ESP", "UKR", "POL", "SWE", "NOR", "FIN", "VNM", 
           "PHL", "MYS", "KOR", "PRK", "IRQ", "SYR", "TUN", "MAR", "CUB", "GTM", 
@@ -406,7 +414,7 @@
           "HTI", "SUR", "GUY"
         ];
 
-        var zoomThreshold = 3; // Tier 1 (Negara Raksasa / Utama - Selalu Tampil)
+        var zoomThreshold = 3; 
         if (tier2Medium.includes(feature.id)) {
           zoomThreshold = 5;
         } else if (tier3Tiny.includes(feature.id)) {
