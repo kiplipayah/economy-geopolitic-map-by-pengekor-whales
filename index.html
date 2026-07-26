@@ -245,7 +245,8 @@
     var dataNews = []; 
     var dataConfig = [];
     var mapGeoJsonLayer = null;
-    var seaLabelsLayerGroup = L.layerGroup(); // Layer khusus menampung label perairan agar bisa di-toggle berdasarkan zoom
+    var seaLabelsLayerGroup = L.layerGroup(); // Layer khusus menampung label perairan
+    var countryLabelsLayerGroup = L.layerGroup(); // Layer khusus menampung label negara agar bisa disaring dinamis berdasar zoom
 
     function closeNoticeModal() {
       document.getElementById('notice-modal').style.display = 'none';
@@ -257,7 +258,6 @@
       var c = code.toString().trim().toUpperCase();
       var month = new Date().getMonth(); // 0 = Jan, 1 = Feb, ..., 6 = Jul, ..., 11 = Dec
       
-      // KAMUS TERJEMAHAN ZONA IKLIM LENGKAP
       var mapIklim = {
         'TROPICAL_MONSOON': 'Tropis Muson',
         'TROPICAL_RAINFOREST': 'Tropis Hutan Hujan',
@@ -279,7 +279,6 @@
         'POLAR': 'Arktik / Kutub (Dingin Ekstrem)'
       };
 
-      // DETEKSI MUSIM JIKA MENGGUNAKAN ZONA 4 MUSIM UTARA / SELATAN
       if (c === 'NORTH_4SEASONS' || c === 'NORTH_4_SEASONS') {
         var musim = '';
         if (month === 11 || month === 0 || month === 1) musim = '❄️ Musim Dingin (Winter)';
@@ -298,19 +297,17 @@
         return `${musim} — Zona 4 Musim (Bumi Selatan)`;
       }
 
-      // UNTUK ZONA TROPIS: KALKULASI MUSIM HUJAN / KEMARAU DARI BULAN
       if (c.includes('TROPICAL') || c.includes('TROPIS') || c.includes('EQUATORIAL')) {
         var musimTropis = (month >= 4 && month <= 9) ? '☀️ Musim Kemarau' : '🌧️ Musim Hujan';
         var namaZona = mapIklim[c] || c.replace(/_/g, ' ');
         return `${namaZona} — <i>${musimTropis}</i>`;
       }
 
-      // JIKA TERDAPAT DI KAMUS UTAMA
       if (mapIklim[c]) {
         return mapIklim[c];
       }
       
-      return code.replace(/_/g, ' '); // Fallback jika teks di database sudah berbentuk deskripsi biasa
+      return code.replace(/_/g, ' ');
     }
 
     /* ENGINE CUACA REAL-TIME (OPEN-METEO) */
@@ -359,23 +356,19 @@
     function getColor(isoCode) {
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       
-      // 1. DAHULUKAN STATUS KONFLIK DARI DATABASE (JIKA ON = PASTI MERAH)
       if (negara && (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON')) {
         return '#ef4444'; // Merah 🔴
       }
 
       var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
       if (newsForCountry.length > 0) {
-        // 2. CEK APABILA ADA SALAH SATU BERITA BERTAG HIGH -> MERAH
         var hasHigh = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'HIGH'));
         if (hasHigh) return '#ef4444'; // Merah 🔴
 
-        // 3. CEK APABILA ADA BERITA BERTAG MEDIUM -> KUNING
         var hasMedium = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'MEDIUM'));
         if (hasMedium) return '#f59e0b'; // Kuning 🟡
       }
 
-      // 4. JIKA TIDAK ADA ANCAMAN -> HIJAU
       return '#10b981'; // Hijau 🟢
     }
 
@@ -395,8 +388,27 @@
       var weatherElemId = `popup-weather-${feature.id}`;
 
       if (negara) {
-        L.tooltip({ permanent: true, direction: 'center', className: 'country-label', opacity: 0.9 })
-        .setLatLng(centerLatLng).setContent(negara.Negara).addTo(map);
+        // DAFTAR KODE ISO NEGARA KECIL YANG DISEMBUNYIKAN SAAT ZOOM OUT
+        var smallCountries = [
+          "CHE", "AUT", "BEL", "NLD", "DNK", "CZE", "SVK", "HUN", "PRT", "GRC", 
+          "SRB", "HRV", "BIH", "SVN", "ALB", "MNE", "MKD", "BGR", "ROU", "BLR", 
+          "LTU", "LVA", "EST", "IRL", "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", 
+          "OMN", "YEM", "SGP", "KHM", "LAO", "BHR", "CYP", "GEO", "ARM", "AZE", 
+          "BTN", "NPL", "BDI", "RWA", "TGO", "BEN", "SLE", "LBR", "GNB", "GNQ"
+        ];
+        var isSmall = smallCountries.includes(feature.id);
+
+        var countryTooltip = L.tooltip({ 
+          permanent: true, 
+          direction: 'center', 
+          className: 'country-label', 
+          opacity: 0.9 
+        })
+        .setLatLng(centerLatLng)
+        .setContent(negara.Negara);
+
+        countryTooltip.isSmallCountry = isSmall;
+        countryLabelsLayerGroup.addLayer(countryTooltip);
 
         var lat = Array.isArray(centerLatLng) ? centerLatLng[0] : centerLatLng.lat;
         var lng = Array.isArray(centerLatLng) ? centerLatLng[1] : centerLatLng.lng;
@@ -708,9 +720,25 @@
       });
     }
 
-    /* KONTROL DINAMIS: TAMPILKAN LABEL PERAIRAN HANYA SAAT ZOOM-IN (ZOOM >= 5) */
-    function checkZoomAndToggleSeaLabels() {
+    /* KONTROL DINAMIS: ATUR KEPADATAN LABEL NEGARA KECIL & PERAIRAN BERDASARKAN ZOOM LEVEL */
+    function checkZoomAndToggleLabels() {
       var currentZoom = map.getZoom();
+
+      // 1. KONTROL LABEL NEGARA (NEGARA KECIL HANYA MUNCUL DI ZOOM >= 5)
+      countryLabelsLayerGroup.eachLayer(function(layer) {
+        if (layer.isSmallCountry) {
+          if (currentZoom >= 5) {
+            if (!map.hasLayer(layer)) layer.addTo(map);
+          } else {
+            if (map.hasLayer(layer)) map.removeLayer(layer);
+          }
+        } else {
+          // Negara besar/utama selalu tampil
+          if (!map.hasLayer(layer)) layer.addTo(map);
+        }
+      });
+
+      // 2. KONTROL LABEL PERAIRAN / SELAT (MUNCUL DI ZOOM >= 5)
       if (currentZoom >= 5) {
         if (!map.hasLayer(seaLabelsLayerGroup)) {
           map.addLayer(seaLabelsLayerGroup);
@@ -730,7 +758,7 @@
     }
 
     // LISTENER ZOOM LEVEL PADA PETA
-    map.on('zoomend', checkZoomAndToggleSeaLabels);
+    map.on('zoomend', checkZoomAndToggleLabels);
 
     // MAIN FETCH & CONFIG PARSER
     fetch(apiUrl)
@@ -776,7 +804,7 @@
         mapGeoJsonLayer = L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
         addStrategicPoints();
         addOceanLabels();
-        checkZoomAndToggleSeaLabels(); // Evaluasi status tampil label saat pertama kali load
+        checkZoomAndToggleLabels(); // Jalankan evaluasi saat pertama load
       })
       .catch(e => console.error('Error:', e));
   </script>
