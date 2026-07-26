@@ -255,6 +255,29 @@
       var c = code.toString().trim().toUpperCase();
       var month = new Date().getMonth(); // 0 = Jan, 1 = Feb, ..., 6 = Jul, ..., 11 = Dec
       
+      // KAMUS TERJEMAHAN ZONA IKLIM LENGKAP
+      var mapIklim = {
+        'TROPICAL_MONSOON': 'Tropis Muson',
+        'TROPICAL_RAINFOREST': 'Tropis Hutan Hujan',
+        'TROPICAL_SAVANNA': 'Tropis Sabana',
+        'TROPICAL': 'Tropis (Panas & Lembap)',
+        'TROPIS': 'Tropis (Panas & Lembap)',
+        'EQUATORIAL': 'Ekuatorial (Tropis Basah)',
+        'MEDITERRANEAN': 'Mediterania (Panas Kering / Dingin Sejuk)',
+        'HUMID_CONTINENTAL': 'Kontinental Lembap',
+        'OCEANIC': 'Sedang / Lautan',
+        'DESERT': 'Gurun Panas Ekstrem (Arid)',
+        'GURUN': 'Gurun Panas Ekstrem (Arid)',
+        'ARID_DESERT': 'Gurun Panas Ekstrem (Arid)',
+        'SEMI_ARID': 'Semi-Kering / Stepa',
+        'SUBTROPICAL': 'Subtropis',
+        'SUBTROPIS': 'Subtropis',
+        'SUBARCTIC': 'Subartik',
+        'ARCTIC': 'Arktik / Kutub (Dingin Ekstrem)',
+        'POLAR': 'Arktik / Kutub (Dingin Ekstrem)'
+      };
+
+      // DETEKSI MUSIM JIKA MENGGUNAKAN ZONA 4 MUSIM UTARA / SELATAN
       if (c === 'NORTH_4SEASONS' || c === 'NORTH_4_SEASONS') {
         var musim = '';
         if (month === 11 || month === 0 || month === 1) musim = '❄️ Musim Dingin (Winter)';
@@ -272,15 +295,20 @@
         else musim = '🌸 Musim Semi (Spring)';
         return `${musim} — Zona 4 Musim (Bumi Selatan)`;
       }
+
+      // UNTUK ZONA TROPIS: KALKULASI MUSIM HUJAN / KEMARAU DARI BULAN
+      if (c.includes('TROPICAL') || c.includes('TROPIS') || c.includes('EQUATORIAL')) {
+        var musimTropis = (month >= 4 && month <= 9) ? '☀️ Musim Kemarau' : '🌧️ Musim Hujan';
+        var namaZona = mapIklim[c] || c.replace(/_/g, ' ');
+        return `${namaZona} — <i>${musimTropis}</i>`;
+      }
+
+      // JIKA TERDAPAT DI KAMUS UTAMA
+      if (mapIklim[c]) {
+        return mapIklim[c];
+      }
       
-      if (c === 'DESERT' || c === 'GURUN') return '🌵 Gurun Panas Ekstrem (Arid)';
-      if (c === 'TROPICAL' || c === 'TROPIS') return '🌴 Tropis (Panas & Lembap)';
-      if (c === 'EQUATORIAL') return '☀️ Ekuatorial (Tropis Basah)';
-      if (c === 'SUBTROPICAL' || c === 'SUBTROPIS') return '🌤️ Subtropis';
-      if (c === 'MEDITERRANEAN') return '🌊 Mediterania (Panas Kering / Dingin Sejuk)';
-      if (c === 'ARCTIC' || c === 'POLAR') return '❄️ Arktik / Kutub (Dingin Ekstrem)';
-      
-      return code; // Fallback jika teks di database sudah berbentuk deskripsi biasa
+      return code.replace(/_/g, ' '); // Fallback jika teks di database sudah berbentuk deskripsi biasa
     }
 
     /* ENGINE CUACA REAL-TIME (OPEN-METEO) */
