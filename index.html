@@ -236,7 +236,8 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    var map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+    // Batas minimum zoom diatur ke 3 dan view awal di zoom level 3 agar tidak terlalu jauh/berantakan
+    var map = L.map('map', { zoomControl: false, minZoom: 3 }).setView([20, 0], 3);
     var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
     var apiUrl = 'https://script.google.com/macros/s/AKfycbyvAC2vpgKNoaDCl89Tm7GiPi09qIqvHbYeG79vVC66XTAQypK-eQi48-aOo3XWJQ/exec'; 
 
@@ -707,10 +708,10 @@
       });
     }
 
-    /* KONTROL DINAMIS: TAMPILKAN LABEL PERAIRAN HANYA SAAT ZOOM-IN (ZOOM >= 4) */
+    /* KONTROL DINAMIS: TAMPILKAN LABEL PERAIRAN HANYA SAAT ZOOM-IN (ZOOM >= 5) */
     function checkZoomAndToggleSeaLabels() {
       var currentZoom = map.getZoom();
-      if (currentZoom >= 4) {
+      if (currentZoom >= 5) {
         if (!map.hasLayer(seaLabelsLayerGroup)) {
           map.addLayer(seaLabelsLayerGroup);
         }
