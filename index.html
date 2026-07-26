@@ -88,14 +88,16 @@
     .modal-header-title { font-size: 20px; border-bottom: 2px solid #334155; padding-bottom: 8px; margin-top: 0; color: #38bdf8; }
     
     .dossier-section-title { font-size: 13px; font-weight: bold; color: #fbbf24; margin: 12px 0 6px 0; text-transform: uppercase; letter-spacing: 0.5px; }
-    .macro-grid-3pilar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-    .macro-card { background: #0f172a; padding: 10px; border-radius: 6px; border: 1px solid #334155; }
-    .macro-label { font-size: 10px; color: #94a3b8; text-transform: uppercase; }
-    .macro-val-main { font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
-    .macro-val-sub { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
+    
+    /* MAKRO GRID: 4 KARTU (PDB, INFLASI, SUKU BUNGA, PENGANGGURAN) */
+    .macro-grid-4card { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    .macro-card { background: #0f172a; padding: 10px 8px; border-radius: 6px; border: 1px solid #334155; text-align: center; }
+    .macro-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
+    .macro-val-main { font-size: 14px; font-weight: bold; color: #38bdf8; margin-top: 3px; }
+    .macro-val-sub { font-size: 10px; color: #cbd5e1; margin-top: 3px; }
 
-    /* DEMOGRAFI GRID: 4 KARTU (TERMASUK PENGANGGURAN) */
-    .demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    /* DEMOGRAFI GRID: 3 KARTU (KEMISKINAN, KELAS MENENGAH, KELAS ATAS) */
+    .demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
     .demo-card { background: #0f172a; padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center; }
 
     .risk-box { background: #0f172a; padding: 12px; border-radius: 6px; border-left: 4px solid #f59e0b; font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 15px; border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; }
@@ -289,7 +291,7 @@
         });
     }
 
-    /* LOGIKA WARNA PETA MAX-RISK ENGINE (PERBAIKAN TOTAL) */
+    /* LOGIKA WARNA PETA MAX-RISK ENGINE */
     function getColor(isoCode) {
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       
@@ -438,12 +440,13 @@
 
       var modalWeatherElemId = `modal-weather-${isoCode}`;
       var modalBody = document.getElementById('modal-body');
+      var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
 
       modalBody.innerHTML = `
         <h2 class="modal-header-title">📊 DOSSIER INTELIJEN MAKRO & SOSIAL: ${negara.Negara}</h2>
         
-        <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO (3 PILAR)</div>
-        <div class="macro-grid-3pilar">
+        <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
+        <div class="macro-grid-4card">
           <div class="macro-card">
             <div class="macro-label">PDB (GDP) NOMINAL</div>
             <div class="macro-val-main">${negara.GDP_Nominal || 'N/A'}</div>
@@ -459,6 +462,11 @@
             <div class="macro-val-main">${negara.Suku_Bunga || 'N/A'}</div>
             <div class="macro-val-sub">Status: <strong>${(negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON') ? '⚠️ KRISIS' : '✅ STABIL'}</strong></div>
           </div>
+          <div class="macro-card">
+            <div class="macro-label">PENGANGGURAN</div>
+            <div class="macro-val-main" style="color:#f59e0b;">${pengangguranVal}</div>
+            <div class="macro-val-sub">Tingkat Tenaga Kerja</div>
+          </div>
         </div>
 
         <div class="dossier-section-title">👥 DEMOGRAFI & STRUKTUR KELAS SOSIAL</div>
@@ -466,10 +474,6 @@
           <div class="demo-card">
             <div class="macro-label">KEMISKINAN</div>
             <div class="macro-val-main" style="color:#ef4444;">${negara.Kemiskinan_Pct || 'N/A'}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">PENGANGGURAN</div>
-            <div class="macro-val-main" style="color:#f59e0b;">${negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A'}</div>
           </div>
           <div class="demo-card">
             <div class="macro-label">KELAS MENENGAH</div>
