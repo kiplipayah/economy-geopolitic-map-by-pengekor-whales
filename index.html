@@ -236,7 +236,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   <script>
-    // Batas minimum zoom diatur ke 3 dan view awal di zoom level 3 agar tidak terlalu jauh/berantakan
     var map = L.map('map', { zoomControl: false, minZoom: 3 }).setView([20, 0], 3);
     var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
     var apiUrl = 'https://script.google.com/macros/s/AKfycbyvAC2vpgKNoaDCl89Tm7GiPi09qIqvHbYeG79vVC66XTAQypK-eQi48-aOo3XWJQ/exec'; 
@@ -245,8 +244,8 @@
     var dataNews = []; 
     var dataConfig = [];
     var mapGeoJsonLayer = null;
-    var seaLabelsLayerGroup = L.layerGroup(); // Layer khusus menampung label perairan
-    var countryLabelsLayerGroup = L.layerGroup(); // Layer khusus menampung label negara agar bisa disaring dinamis berdasar zoom
+    var seaLabelsLayerGroup = L.layerGroup(); 
+    var countryLabelsLayerGroup = L.layerGroup(); 
 
     function closeNoticeModal() {
       document.getElementById('notice-modal').style.display = 'none';
@@ -256,7 +255,7 @@
     function formatZonaIklim(code) {
       if (!code) return '-';
       var c = code.toString().trim().toUpperCase();
-      var month = new Date().getMonth(); // 0 = Jan, 1 = Feb, ..., 6 = Jul, ..., 11 = Dec
+      var month = new Date().getMonth(); 
       
       var mapIklim = {
         'TROPICAL_MONSOON': 'Tropis Muson',
@@ -307,7 +306,7 @@
         return mapIklim[c];
       }
       
-      return code.replace(/_/g, ' ');
+      return code.replace(/_/g, ' '); 
     }
 
     /* ENGINE CUACA REAL-TIME (OPEN-METEO) */
@@ -357,19 +356,19 @@
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       
       if (negara && (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON')) {
-        return '#ef4444'; // Merah 🔴
+        return '#ef4444'; 
       }
 
       var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
       if (newsForCountry.length > 0) {
         var hasHigh = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'HIGH'));
-        if (hasHigh) return '#ef4444'; // Merah 🔴
+        if (hasHigh) return '#ef4444'; 
 
         var hasMedium = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'MEDIUM'));
-        if (hasMedium) return '#f59e0b'; // Kuning 🟡
+        if (hasMedium) return '#f59e0b'; 
       }
 
-      return '#10b981'; // Hijau 🟢
+      return '#10b981'; 
     }
 
     function styleNegara(feature) {
@@ -388,15 +387,31 @@
       var weatherElemId = `popup-weather-${feature.id}`;
 
       if (negara) {
-        // DAFTAR KODE ISO NEGARA KECIL YANG DISEMBUNYIKAN SAAT ZOOM OUT
-        var smallCountries = [
-          "CHE", "AUT", "BEL", "NLD", "DNK", "CZE", "SVK", "HUN", "PRT", "GRC", 
-          "SRB", "HRV", "BIH", "SVN", "ALB", "MNE", "MKD", "BGR", "ROU", "BLR", 
-          "LTU", "LVA", "EST", "IRL", "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", 
-          "OMN", "YEM", "SGP", "KHM", "LAO", "BHR", "CYP", "GEO", "ARM", "AZE", 
-          "BTN", "NPL", "BDI", "RWA", "TGO", "BEN", "SLE", "LBR", "GNB", "GNQ"
+        // HIERARKI MULTI-TIER ZOOM UNTUK PERFECTIONIST VISUAL (MENCEGAH TUMPUKAN KEPULAUAN & NEGARA KECIL)
+        // Tier 3: Pulau-pulau kecil / Karibia berdekatan (Republik Dominika, Jamaika, Puerto Riko, dll.) -> Muncul di Zoom >= 6
+        var tier3Tiny = [
+          "DOM", "JAM", "PRI", "BLZ", "SLV", "HND", "CRI", "PAN", "TTO", 
+          "SGP", "BHR", "CYP", "GEO", "ARM", "AZE", "BTN", "NPL", "BDI", "RWA", 
+          "TGO", "BEN", "SLE", "LBR", "GNB", "GNQ", "CHE", "AUT", "BEL", "NLD", 
+          "DNK", "CZE", "SVK", "HUN", "PRT", "GRC", "SRB", "HRV", "BIH", "SVN", 
+          "ALB", "MNE", "MKD", "BGR", "ROU", "BLR", "LTU", "LVA", "EST", "IRL", 
+          "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", "OMN", "YEM", "LUX", "LKA"
         ];
-        var isSmall = smallCountries.includes(feature.id);
+        
+        // Tier 2: Negara berukuran menengah / tetangga regional -> Muncul di Zoom >= 5 (Haiti berada di sini agar tampil lebih dulu, sementara Dominika di Tier 3 sehingga tidak bertumpuk)
+        var tier2Medium = [
+          "GBR", "DEU", "ITA", "ESP", "UKR", "POL", "SWE", "NOR", "FIN", "VNM", 
+          "PHL", "MYS", "KOR", "PRK", "IRQ", "SYR", "TUN", "MAR", "CUB", "GTM", 
+          "NIC", "ECU", "BOL", "PRY", "URY", "VEN", "COL", "PER", "CHL", "FRA",
+          "HTI", "SUR", "GUY"
+        ];
+
+        var zoomThreshold = 3; // Tier 1 (Negara Raksasa / Utama - Selalu Tampil)
+        if (tier2Medium.includes(feature.id)) {
+          zoomThreshold = 5;
+        } else if (tier3Tiny.includes(feature.id)) {
+          zoomThreshold = 6;
+        }
 
         var countryTooltip = L.tooltip({ 
           permanent: true, 
@@ -407,7 +422,7 @@
         .setLatLng(centerLatLng)
         .setContent(negara.Negara);
 
-        countryTooltip.isSmallCountry = isSmall;
+        countryTooltip.zoomThreshold = zoomThreshold;
         countryLabelsLayerGroup.addLayer(countryTooltip);
 
         var lat = Array.isArray(centerLatLng) ? centerLatLng[0] : centerLatLng.lat;
@@ -522,7 +537,6 @@
       modalBody.innerHTML = `
         <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${negara.Negara}</h2>
         
-        <!-- KOLOM TERSENDIRI STATUS GEOPOLITIK WILAYAH -->
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
           <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
           ${isConflict 
@@ -530,7 +544,6 @@
             : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
         </div>
 
-        <!-- CONTAINER IKLIM & MUSIM DETIL (LENGKAP DENGAN STATUS MUSIM AKTIF & REGION ACUAN) -->
         <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
           <div style="margin-bottom: 4px;">📌 <strong>Status Musim Saat Ini:</strong> <span style="color:#fbbf24; font-weight:bold;">${formatZonaIklim(negara.Tipe_Zona_Iklim)}</span></div>
           <div style="margin-bottom: 4px;">📍 <strong>Region Acuan:</strong> ${negara.Region_Acuan || negara.Catatan_Geografi || '-'}</div>
@@ -720,21 +733,17 @@
       });
     }
 
-    /* KONTROL DINAMIS: ATUR KEPADATAN LABEL NEGARA KECIL & PERAIRAN BERDASARKAN ZOOM LEVEL */
+    /* KONTROL DINAMIS: MULTI-TIER ZOOM FILTER UNTUK NEGARA & PERAIRAN */
     function checkZoomAndToggleLabels() {
       var currentZoom = map.getZoom();
 
-      // 1. KONTROL LABEL NEGARA (NEGARA KECIL HANYA MUNCUL DI ZOOM >= 5)
+      // 1. KONTROL LABEL NEGARA BERDASARKAN THRESHOLD ZOOM TIAP TIER
       countryLabelsLayerGroup.eachLayer(function(layer) {
-        if (layer.isSmallCountry) {
-          if (currentZoom >= 5) {
-            if (!map.hasLayer(layer)) layer.addTo(map);
-          } else {
-            if (map.hasLayer(layer)) map.removeLayer(layer);
-          }
-        } else {
-          // Negara besar/utama selalu tampil
+        var thres = layer.zoomThreshold || 3;
+        if (currentZoom >= thres) {
           if (!map.hasLayer(layer)) layer.addTo(map);
+        } else {
+          if (map.hasLayer(layer)) map.removeLayer(layer);
         }
       });
 
