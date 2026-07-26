@@ -246,6 +246,7 @@
     var mapGeoJsonLayer = null;
     var seaLabelsLayerGroup = L.layerGroup(); 
     var countryLabelsLayerGroup = L.layerGroup(); 
+    var sgpLayerInstance = null; // Instance marker khusus Singapura
 
     function closeNoticeModal() {
       document.getElementById('notice-modal').style.display = 'none';
@@ -470,6 +471,65 @@
       }
     }
 
+    /* PENAMBAHAN MIKROSTATE SINGAPURA (KARENA TIDAK ADA DI STANDARD GEOJSON DUNIA) */
+    function addMicroStates() {
+      var negaraSGP = dataMakro.find(n => n.Kode_ISO === 'SGP');
+      if (!negaraSGP) return;
+
+      var lat = 1.3521;
+      var lng = 103.8198;
+      var weatherElemId = `popup-weather-SGP`;
+
+      sgpLayerInstance = L.circleMarker([lat, lng], {
+        radius: 6,
+        fillColor: getColor('SGP'),
+        color: '#ffffff',
+        weight: 1.5,
+        opacity: 1,
+        fillOpacity: 0.95
+      }).addTo(map);
+
+      var sgpTooltip = L.tooltip({
+        permanent: true,
+        direction: 'top',
+        className: 'country-label',
+        opacity: 0.9
+      })
+      .setLatLng([lat, lng])
+      .setContent(negaraSGP.Negara);
+
+      sgpTooltip.zoomThreshold = 6;
+      countryLabelsLayerGroup.addLayer(sgpTooltip);
+
+      var pengangguranVal = negaraSGP.Tingkat_Pengangguran || negaraSGP.Pengangguran_Pct || '-';
+
+      sgpLayerInstance.bindPopup(`
+        <div class="mini-dossier">
+          <div class="mini-title">${negaraSGP.Negara}</div>
+
+          <div class="weather-live-box" id="${weatherElemId}">
+            <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
+          </div>
+
+          <div class="mini-grid">
+            <div class="mini-card"><div class="mini-label">GDP</div><div class="mini-value">${negaraSGP.GDP_Nominal || '-'}</div></div>
+            <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${negaraSGP.Suku_Bunga || '-'}</div></div>
+            <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${negaraSGP.Inflasi_YoY || '-'}</div></div>
+          </div>
+          <p style="margin:4px 0; font-size:11px;"><strong>Pengangguran:</strong> <span style="color:#fbbf24;">${pengangguranVal}</span></p>
+          <p style="margin:4px 0; font-size:11px;"><strong>Status Musim & Iklim:</strong> ${formatZonaIklim(negaraSGP.Tipe_Zona_Iklim)}</p>
+          <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negaraSGP.Keunggulan_Ekspor || '-'}</p>
+          <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negaraSGP.Kebutuhan_Impor || '-'}</p>
+          <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${negaraSGP.Korelasi_Rantai_Pasok || '-'}</p>
+          <button class="btn-news" onclick="openModal('SGP', ${lat}, ${lng})">📂 Lihat Berita & Intelijen Lengkap</button>
+        </div>
+      `, { maxWidth: 300 });
+
+      sgpLayerInstance.on('popupopen', function() {
+        fetchLiveWeather(lat, lng, weatherElemId);
+      });
+    }
+
     function handleSearchInput() {
       var query = document.getElementById('search-input').value.trim().toLowerCase();
       var resultsContainer = document.getElementById('search-results');
@@ -492,6 +552,11 @@
 
     function selectSearchCountry(isoCode) {
       document.getElementById('search-results').style.display = 'none';
+      if (isoCode === 'SGP' && sgpLayerInstance) {
+        map.setView([1.3521, 103.8198], 7, { animate: true, duration: 1.5 });
+        setTimeout(() => { sgpLayerInstance.openPopup(); }, 1500);
+        return;
+      }
       if (!mapGeoJsonLayer) return;
       mapGeoJsonLayer.eachLayer(layer => {
         if (layer.feature && layer.feature.id === isoCode) {
@@ -819,6 +884,7 @@
       .then(geo => {
         if (!geo) return;
         mapGeoJsonLayer = L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
+        addMicroStates(); // Menambahkan marker & label Singapura
         addStrategicPoints();
         addOceanLabels();
         checkZoomAndToggleLabels(); // Jalankan evaluasi saat pertama load
