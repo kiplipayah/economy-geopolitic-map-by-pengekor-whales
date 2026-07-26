@@ -34,7 +34,7 @@
 
     @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-    /* ALERT BANNER (RUNNING / EMERGENCY ANNOUNCEMENT) */
+    /* ALERT BANNER */
     #alert-banner {
       display: none; position: fixed; top: 38px; left: 0; width: 100%;
       background: #f59e0b; color: #0f172a; font-weight: bold; font-size: 12px;
@@ -116,6 +116,12 @@
     .ocean-label { background: transparent; border: none; box-shadow: none; color: #74b9ff; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
     .strategic-point { background-color: #f39c12; border: 2px solid #fff; border-radius: 50%; }
 
+    /* WIDGET CUACA REAL-TIME */
+    .weather-live-box {
+      background: #0f172a; border: 1px solid #38bdf8; border-radius: 6px;
+      padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
+    }
+
     /* MAINTENANCE SCREEN OVERLAY */
     #maintenance-screen {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -131,9 +137,43 @@
     .maintenance-icon { font-size: 50px; margin-bottom: 15px; }
     .maintenance-title { font-size: 22px; font-weight: bold; color: #ef4444; margin-bottom: 10px; }
     .maintenance-desc { font-size: 14px; color: #cbd5e1; line-height: 1.6; }
+
+    /* NOTIFIKASI PEMBUKA (CATATAN PENGGUNA PONSEL) */
+    #notice-modal {
+      display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.85); z-index: 10000;
+      justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
+      backdrop-filter: blur(6px);
+    }
+    .notice-card {
+      background: #1e293b; border: 1px solid #38bdf8; padding: 28px 22px;
+      border-radius: 14px; max-width: 420px; width: 100%; text-align: center;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6); color: #f8fafc;
+    }
+    .notice-icon { font-size: 42px; margin-bottom: 12px; }
+    .notice-title { font-size: 17px; font-weight: bold; color: #38bdf8; margin-bottom: 10px; }
+    .notice-desc { font-size: 13px; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px; }
+    .btn-notice {
+      background: #0284c7; color: white; border: none; padding: 10px 20px;
+      border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px;
+      width: 100%; transition: background 0.2s ease;
+    }
+    .btn-notice:hover { background: #0369a1; }
   </style>
 </head>
 <body>
+
+  <!-- POPUP NOTIFIKASI AWAL (MOBILE ROTATION) -->
+  <div id="notice-modal">
+    <div class="notice-card">
+      <div class="notice-icon">📱</div>
+      <div class="notice-title">Catatan untuk Pengguna Ponsel</div>
+      <div class="notice-desc">
+        Disarankan mengaktifkan rotasi layar (mode lanskap) untuk pengalaman menjelajah peta yang lebih optimal, luas, dan nyaman.
+      </div>
+      <button class="btn-notice" onclick="closeNoticeModal()">Siap, Mengerti!</button>
+    </div>
+  </div>
 
   <!-- MAINTENANCE OVERLAY -->
   <div id="maintenance-screen">
@@ -182,6 +222,52 @@
     var dataConfig = [];
     var mapGeoJsonLayer = null;
 
+    function closeNoticeModal() {
+      document.getElementById('notice-modal').style.display = 'none';
+    }
+
+    /* ENGINE CUACA REAL-TIME (OPEN-METEO) */
+    function translateWeatherCode(code) {
+      if (code === 0) return "☀️ Cerah";
+      if ([1, 2, 3].includes(code)) return "⛅ Cerah Berawan";
+      if ([45, 48].includes(code)) return "🌫️ Berkabut";
+      if ([51, 53, 55, 61, 63, 65].includes(code)) return "🌧️ Hujan / Gerimis";
+      if ([71, 73, 75].includes(code)) return "❄️ Bersalju";
+      if ([80, 81, 82].includes(code)) return "🌧️ Hujan Deras";
+      if ([95, 96, 99].includes(code)) return "🌩️ Badai Petir";
+      return "🌡️ Cuaca Terdeteksi";
+    }
+
+    function fetchLiveWeather(lat, lng, targetElementId) {
+      if (!lat || !lng) return;
+      var url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
+      
+      fetch(url)
+        .then(r => r.json())
+        .then(res => {
+          if (res && res.current_weather) {
+            var temp = res.current_weather.temperature;
+            var wind = res.current_weather.windspeed;
+            var code = res.current_weather.weathercode;
+            var cond = translateWeatherCode(code);
+            var el = document.getElementById(targetElementId);
+            if (el) {
+              el.innerHTML = `
+                <div>
+                  <span style="font-size:15px; font-weight:bold; color:#fbbf24;">${temp}°C</span>
+                  <span style="font-size:12px; color:#cbd5e1; margin-left:6px;">${cond}</span>
+                </div>
+                <div style="font-size:10px; color:#94a3b8;">Angin: <b>${wind} km/h</b></div>
+              `;
+            }
+          }
+        })
+        .catch(e => {
+          var el = document.getElementById(targetElementId);
+          if (el) el.innerHTML = `<span style="color:#94a3b8; font-size:11px;">Gagal memuat cuaca live.</span>`;
+        });
+    }
+
     function getColor(isoCode) {
       var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
       if (newsForCountry.length > 0) {
@@ -204,29 +290,45 @@
       var customCenters = {
         "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], "FRA": [46.2, 2.2], 
         "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], 
-        "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5]
+        "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5], "MAR": [31.79, -7.09]
       };
       
       var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
+      var weatherElemId = `popup-weather-${feature.id}`;
 
       if (negara) {
         L.tooltip({ permanent: true, direction: 'center', className: 'country-label', opacity: 0.9 })
         .setLatLng(centerLatLng).setContent(negara.Negara).addTo(map);
 
+        var lat = Array.isArray(centerLatLng) ? centerLatLng[0] : centerLatLng.lat;
+        var lng = Array.isArray(centerLatLng) ? centerLatLng[1] : centerLatLng.lng;
+
         layer.bindPopup(`
           <div class="mini-dossier">
             <div class="mini-title">${negara.Negara}</div>
+
+            <!-- CONTAINER CUACA REAL-TIME -->
+            <div class="weather-live-box" id="${weatherElemId}">
+              <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
+            </div>
+
             <div class="mini-grid">
               <div class="mini-card"><div class="mini-label">GDP</div><div class="mini-value">${negara.GDP_Nominal || '-'}</div></div>
               <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${negara.Suku_Bunga || '-'}</div></div>
               <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${negara.Inflasi_YoY || '-'}</div></div>
             </div>
+            <p style="margin:4px 0; font-size:11px;"><strong>Zona Iklim:</strong> ${negara.Tipe_Zona_Iklim || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${negara.Korelasi_Rantai_Pasok || '-'}</p>
-            <button class="btn-news" onclick="openModal('${feature.id}')">📂 Lihat Berita & Intelijen Lengkap</button>
+            <button class="btn-news" onclick="openModal('${feature.id}', ${lat}, ${lng})">📂 Lihat Berita & Intelijen Lengkap</button>
           </div>
         `, { maxWidth: 300 });
+
+        layer.on('popupopen', function() {
+          fetchLiveWeather(lat, lng, weatherElemId);
+        });
+
       } else {
         layer.bindPopup("<b style='color:#fff;'>" + feature.properties.name + "</b><br/><span style='color:#94a3b8; font-size:11px;'>Data belum terdaftar.</span>");
       }
@@ -270,7 +372,7 @@
       setTimeout(() => { openModal(isoCode); }, 1500);
     }
 
-    function openModal(isoCode) {
+    function openModal(isoCode, lat, lng) {
       if (isoCode === "GLOBAL") { openGlobalModal(); return; }
 
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
@@ -299,6 +401,7 @@
         beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU AKTIF</h4><p class="news-desc">Belum ada laporan krisis mendesak untuk wilayah ini.</p></div>`;
       }
 
+      var modalWeatherElemId = `modal-weather-${isoCode}`;
       var modalBody = document.getElementById('modal-body');
 
       modalBody.innerHTML = `
@@ -339,6 +442,15 @@
           </div>
         </div>
 
+        <div class="dossier-section-title">🌍 GEOGRAFI, ZONA IKLIM & CUACA REAL-TIME</div>
+        <div class="weather-live-box" id="${modalWeatherElemId}">
+          <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
+        </div>
+        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
+          <strong style="color:#38bdf8;">Zona Iklim:</strong> ${negara.Tipe_Zona_Iklim || '-'}<br>
+          <strong style="color:#38bdf8;">Catatan Geografi:</strong> ${negara.Catatan_Geografi || '-'}
+        </div>
+
         <div class="risk-box">
           <strong style="color:#fbbf24;">⚠️ REALITA SOSIAL & RISIKO LAPANGAN:</strong><br>
           ${negara.Realita_Sosial || 'Data analisis sosial tidak tersedia.'}
@@ -349,6 +461,10 @@
       `;
 
       document.getElementById('news-modal').style.display = 'flex';
+
+      if (lat && lng) {
+        fetchLiveWeather(lat, lng, modalWeatherElemId);
+      }
     }
 
     function openGlobalModal() {
@@ -394,11 +510,70 @@
       tickerContent.innerHTML = html;
     }
 
+    /* MENAMPILKAN SELURUH PERAIRAN, LAUT, SELAT, DAN SUNGAI STRATEGIS DUNIA */
     function addStrategicPoints() {
-      [{name:"Selat Hormuz", lat:26.5, lng:56.3}, {name:"Terusan Suez", lat:30.6, lng:32.3}, {name:"Selat Malaka", lat:3.0, lng:101.5}]
-      .forEach(p => {
-        L.circleMarker([p.lat, p.lng], {radius: 5, className: 'strategic-point'})
-        .bindTooltip(p.name, {permanent: true, direction: 'auto', offset: [0, -10], className: 'country-label'}).addTo(map);
+      var perairanDunia = [
+        // --- LAUT & TELUK STRATEGIS ---
+        {name:"Laut Kaspia", lat:41.5, lng:51.0},
+        {name:"Laut Merah", lat:20.0, lng:38.5},
+        {name:"Laut Hitam", lat:43.5, lng:34.0},
+        {name:"Laut Azov", lat:46.0, lng:37.0},
+        {name:"Laut Cina Selatan", lat:14.0, lng:113.0},
+        {name:"Laut Cina Timur", lat:29.0, lng:125.0},
+        {name:"Laut Jepang", lat:40.0, lng:135.0},
+        {name:"Laut Kuning", lat:35.0, lng:123.0},
+        {name:"Laut Filipina", lat:20.0, lng:130.0},
+        {name:"Laut Okhotsk", lat:53.0, lng:150.0},
+        {name:"Laut Bering", lat:58.0, lng:-175.0},
+        {name:"Laut Mediterania", lat:35.0, lng:18.0},
+        {name:"Laut Baltik", lat:57.0, lng:20.0},
+        {name:"Laut Utara", lat:56.0, lng:3.0},
+        {name:"Laut Barents", lat:75.0, lng:40.0},
+        {name:"Laut Karibia", lat:15.0, lng:-75.0},
+        {name:"Teluk Persia", lat:27.0, lng:51.0},
+        {name:"Teluk Aden", lat:12.5, lng:48.0},
+        {name:"Teluk Oman", lat:24.5, lng:58.5},
+        {name:"Teluk Benggala", lat:15.0, lng:88.0},
+        {name:"Teluk Meksiko", lat:25.0, lng:-90.0},
+        {name:"Teluk Guinea", lat:1.0, lng:2.0},
+        {name:"Laut Jawa", lat:-5.0, lng:112.0},
+        {name:"Laut Sulawesi", lat:3.0, lng:122.0},
+        {name:"Laut Arafura", lat:-9.0, lng:135.0},
+
+        // --- SELAT & CHOKEPOINTS UTAMA ---
+        {name:"Selat Hormuz", lat:26.5, lng:56.3},
+        {name:"Terusan Suez", lat:30.6, lng:32.3},
+        {name:"Selat Malaka", lat:3.0, lng:101.5},
+        {name:"Selat Bab el-Mandeb", lat:12.6, lng:43.3},
+        {name:"Selat Gibraltar", lat:35.9, lng:-5.5},
+        {name:"Terusan Panama", lat:9.1, lng:-79.7},
+        {name:"Selat Taiwan", lat:24.0, lng:119.5},
+        {name:"Selat Bosporus", lat:41.1, lng:29.0},
+
+        // --- SUNGAI STRATEGIS ---
+        {name:"Sungai Merah (Vietnam)", lat:20.8, lng:106.5},
+        {name:"Sungai Dnieper (Ukraina)", lat:47.5, lng:34.5},
+        {name:"Sungai Nil (Mesir)", lat:26.0, lng:32.8},
+        {name:"Sungai Mekong", lat:10.5, lng:105.2}
+      ];
+
+      perairanDunia.forEach(function(p) {
+        L.circleMarker([p.lat, p.lng], {
+          radius: 4,
+          fillColor: "#38bdf8",
+          color: "#ffffff",
+          weight: 1,
+          opacity: 1,
+          fillOpacity: 0.9,
+          className: 'strategic-point'
+        })
+        .bindTooltip(p.name, {
+          permanent: true,
+          direction: 'auto',
+          offset: [0, -8],
+          className: 'country-label'
+        })
+        .addTo(map);
       });
     }
 
@@ -418,7 +593,6 @@
           dataNews = data.dataNews || [];
           dataConfig = data.dataConfig || [];
 
-          // Parse System_Config dari Google Sheet
           var configObj = {};
           dataConfig.forEach(item => {
             if (item.Parameter) configObj[item.Parameter.trim()] = item.Value ? item.Value.trim() : "";
@@ -432,7 +606,8 @@
               mDesc.innerText = mRow.Keterangan;
             }
             document.getElementById('maintenance-screen').style.display = 'flex';
-            return null; // Stop render peta
+            document.getElementById('notice-modal').style.display = 'none';
+            return null;
           }
 
           // 2. CEK ALERT MESSAGE BANNER
