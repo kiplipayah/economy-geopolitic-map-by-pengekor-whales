@@ -441,10 +441,19 @@
       var modalWeatherElemId = `modal-weather-${isoCode}`;
       var modalBody = document.getElementById('modal-body');
       var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
+      var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
 
       modalBody.innerHTML = `
         <h2 class="modal-header-title">📊 DOSSIER INTELIJEN MAKRO & SOSIAL: ${negara.Negara}</h2>
         
+        <!-- KOLOM TERSENDIRI STATUS GEOPOLITIK WILAYAH -->
+        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
+          <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
+          ${isConflict 
+            ? '<span style="font-size: 11px; font-weight: bold; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444;">⚔️ KONFLIK AKTIF / WASPADA</span>' 
+            : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
+        </div>
+
         <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
         <div class="macro-grid-4card">
           <div class="macro-card">
@@ -460,7 +469,7 @@
           <div class="macro-card">
             <div class="macro-label">SUKU BUNGA ACUAN</div>
             <div class="macro-val-main">${negara.Suku_Bunga || 'N/A'}</div>
-            <div class="macro-val-sub">Status: <strong>${(negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON') ? '⚠️ KRISIS' : '✅ STABIL'}</strong></div>
+            <div class="macro-val-sub">Acuan Bank Sentral</div>
           </div>
           <div class="macro-card">
             <div class="macro-label">PENGANGGURAN</div>
