@@ -244,6 +244,7 @@
     var dataNews = []; 
     var dataConfig = [];
     var mapGeoJsonLayer = null;
+    var seaLabelsLayerGroup = L.layerGroup(); // Layer khusus menampung label perairan agar bisa di-toggle berdasarkan zoom
 
     function closeNoticeModal() {
       document.getElementById('notice-modal').style.display = 'none';
@@ -629,6 +630,8 @@
 
     /* MENAMPILKAN LABEL PERAIRAN, LAUT, SELAT & SUNGAI MURNI TANPA TITIK (ALA GOOGLE MAPS) */
     function addStrategicPoints() {
+      seaLabelsLayerGroup.clearLayers();
+
       var perairanDunia = [
         // --- LAUT & TELUK UTAMA (ASIA & PASIFIK) ---
         {name:"Laut Tiongkok Selatan", lat:14.0, lng:113.0},
@@ -692,15 +695,30 @@
       ];
 
       perairanDunia.forEach(function(p) {
-        L.tooltip({
+        var label = L.tooltip({
           permanent: true,
           direction: 'center',
           className: 'sea-label'
         })
         .setLatLng([p.lat, p.lng])
-        .setContent(p.name)
-        .addTo(map);
+        .setContent(p.name);
+        
+        seaLabelsLayerGroup.addLayer(label);
       });
+    }
+
+    /* KONTROL DINAMIS: TAMPILKAN LABEL PERAIRAN HANYA SAAT ZOOM-IN (ZOOM >= 4) */
+    function checkZoomAndToggleSeaLabels() {
+      var currentZoom = map.getZoom();
+      if (currentZoom >= 4) {
+        if (!map.hasLayer(seaLabelsLayerGroup)) {
+          map.addLayer(seaLabelsLayerGroup);
+        }
+      } else {
+        if (map.hasLayer(seaLabelsLayerGroup)) {
+          map.removeLayer(seaLabelsLayerGroup);
+        }
+      }
     }
 
     function addOceanLabels() {
@@ -709,6 +727,9 @@
         L.tooltip({permanent: true, direction: 'center', className: 'ocean-label'}).setLatLng([o.lat, o.lng]).setContent(o.name).addTo(map);
       });
     }
+
+    // LISTENER ZOOM LEVEL PADA PETA
+    map.on('zoomend', checkZoomAndToggleSeaLabels);
 
     // MAIN FETCH & CONFIG PARSER
     fetch(apiUrl)
@@ -754,6 +775,7 @@
         mapGeoJsonLayer = L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
         addStrategicPoints();
         addOceanLabels();
+        checkZoomAndToggleSeaLabels(); // Evaluasi status tampil label saat pertama kali load
       })
       .catch(e => console.error('Error:', e));
   </script>
