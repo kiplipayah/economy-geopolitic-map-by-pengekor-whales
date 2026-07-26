@@ -249,19 +249,36 @@
       document.getElementById('notice-modal').style.display = 'none';
     }
 
-    /* FORMATTER ZONA IKLIM (UBAH KODE MENTAH DATABASE JADI RAMAH PENGGUNA) */
+    /* ENGINE DYNAMIC SEASON & CLIMATE FORMATTER */
     function formatZonaIklim(code) {
       if (!code) return '-';
       var c = code.toString().trim().toUpperCase();
+      var month = new Date().getMonth(); // 0 = Jan, 1 = Feb, ..., 6 = Jul, ..., 11 = Dec
       
-      if (c === 'NORTH_4SEASONS' || c === 'NORTH_4_SEASONS') return '🍂 4 Musim (Bumi Utara)';
-      if (c === 'SOUTH_4SEASONS' || c === 'SOUTH_4_SEASONS') return '🍁 4 Musim (Bumi Selatan)';
-      if (c === 'DESERT' || c === 'GURUN') return '🌵 Gurun / Arid (Kering Ekstrem)';
+      if (c === 'NORTH_4SEASONS' || c === 'NORTH_4_SEASONS') {
+        var musim = '';
+        if (month === 11 || month === 0 || month === 1) musim = '❄️ Musim Dingin (Winter)';
+        else if (month >= 2 && month <= 4) musim = '🌸 Musim Semi (Spring)';
+        else if (month >= 5 && month <= 7) musim = '☀️ Musim Panas (Summer)';
+        else musim = '🍂 Musim Gugur (Autumn/Fall)';
+        return `${musim} — Zona 4 Musim (Bumi Utara)`;
+      }
+      
+      if (c === 'SOUTH_4SEASONS' || c === 'SOUTH_4_SEASONS') {
+        var musim = '';
+        if (month === 11 || month === 0 || month === 1) musim = '☀️ Musim Panas (Summer)';
+        else if (month >= 2 && month <= 4) musim = '🍂 Musim Gugur (Autumn/Fall)';
+        else if (month >= 5 && month <= 7) musim = '❄️ Musim Dingin (Winter)';
+        else musim = '🌸 Musim Semi (Spring)';
+        return `${musim} — Zona 4 Musim (Bumi Selatan)`;
+      }
+      
+      if (c === 'DESERT' || c === 'GURUN') return '🌵 Gurun Panas Ekstrem (Arid)';
       if (c === 'TROPICAL' || c === 'TROPIS') return '🌴 Tropis (Panas & Lembap)';
-      if (c === 'EQUATORIAL') return '☀️ Ekuatorial';
+      if (c === 'EQUATORIAL') return '☀️ Ekuatorial (Tropis Basah)';
       if (c === 'SUBTROPICAL' || c === 'SUBTROPIS') return '🌤️ Subtropis';
-      if (c === 'MEDITERRANEAN') return '🌊 Mediterania';
-      if (c === 'ARCTIC' || c === 'POLAR') return '❄️ Arktik / Kutub';
+      if (c === 'MEDITERRANEAN') return '🌊 Mediterania (Panas Kering / Dingin Sejuk)';
+      if (c === 'ARCTIC' || c === 'POLAR') return '❄️ Arktik / Kutub (Dingin Ekstrem)';
       
       return code; // Fallback jika teks di database sudah berbentuk deskripsi biasa
     }
@@ -371,7 +388,7 @@
               <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${negara.Inflasi_YoY || '-'}</div></div>
             </div>
             <p style="margin:4px 0; font-size:11px;"><strong>Pengangguran:</strong> <span style="color:#fbbf24;">${pengangguranVal}</span></p>
-            <p style="margin:4px 0; font-size:11px;"><strong>Zona Iklim:</strong> ${formatZonaIklim(negara.Tipe_Zona_Iklim)}</p>
+            <p style="margin:4px 0; font-size:11px;"><strong>Status Musim & Iklim:</strong> ${formatZonaIklim(negara.Tipe_Zona_Iklim)}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${negara.Korelasi_Rantai_Pasok || '-'}</p>
@@ -461,7 +478,7 @@
       var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
 
       modalBody.innerHTML = `
-        <h2 class="modal-header-title">📊 DOSSIER INTELIJEN MAKRO & SOSIAL: ${negara.Negara}</h2>
+        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${negara.Negara}</h2>
         
         <!-- KOLOM TERSENDIRI STATUS GEOPOLITIK WILAYAH -->
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
@@ -469,6 +486,13 @@
           ${isConflict 
             ? '<span style="font-size: 11px; font-weight: bold; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444;">⚔️ KONFLIK AKTIF / WASPADA</span>' 
             : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
+        </div>
+
+        <!-- CONTAINER IKLIM & MUSIM DETIL (LENGKAP DENGAN STATUS MUSIM AKTIF & REGION ACUAN) -->
+        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
+          <div style="margin-bottom: 4px;">📌 <strong>Status Musim Saat Ini:</strong> <span style="color:#fbbf24; font-weight:bold;">${formatZonaIklim(negara.Tipe_Zona_Iklim)}</span></div>
+          <div style="margin-bottom: 4px;">📍 <strong>Region Acuan:</strong> ${negara.Region_Acuan || negara.Catatan_Geografi || '-'}</div>
+          <div style="font-size: 11px; color: #94a3b8; font-style: italic;">ℹ️ Note: ${negara.Catatan_Geografi || 'Informasi iklim dihitung dinamis berdasarkan posisi astronomis wilayah dan bulan berjalan.'}</div>
         </div>
 
         <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
@@ -511,13 +535,9 @@
           </div>
         </div>
 
-        <div class="dossier-section-title">🌍 GEOGRAFI, ZONA IKLIM & CUACA REAL-TIME</div>
+        <div class="dossier-section-title">🌍 CUACA REAL-TIME STASIUN TERDEKAT</div>
         <div class="weather-live-box" id="${modalWeatherElemId}">
           <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-        </div>
-        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
-          <strong style="color:#38bdf8;">Zona Iklim:</strong> ${formatZonaIklim(negara.Tipe_Zona_Iklim)}<br>
-          <strong style="color:#38bdf8;">Catatan Geografi:</strong> ${negara.Catatan_Geografi || '-'}
         </div>
 
         <div class="risk-box">
