@@ -94,7 +94,8 @@
     .macro-val-main { font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
     .macro-val-sub { font-size: 11px; color: #cbd5e1; margin-top: 2px; }
 
-    .demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    /* DEMOGRAFI GRID: 4 KARTU (TERMASUK PENGANGGURAN) */
+    .demo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
     .demo-card { background: #0f172a; padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center; }
 
     .risk-box { background: #0f172a; padding: 12px; border-radius: 6px; border-left: 4px solid #f59e0b; font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 15px; border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; }
@@ -129,7 +130,6 @@
       pointer-events: none;
     }
 
-    /* MENGHILANGKAN SEGITIGA PANAH TOOLTIP LEAFLET */
     .leaflet-tooltip-top:before,
     .leaflet-tooltip-bottom:before,
     .leaflet-tooltip-left:before,
@@ -289,17 +289,28 @@
         });
     }
 
+    /* LOGIKA WARNA PETA MAX-RISK ENGINE (PERBAIKAN TOTAL) */
     function getColor(isoCode) {
+      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
+      
+      // 1. DAHULUKAN STATUS KONFLIK DARI DATABASE (JIKA ON = PASTI MERAH)
+      if (negara && (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON')) {
+        return '#ef4444'; // Merah 🔴
+      }
+
       var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
       if (newsForCountry.length > 0) {
-        var latestNews = newsForCountry[newsForCountry.length - 1]; 
-        var level = (latestNews.Threat_Level || latestNews.threat_level || "").toUpperCase();
-        if (level === 'HIGH') return '#ef4444';   
-        if (level === 'MEDIUM') return '#f59e0b'; 
-        if (level === 'LOW') return '#10b981';    
+        // 2. CEK APABILA ADA SALAH SATU BERITA BERTAG HIGH -> MERAH
+        var hasHigh = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'HIGH'));
+        if (hasHigh) return '#ef4444'; // Merah 🔴
+
+        // 3. CEK APABILA ADA BERITA BERTAG MEDIUM -> KUNING
+        var hasMedium = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'MEDIUM'));
+        if (hasMedium) return '#f59e0b'; // Kuning 🟡
       }
-      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-      return (negara && negara.Status_Konflik === 'ON') ? '#ef4444' : '#10b981'; 
+
+      // 4. JIKA TIDAK ADA ANCAMAN -> HIJAU
+      return '#10b981'; // Hijau 🟢
     }
 
     function styleNegara(feature) {
@@ -323,6 +334,8 @@
 
         var lat = Array.isArray(centerLatLng) ? centerLatLng[0] : centerLatLng.lat;
         var lng = Array.isArray(centerLatLng) ? centerLatLng[1] : centerLatLng.lng;
+        
+        var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || '-';
 
         layer.bindPopup(`
           <div class="mini-dossier">
@@ -338,6 +351,7 @@
               <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${negara.Suku_Bunga || '-'}</div></div>
               <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${negara.Inflasi_YoY || '-'}</div></div>
             </div>
+            <p style="margin:4px 0; font-size:11px;"><strong>Pengangguran:</strong> <span style="color:#fbbf24;">${pengangguranVal}</span></p>
             <p style="margin:4px 0; font-size:11px;"><strong>Zona Iklim:</strong> ${negara.Tipe_Zona_Iklim || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor || '-'}</p>
@@ -443,7 +457,7 @@
           <div class="macro-card">
             <div class="macro-label">SUKU BUNGA ACUAN</div>
             <div class="macro-val-main">${negara.Suku_Bunga || 'N/A'}</div>
-            <div class="macro-val-sub">Status: <strong>${negara.Status_Konflik === 'ON' ? '⚠️ KRISIS' : '✅ STABIL'}</strong></div>
+            <div class="macro-val-sub">Status: <strong>${(negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON') ? '⚠️ KRISIS' : '✅ STABIL'}</strong></div>
           </div>
         </div>
 
@@ -454,11 +468,15 @@
             <div class="macro-val-main" style="color:#ef4444;">${negara.Kemiskinan_Pct || 'N/A'}</div>
           </div>
           <div class="demo-card">
+            <div class="macro-label">PENGANGGURAN</div>
+            <div class="macro-val-main" style="color:#f59e0b;">${negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A'}</div>
+          </div>
+          <div class="demo-card">
             <div class="macro-label">KELAS MENENGAH</div>
             <div class="macro-val-main" style="color:#38bdf8;">${negara.Kelas_Menengah_Pct || 'N/A'}</div>
           </div>
           <div class="demo-card">
-            <div class="macro-label">KELAS ATAS / ORANG KAYA</div>
+            <div class="macro-label">KELAS ATAS / KAYA</div>
             <div class="macro-val-main" style="color:#fbbf24;">${negara.Kelas_Atas_Pct || 'N/A'}</div>
           </div>
         </div>
