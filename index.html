@@ -371,8 +371,8 @@
     </div>
 
     <div class="drawer-footer">
-      Created by <b>Pengekor Whales</b><br>
-      System Version 1.0
+      Created with dedication by <b>Pengekor Whales</b><br>
+      System Version 2.1.0-MVP
     </div>
   </div>
 
@@ -393,7 +393,7 @@
     var map = L.map('map', { zoomControl: false, minZoom: 3 }).setView([20, 0], 3);
     var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
     
-    // API URL HASIL DEPLOYMENT TERBARU
+    // API URL HASIL DEPLOYMENT
     var apiUrl = 'https://script.google.com/macros/s/AKfycbxnWluWRvSbSCeWvSjCbMPC7eXC9xQlwne5INBCzQ2YLDxsilgGcBdoRX_drvwMnmk/exec'; 
 
     var dataMakro = [];
@@ -512,15 +512,24 @@
           <label style="font-size:11px; color:#94a3b8;">Password Baru:</label>
           <input type="password" id="pass-new" class="input-field" placeholder="Masukkan password baru..." />
 
-          <button class="btn-action" style="margin-top:10px;" onclick="submitNewPassword('${userEmail}')">Update Password Sekarang</button>
+          <button id="btn-update-pass" class="btn-action" style="margin-top:10px;" onclick="submitNewPassword('${userEmail}')">Update Password Sekarang</button>
         </div>
       `;
       document.getElementById('news-modal').style.display = 'flex';
     }
 
+    /* FUNGSI SUBMIT PASSWORD (DIPERBARUI DENGAN PROGRESS & VERIFIKASI SEBENARNYA) */
     function submitNewPassword(email) {
-      var newPass = document.getElementById('pass-new').value;
-      if (!newPass) { alert("Masukkan password baru!"); return; }
+      var newPass = document.getElementById('pass-new').value.trim();
+      if (!newPass) { 
+        alert("⚠️ Masukkan password baru!"); 
+        return; 
+      }
+
+      var btn = document.getElementById('btn-update-pass');
+      var originalText = btn.innerText;
+      btn.innerText = "⏳ Memperbarui di Database Sheets...";
+      btn.disabled = true;
 
       fetch(apiUrl, {
         method: "POST",
@@ -528,12 +537,20 @@
       })
       .then(r => r.json())
       .then(res => {
-        alert("✅ Password berhasil diperbarui!");
-        closeModal();
+        btn.innerText = originalText;
+        btn.disabled = false;
+
+        if (res && res.status === "success") {
+          alert("✅ Password berhasil diperbarui di Google Sheets! Gunakan password baru saat login berikutnya.");
+          closeModal();
+        } else {
+          alert("❌ Gagal memperbarui password: " + (res.message || "Terjadi kesalahan pada server database."));
+        }
       })
       .catch(e => {
-        alert("✅ Request password berhasil diproses!");
-        closeModal();
+        btn.innerText = originalText;
+        btn.disabled = false;
+        alert("❌ KONEKSI GAGAL! Gagal terhubung ke server Apps Script.");
       });
     }
 
