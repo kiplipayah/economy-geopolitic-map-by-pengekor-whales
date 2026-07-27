@@ -415,7 +415,17 @@
         "SVN": [46.1, 14.9],   // Slovenia
         "HTI": [19.1, -72.3],  // Haiti
         "DOM": [18.7, -70.1],  // Republik Dominika
-        "CUB": [21.5, -79.5]   // Kuba
+        "CUB": [21.5, -79.5],  // Kuba
+        // --- Penyesuaian Presisi Daratan Utama ---
+        "VNM": [14.0, 108.0],  // Vietnam
+        "GIN": [10.0, -10.5],  // Guinea
+        "AUT": [47.3, 13.3],   // Austria
+        "MDA": [47.0, 28.5],   // Moldova
+        "SWE": [62.0, 15.0],   // Swedia
+        "NOR": [61.0, 8.0],    // Norwegia
+        "BHS": [24.2, -76.5],  // Bahama
+        "PAN": [8.5, -80.5],   // Panama
+        "CHL": [-33.0, -71.0]  // Chili
       };
       
       var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
@@ -428,14 +438,15 @@
           "TGO", "BEN", "SLE", "LBR", "GNB", "GNQ", "CHE", "AUT", "BEL", "NLD", 
           "DNK", "CZE", "SVK", "HUN", "PRT", "GRC", "SRB", "HRV", "BIH", "SVN", 
           "ALB", "MNE", "MKD", "BGR", "ROU", "BLR", "LTU", "LVA", "EST", "IRL", 
-          "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", "OMN", "YEM", "LUX", "LKA"
+          "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", "OMN", "YEM", "LUX", "LKA",
+          "MDA", "BHS"
         ];
         
         var tier2Medium = [
           "GBR", "DEU", "ITA", "ESP", "UKR", "POL", "SWE", "NOR", "FIN", "VNM", 
           "PHL", "MYS", "KOR", "PRK", "IRQ", "SYR", "TUN", "MAR", "CUB", "GTM", 
           "NIC", "ECU", "BOL", "PRY", "URY", "VEN", "COL", "PER", "CHL", "FRA",
-          "HTI", "SUR", "GUY"
+          "HTI", "SUR", "GUY", "GIN"
         ];
 
         var zoomThreshold = 3; 
