@@ -28,7 +28,7 @@
     .ticker-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
     .ticker-move { display: inline-block; animation: ticker 85s linear infinite; padding-left: 100%; }
     .ticker-move:hover { animation-play-state: paused; }
-    .ticker-item { display: inline-block; padding: 0 25px; font-size: 13px; color: #f1f2f6; text-decoration: none; }
+    .ticker-item { display: inline-block; padding: 0 25px; font-size: 13px; color: #f1f2f6; text-decoration: none; cursor: pointer; }
     .ticker-item:hover { color: #38bdf8; text-decoration: underline; }
     .ticker-country { color: #ffa801; font-weight: bold; margin-right: 6px; }
 
@@ -241,7 +241,6 @@
     }
     .btn-notice:hover { background: #0369a1; }
 
-    /* CARD TAMPILAN PROFIL SPESIAL SETELAH LOGIN */
     .user-welcome-card {
       background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
       border: 1px solid #38bdf8;
@@ -311,7 +310,7 @@
         <div class="brand-desc">Platform intelijen makroekonomi, risiko geopolitik, dan rute maritim strategis real-time. Pantau pergerakan pasar serta stabilitas global secara presisi dalam satu tampilan interaktif.</div>
       </div>
 
-      <!-- FORM LOGIN (HANYA EMAIL & PASSWORD, TANPA DAFTAR AKUN) -->
+      <!-- FORM LOGIN -->
       <div id="login-container" class="user-section">
         <div class="section-label">🔐 Masuk Akun / Login</div>
         
@@ -324,7 +323,7 @@
         <button id="btn-login-submit" class="btn-action" style="margin-top: 6px;" onclick="handleLogin()">🔑 Masuk / Login</button>
       </div>
 
-      <!-- PROFIL SPESIAL USER (TAMPIL SETELAH BERHASIL LOGIN) -->
+      <!-- PROFIL SPESIAL USER -->
       <div id="profile-container" class="user-section" style="display: none;">
         <div class="user-welcome-card">
           <div style="font-size: 26px; margin-bottom: 4px;">👑</div>
@@ -399,13 +398,12 @@
     var dataMakro = [];
     var dataNews = []; 
     var dataConfig = [];
-    var databasePerairan = []; // Mengambil data perairan secara dinamis dari Google Sheets
+    var databasePerairan = [];
     var mapGeoJsonLayer = null;
     var seaLabelsLayerGroup = L.layerGroup(); 
     var countryLabelsLayerGroup = L.layerGroup(); 
-    var sgpLayerInstance = null; // Instance marker khusus Singapura
+    var sgpLayerInstance = null;
 
-    // TELEGRAM ADMIN & GAMBAR QRIS
     var telegramAdminUsername = "seabank_singapore";
     var qrisImageUrl = "https://e.top4top.io/p_3860gj3gp1.jpg";
 
@@ -417,7 +415,6 @@
       document.getElementById('user-drawer').classList.toggle('open');
     }
 
-    /* SISTEM KETAT LOGIN & CEK STATUS SESI USER */
     function checkLoginState() {
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
       var loginContainer = document.getElementById('login-container');
@@ -433,7 +430,6 @@
         if (securitySection) securitySection.style.display = 'block';
         if (chatSection) chatSection.style.display = 'block';
 
-        // Tampilkan Nama & Email di Kartu Profil
         var displayName = loggedUser.nama || loggedUser.email.split('@')[0];
         document.getElementById('profile-display-name').innerText = displayName;
         document.getElementById('profile-display-email').innerText = loggedUser.email;
@@ -468,7 +464,6 @@
         btnSubmit.innerText = "🔑 Masuk / Login";
         btnSubmit.disabled = false;
 
-        // VERIFIKASI KETAT RESPONSE GOOGLE SHEETS
         if (res && res.status === "success") {
           var userData = {
             email: res.email || email,
@@ -484,7 +479,7 @@
       .catch(e => {
         btnSubmit.innerText = "🔑 Masuk / Login";
         btnSubmit.disabled = false;
-        alert("❌ KONEKSI GAGAL! Pastikan email & password sudah terdaftar di Google Sheets dan server aktif.");
+        alert("❌ KONEKSI GAGAL! Pastikan email & password sudah terdaftar di Google Sheets.");
       });
     }
 
@@ -496,7 +491,6 @@
       alert("🚪 Anda telah keluar dari akun.");
     }
 
-    // Inisialisasi Cek Status Sesi Login
     checkLoginState();
 
     function openPasswordModal() {
@@ -518,7 +512,6 @@
       document.getElementById('news-modal').style.display = 'flex';
     }
 
-    /* FUNGSI SUBMIT PASSWORD (KEBAL REDIRECT 302 — MEMPAN DALAM 1X KLIK) */
     function submitNewPassword(email) {
       var newPass = document.getElementById('pass-new').value.trim();
       if (!newPass) { 
@@ -533,7 +526,6 @@
         btn.disabled = true;
       }
 
-      // Mengirim parameter di URL dan Body (Kebal Redirect 302 Browser)
       var requestUrl = apiUrl + "?action=updateProfile&email=" + encodeURIComponent(email) + "&newPassword=" + encodeURIComponent(newPass);
 
       fetch(requestUrl, {
@@ -547,7 +539,6 @@
           btn.disabled = false;
         }
 
-        // MEMASTIKAN RESPON BENAR-BENAR DARI HASIL UPDATE PASSWORD
         if (res && res.status === "success" && res.type === "updateProfile_response") {
           alert("✅ Password berhasil diperbarui di Google Sheets! Silakan coba login ulang.");
           closeModal();
@@ -572,15 +563,12 @@
       modalBody.innerHTML = `
         <div class="modal-box-center">
           <h2 class="modal-header-title">💳 Perpanjang Masa Langganan Pro</h2>
-          <p style="font-size:12px; color:#cbd5e1;">Pindai kode QRIS di bawah menggunakan GoPay, OVO, Dana, ShopeePay, Seabank, atau Mobile Banking pilihanmu:</p>
-          
+          <p style="font-size:12px; color:#cbd5e1;">Pindai kode QRIS di bawah menggunakan e-wallet atau mobile banking:</p>
           <img src="${qrisImageUrl}" class="qris-img" alt="QRIS All Payment" />
-
           <div class="risk-box" style="border-left: 4px solid #10b981; text-align:left; margin-top:10px;">
             <b>Nominal Paket Pro:</b> Rp 47.000 / bulan<br>
-            <b>Sistem Verifikasi:</b> Setelah transfer, klik tombol di bawah untuk mengirim bukti transfer langsung ke admin via Telegram.
+            <b>Sistem Verifikasi:</b> Setelah transfer, klik tombol di bawah untuk mengirim bukti ke admin.
           </div>
-
           <button class="btn-action" style="background:#10b981; padding:10px; font-size:13px;" onclick="confirmPaymentTelegram('${email}')">📲 Konfirmasi Pembayaran via Telegram</button>
         </div>
       `;
@@ -603,16 +591,11 @@
     function openVIPChatModal() {
       var modalBody = document.getElementById('modal-body');
       modalBody.innerHTML = `
-        <h2 class="modal-header-title">💬 VIP Community Chat (24 Jam Auto-Delete)</h2>
-        <div class="risk-box" style="margin-bottom:10px;">
-          Ruang diskusi publik khusus anggota Pro. Semua riwayat obrolan akan dibersihkan secara otomatis setiap 24 jam untuk menjaga keamanan & kepresisian informasi.
-        </div>
-        
+        <h2 class="modal-header-title">💬 VIP Community Chat</h2>
+        <div class="risk-box" style="margin-bottom:10px;">Ruang diskusi publik khusus anggota Pro.</div>
         <div style="height: 220px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px; overflow-y:auto; margin-bottom:10px; font-size:12px;">
           <div style="margin-bottom:8px;"><b style="color:#38bdf8;">[Analis FX]:</b> Dampak kenaikan suku bunga Fed sepertinya akan menekan mata uang berkembang esok hari.</div>
-          <div style="margin-bottom:8px;"><b style="color:#fbbf24;">[Trader Komoditas]:</b> Fokus pantau Selat Hormuz, ada pengencangan rute navigasi.</div>
         </div>
-
         <div style="display:flex; gap:6px;">
           <input type="text" class="input-field" placeholder="Ketik pesan..." style="margin:0;" />
           <button class="btn-action" style="width:80px; margin:0;">Kirim</button>
@@ -621,123 +604,53 @@
       document.getElementById('news-modal').style.display = 'flex';
     }
 
-    /* ENGINE DYNAMIC SEASON & CLIMATE FORMATTER */
     function formatZonaIklim(code) {
       if (!code) return '-';
       var c = code.toString().trim().toUpperCase();
       var month = new Date().getMonth(); 
-      
       var mapIklim = {
-        'TROPICAL_MONSOON': 'Tropis Muson',
-        'TROPICAL_RAINFOREST': 'Tropis Hutan Hujan',
-        'TROPICAL_SAVANNA': 'Tropis Sabana',
-        'TROPICAL': 'Tropis (Panas & Lembap)',
-        'TROPIS': 'Tropis (Panas & Lembap)',
-        'EQUATORIAL': 'Ekuatorial (Tropis Basah)',
-        'MEDITERRANEAN': 'Mediterania (Panas Kering / Dingin Sejuk)',
-        'HUMID_CONTINENTAL': 'Kontinental Lembap',
-        'OCEANIC': 'Sedang / Lautan',
-        'DESERT': 'Gurun Panas Ekstrem (Arid)',
-        'GURUN': 'Gurun Panas Ekstrem (Arid)',
-        'ARID_DESERT': 'Gurun Panas Ekstrem (Arid)',
-        'SEMI_ARID': 'Semi-Kering / Stepa',
-        'SUBTROPICAL': 'Subtropis',
-        'SUBTROPIS': 'Subtropis',
-        'SUBARCTIC': 'Subartik',
-        'ARCTIC': 'Arktik / Kutub (Dingin Ekstrem)',
-        'POLAR': 'Arktik / Kutub (Dingin Ekstrem)'
+        'TROPICAL_MONSOON': 'Tropis Muson', 'TROPICAL_RAINFOREST': 'Tropis Hutan Hujan',
+        'TROPICAL_SAVANNA': 'Tropis Sabana', 'TROPICAL': 'Tropis', 'TROPIS': 'Tropis',
+        'EQUATORIAL': 'Ekuatorial', 'MEDITERRANEAN': 'Mediterania', 'DESERT': 'Gurun', 'GURUN': 'Gurun'
       };
-
-      if (c === 'NORTH_4SEASONS' || c === 'NORTH_4_SEASONS') {
-        var musim = '';
-        if (month === 11 || month === 0 || month === 1) musim = '❄️ Musim Dingin (Winter)';
-        else if (month >= 2 && month <= 4) musim = '🌸 Musim Semi (Spring)';
-        else if (month >= 5 && month <= 7) musim = '☀️ Musim Panas (Summer)';
-        else musim = '🍂 Musim Gugur (Autumn/Fall)';
-        return `${musim} — Zona 4 Musim (Bumi Utara)`;
+      if (c.includes('TROPICAL') || c.includes('TROPIS')) {
+        var musim = (month >= 4 && month <= 9) ? '☀️ Musim Kemarau' : '🌧️ Musim Hujan';
+        return `${mapIklim[c] || c} — <i>${musim}</i>`;
       }
-      
-      if (c === 'SOUTH_4SEASONS' || c === 'SOUTH_4_SEASONS') {
-        var musim = '';
-        if (month === 11 || month === 0 || month === 1) musim = '☀️ Musim Panas (Summer)';
-        else if (month >= 2 && month <= 4) musim = '🍂 Musim Gugur (Autumn/Fall)';
-        else if (month >= 5 && month <= 7) musim = '❄️ Musim Dingin (Winter)';
-        else musim = '🌸 Musim Semi (Spring)';
-        return `${musim} — Zona 4 Musim (Bumi Selatan)`;
-      }
-
-      if (c.includes('TROPICAL') || c.includes('TROPIS') || c.includes('EQUATORIAL')) {
-        var musimTropis = (month >= 4 && month <= 9) ? '☀️ Musim Kemarau' : '🌧️ Musim Hujan';
-        var namaZona = mapIklim[c] || c.replace(/_/g, ' ');
-        return `${namaZona} — <i>${musimTropis}</i>`;
-      }
-
-      if (mapIklim[c]) {
-        return mapIklim[c];
-      }
-      
-      return code.replace(/_/g, ' '); 
+      return mapIklim[c] || code.replace(/_/g, ' '); 
     }
 
-    /* ENGINE CUACA REAL-TIME (OPEN-METEO) */
     function translateWeatherCode(code) {
       if (code === 0) return "☀️ Cerah";
       if ([1, 2, 3].includes(code)) return "⛅ Cerah Berawan";
-      if ([45, 48].includes(code)) return "🌫️ Berkabut";
-      if ([51, 53, 55, 61, 63, 65].includes(code)) return "🌧️ Hujan / Gerimis";
-      if ([71, 73, 75].includes(code)) return "❄️ Bersalju";
-      if ([80, 81, 82].includes(code)) return "🌧️ Hujan Deras";
-      if ([95, 96, 99].includes(code)) return "🌩️ Badai Petir";
+      if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return "🌧️ Hujan";
       return "🌡️ Cuaca Terdeteksi";
     }
 
     function fetchLiveWeather(lat, lng, targetElementId) {
       if (!lat || !lng) return;
-      var url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
-      
-      fetch(url)
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`)
         .then(r => r.json())
         .then(res => {
           if (res && res.current_weather) {
             var temp = res.current_weather.temperature;
             var wind = res.current_weather.windspeed;
-            var code = res.current_weather.weathercode;
-            var cond = translateWeatherCode(code);
+            var cond = translateWeatherCode(res.current_weather.weathercode);
             var el = document.getElementById(targetElementId);
-            if (el) {
-              el.innerHTML = `
-                <div>
-                  <span style="font-size:15px; font-weight:bold; color:#fbbf24;">${temp}°C</span>
-                  <span style="font-size:12px; color:#cbd5e1; margin-left:6px;">${cond}</span>
-                </div>
-                <div style="font-size:10px; color:#94a3b8;">Angin: <b>${wind} km/h</b></div>
-              `;
-            }
+            if (el) el.innerHTML = `<div><span style="font-size:15px; font-weight:bold; color:#fbbf24;">${temp}°C</span> <span style="font-size:12px; color:#cbd5e1; margin-left:6px;">${cond}</span></div><div style="font-size:10px; color:#94a3b8;">Angin: <b>${wind} km/h</b></div>`;
           }
         })
-        .catch(e => {
-          var el = document.getElementById(targetElementId);
-          if (el) el.innerHTML = `<span style="color:#94a3b8; font-size:11px;">Gagal memuat cuaca live.</span>`;
-        });
+        .catch(() => {});
     }
 
-    /* LOGIKA WARNA PETA MAX-RISK ENGINE */
     function getColor(isoCode) {
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-      
-      if (negara && (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON')) {
-        return '#ef4444'; 
-      }
-
+      if (negara && (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON')) return '#ef4444'; 
       var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
       if (newsForCountry.length > 0) {
-        var hasHigh = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'HIGH'));
-        if (hasHigh) return '#ef4444'; 
-
-        var hasMedium = newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'MEDIUM'));
-        if (hasMedium) return '#f59e0b'; 
+        if (newsForCountry.some(b => ((b.Threat_Level || "").toUpperCase() === 'HIGH'))) return '#ef4444'; 
+        if (newsForCountry.some(b => ((b.Threat_Level || "").toUpperCase() === 'MEDIUM'))) return '#f59e0b'; 
       }
-
       return '#10b981'; 
     }
 
@@ -747,101 +660,31 @@
 
     function onEachFeature(feature, layer) {
       var negara = dataMakro.find(n => n.Kode_ISO === feature.id);
-      
-      var customCenters = {
-        "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], "FRA": [46.2, 2.2], 
-        "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], 
-        "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5], "MAR": [31.79, -7.09],
-        "MYS": [3.8, 102.3],   // Malaysia
-        "HRV": [45.1, 15.2],   // Kroasia
-        "BIH": [43.9, 17.6],   // Bosnia
-        "MNE": [42.7, 19.3],   // Montenegro
-        "SVN": [46.1, 14.9],   // Slovenia
-        "HTI": [19.1, -72.3],  // Haiti
-        "DOM": [18.7, -70.1],  // Republik Dominika
-        "CUB": [21.8, -79.5],  // Kuba
-        "VNM": [14.0, 108.0],  // Vietnam
-        "GIN": [10.0, -10.5],  // Guinea
-        "AUT": [47.3, 13.3],   // Austria
-        "MDA": [47.0, 28.5],   // Moldova
-        "SWE": [62.0, 15.0],   // Swedia
-        "NOR": [61.0, 8.0],    // Norwegia
-        "BHS": [24.5, -77.5],  // Bahama
-        "PAN": [8.5, -80.5],   // Panama
-        "CHL": [-33.0, -71.0]  // Chili
-      };
-      
-      var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
+      var centerLatLng = layer.getBounds().getCenter();
       var weatherElemId = `popup-weather-${feature.id}`;
 
       if (negara) {
-        var tier3Tiny = [
-          "DOM", "JAM", "PRI", "BLZ", "SLV", "HND", "CRI", "PAN", "TTO", 
-          "SGP", "BHR", "CYP", "GEO", "ARM", "AZE", "BTN", "NPL", "BDI", "RWA", 
-          "TGO", "BEN", "SLE", "LBR", "GNB", "GNQ", "CHE", "AUT", "BEL", "NLD", 
-          "DNK", "CZE", "SVK", "HUN", "PRT", "GRC", "SRB", "HRV", "BIH", "SVN", 
-          "ALB", "MNE", "MKD", "BGR", "ROU", "BLR", "LTU", "LVA", "EST", "IRL", 
-          "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", "OMN", "YEM", "LUX", "LKA",
-          "MDA", "BHS"
-        ];
-        
-        var tier2Medium = [
-          "GBR", "DEU", "ITA", "ESP", "UKR", "POL", "SWE", "NOR", "FIN", "VNM", 
-          "PHL", "MYS", "KOR", "PRK", "IRQ", "SYR", "TUN", "MAR", "CUB", "GTM", 
-          "NIC", "ECU", "BOL", "PRY", "URY", "VEN", "COL", "PER", "CHL", "FRA",
-          "HTI", "SUR", "GUY", "GIN"
-        ];
-
-        var zoomThreshold = 3; 
-        if (tier2Medium.includes(feature.id)) {
-          zoomThreshold = 5;
-        } else if (tier3Tiny.includes(feature.id)) {
-          zoomThreshold = 6;
-        }
-
-        var countryTooltip = L.tooltip({ 
-          permanent: true, 
-          direction: 'center', 
-          className: 'country-label', 
-          opacity: 0.9 
-        })
-        .setLatLng(centerLatLng)
-        .setContent(negara.Negara);
-
-        countryTooltip.zoomThreshold = zoomThreshold;
+        var countryTooltip = L.tooltip({ permanent: true, direction: 'center', className: 'country-label', opacity: 0.9 })
+          .setLatLng(centerLatLng)
+          .setContent(negara.Negara);
+        countryTooltip.zoomThreshold = 3;
         countryLabelsLayerGroup.addLayer(countryTooltip);
 
-        var lat = Array.isArray(centerLatLng) ? centerLatLng[0] : centerLatLng.lat;
-        var lng = Array.isArray(centerLatLng) ? centerLatLng[1] : centerLatLng.lng;
-        
-        var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || '-';
-
+        var lat = centerLatLng.lat; var lng = centerLatLng.lng;
         layer.bindPopup(`
           <div class="mini-dossier">
             <div class="mini-title">${negara.Negara}</div>
-
-            <div class="weather-live-box" id="${weatherElemId}">
-              <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-            </div>
-
+            <div class="weather-live-box" id="${weatherElemId}"><span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca...</span></div>
             <div class="mini-grid">
               <div class="mini-card"><div class="mini-label">GDP</div><div class="mini-value">${negara.GDP_Nominal || '-'}</div></div>
               <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${negara.Suku_Bunga || '-'}</div></div>
               <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${negara.Inflasi_YoY || '-'}</div></div>
             </div>
-            <p style="margin:4px 0; font-size:11px;"><strong>Pengangguran:</strong> <span style="color:#fbbf24;">${pengangguranVal}</span></p>
-            <p style="margin:4px 0; font-size:11px;"><strong>Status Musim & Iklim:</strong> ${formatZonaIklim(negara.Tipe_Zona_Iklim)}</p>
-            <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor || '-'}</p>
-            <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor || '-'}</p>
-            <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${negara.Korelasi_Rantai_Pasok || '-'}</p>
-            <button class="btn-news" onclick="openModal('${feature.id}', ${lat}, ${lng})">📂 Lihat Berita & Intelijen Lengkap</button>
+            <button class="btn-news" onclick="openModal('${feature.id}', ${lat}, ${lng})">📂 Lihat Berita & Intelijen</button>
           </div>
         `, { maxWidth: 300 });
 
-        layer.on('popupopen', function() {
-          fetchLiveWeather(lat, lng, weatherElemId);
-        });
-
+        layer.on('popupopen', () => fetchLiveWeather(lat, lng, weatherElemId));
       } else {
         layer.bindPopup("<b style='color:#fff;'>" + feature.properties.name + "</b><br/><span style='color:#94a3b8; font-size:11px;'>Data belum terdaftar.</span>");
       }
@@ -850,98 +693,25 @@
     function addMicroStates() {
       var negaraSGP = dataMakro.find(n => n.Kode_ISO === 'SGP');
       if (!negaraSGP) return;
-
-      var lat = 1.3521;
-      var lng = 103.8198;
-      var weatherElemId = `popup-weather-SGP`;
-
-      sgpLayerInstance = L.circleMarker([lat, lng], {
-        radius: 6,
-        fillColor: getColor('SGP'),
-        color: '#ffffff',
-        weight: 1.5,
-        opacity: 1,
-        fillOpacity: 0.95
-      }).addTo(map);
-
-      var sgpTooltip = L.tooltip({
-        permanent: true,
-        direction: 'top',
-        className: 'country-label',
-        opacity: 0.9
-      })
-      .setLatLng([lat, lng])
-      .setContent(negaraSGP.Negara);
-
-      sgpTooltip.zoomThreshold = 6;
-      countryLabelsLayerGroup.addLayer(sgpTooltip);
-
-      var pengangguranVal = negaraSGP.Tingkat_Pengangguran || negaraSGP.Pengangguran_Pct || '-';
-
-      sgpLayerInstance.bindPopup(`
-        <div class="mini-dossier">
-          <div class="mini-title">${negaraSGP.Negara}</div>
-
-          <div class="weather-live-box" id="${weatherElemId}">
-            <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-          </div>
-
-          <div class="mini-grid">
-            <div class="mini-card"><div class="mini-label">GDP</div><div class="mini-value">${negaraSGP.GDP_Nominal || '-'}</div></div>
-            <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${negaraSGP.Suku_Bunga || '-'}</div></div>
-            <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${negaraSGP.Inflasi_YoY || '-'}</div></div>
-          </div>
-          <p style="margin:4px 0; font-size:11px;"><strong>Pengangguran:</strong> <span style="color:#fbbf24;">${pengangguranVal}</span></p>
-          <p style="margin:4px 0; font-size:11px;"><strong>Status Musim & Iklim:</strong> ${formatZonaIklim(negaraSGP.Tipe_Zona_Iklim)}</p>
-          <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negaraSGP.Keunggulan_Ekspor || '-'}</p>
-          <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negaraSGP.Kebutuhan_Impor || '-'}</p>
-          <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${negaraSGP.Korelasi_Rantai_Pasok || '-'}</p>
-          <button class="btn-news" onclick="openModal('SGP', ${lat}, ${lng})">📂 Lihat Berita & Intelijen Lengkap</button>
-        </div>
-      `, { maxWidth: 300 });
-
-      sgpLayerInstance.on('popupopen', function() {
-        fetchLiveWeather(lat, lng, weatherElemId);
-      });
+      var lat = 1.3521; var lng = 103.8198;
+      sgpLayerInstance = L.circleMarker([lat, lng], { radius: 6, fillColor: getColor('SGP'), color: '#ffffff', weight: 1.5, opacity: 1, fillOpacity: 0.95 }).addTo(map);
     }
 
-    /* PENCARIAN LANJUTAN: NEGARA, BERITA, HINGGA PERAIRAN / SELAT / SAMUDRA */
     function handleSearchInput() {
       var query = document.getElementById('search-input').value.trim().toLowerCase();
       var resultsContainer = document.getElementById('search-results');
       if (!query || query.length < 2) { resultsContainer.style.display = 'none'; return; }
 
       var itemsHtml = ''; var found = 0;
-
-      // 1. Cari Negara
-      dataMakro.filter(n => (n.Negara && n.Negara.toLowerCase().includes(query)) || (n.Kode_ISO && n.Kode_ISO.toLowerCase() === query)).forEach(n => {
-        found++;
-        itemsHtml += `<div class="search-result-item" onclick="selectSearchCountry('${n.Kode_ISO}')"><span class="ticker-country">[${n.Kode_ISO}]</span> <strong>${n.Negara}</strong> (Dossier Makro)</div>`;
+      dataMakro.filter(n => (n.Negara && n.Negara.toLowerCase().includes(query))).forEach(n => {
+        found++; itemsHtml += `<div class="search-result-item" onclick="selectSearchCountry('${n.Kode_ISO}')">[${n.Kode_ISO}] <strong>${n.Negara}</strong></div>`;
       });
-
-      // 2. Cari Perairan / Selat / Samudra / Laut dari data sheet
-      databasePerairan.filter(p => (p.Nama && p.Nama.toLowerCase().includes(query)) || (p.Kategori && p.Kategori.toLowerCase().includes(query))).forEach(p => {
-        found++;
-        itemsHtml += `<div class="search-result-item" onclick="selectSearchPerairan('${p.Nama}')"><span style="color:#38bdf8; font-weight:bold;">[${p.Kategori}]</span> <strong>${p.Nama}</strong> (Analisis Jalur Dagang)</div>`;
-      });
-
-      // 3. Cari Berita
-      dataNews.filter(b => (b.Judul_Berita && b.Judul_Berita.toLowerCase().includes(query)) || (b.Ringkasan_Berita && b.Ringkasan_Berita.toLowerCase().includes(query))).slice().reverse().slice(0, 5).forEach(b => {
-        found++;
-        itemsHtml += `<div class="search-result-item" onclick="selectSearchNews('${b.Kode_ISO || "GLOBAL"}')"><span class="ticker-country">[${b.Negara || "GLOBAL"}]</span> ${b.Judul_Berita}</div>`;
-      });
-
-      resultsContainer.innerHTML = found > 0 ? itemsHtml : `<div class="search-result-item" style="cursor:default; color:#94a3b8;">Tidak ada hasil untuk "${query}"</div>`;
+      resultsContainer.innerHTML = found > 0 ? itemsHtml : `<div class="search-result-item" style="cursor:default; color:#94a3b8;">Tidak ada hasil</div>`;
       resultsContainer.style.display = 'block';
     }
 
     function selectSearchCountry(isoCode) {
       document.getElementById('search-results').style.display = 'none';
-      if (isoCode === 'SGP' && sgpLayerInstance) {
-        map.setView([1.3521, 103.8198], 7, { animate: true, duration: 1.5 });
-        setTimeout(() => { sgpLayerInstance.openPopup(); }, 1500);
-        return;
-      }
       if (!mapGeoJsonLayer) return;
       mapGeoJsonLayer.eachLayer(layer => {
         if (layer.feature && layer.feature.id === isoCode) {
@@ -951,419 +721,90 @@
       });
     }
 
-    function selectSearchPerairan(namaPerairan) {
-      document.getElementById('search-results').style.display = 'none';
-      var item = databasePerairan.find(p => p.Nama && p.Nama.toLowerCase() === namaPerairan.toLowerCase());
-      if (!item) return;
-
-      var latVal = parseFloat(item.Lat) || 0;
-      var lngVal = parseFloat(item.Lng) || 0;
-
-      map.setView([latVal, lngVal], 6, { animate: true, duration: 1.5 });
-
-      setTimeout(() => {
-        openPerairanModal(item);
-      }, 1500);
-    }
-
-    function selectSearchNews(isoCode) {
-      document.getElementById('search-results').style.display = 'none';
-      if (isoCode === "GLOBAL") { openGlobalModal(); return; }
-      selectSearchCountry(isoCode);
-      setTimeout(() => { openModal(isoCode); }, 1500);
-    }
-
-    /* MODAL DOSSIER KHUSUS PERAIRAN / SELAT / SAMUDRA */
-    function openPerairanModal(item) {
-      var modalWeatherElemId = `modal-weather-perairan`;
-      var modalBody = document.getElementById('modal-body');
-
-      var latVal = parseFloat(item.Lat) || 0;
-      var lngVal = parseFloat(item.Lng) || 0;
-
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">🌊 DOSSIER STRATEGIS MARITIM: ${item.Nama}</h2>
-        
-        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
-          <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Kategori Geopolitik:</span>
-          <span style="font-size: 11px; font-weight: bold; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #38bdf8;">⚓ ${item.Kategori}</span>
-        </div>
-
-        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
-          <div style="margin-bottom: 6px;">📍 <strong>Deskripsi Wilayah:</strong> ${item.Deskripsi}</div>
-          <div style="font-size: 11px; color: #cbd5e1;">Koordinat Utama: <b>Lat ${latVal}, Lng ${lngVal}</b></div>
-        </div>
-
-        <div class="dossier-section-title">🚢 ANALISIS RUTE & DAMPAK PERDAGANGAN INTERNASIONAL</div>
-        
-        <div class="news-card" style="border-left: 4px solid #fbbf24; margin-bottom: 10px;">
-          <h4 class="news-title" style="color:#fbbf24; margin-bottom:4px;">🧭 Apakah Ini Rute Pelayaran yang Ideal?</h4>
-          <p class="news-desc">${item.Rute_Ideal}</p>
-        </div>
-
-        <div class="news-card" style="border-left: 4px solid #ef4444; margin-bottom: 10px;">
-          <h4 class="news-title" style="color:#ef4444; margin-bottom:4px;">⚠️ Dampak Konflik & Penutupan terhadap Jalur Perdagangan</h4>
-          <p class="news-desc">${item.Dampak_Perdagangan}</p>
-        </div>
-
-        <div class="news-card" style="border-left: 4px solid #10b981; margin-bottom: 12px;">
-          <h4 class="news-title" style="color:#10b981; margin-bottom:4px;">⚡ Efisiensi Biaya Logistik & Bahan Bakar</h4>
-          <p class="news-desc">${item.Efisiensi_Biaya}</p>
-        </div>
-
-        <div class="dossier-section-title">🌍 CUACA REAL-TIME DI TITIK KUNCI</div>
-        <div class="weather-live-box" id="${modalWeatherElemId}">
-          <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-        </div>
-      `;
-
-      document.getElementById('news-modal').style.display = 'flex';
-      fetchLiveWeather(latVal, lngVal, modalWeatherElemId);
-    }
-
-    /* FUNGSI MEMBUKA REKAP / ARSIP SEMUA BERITA (TERBARU DI ATAS) */
-    function openAllNewsArchive() {
-      var modalBody = document.getElementById('modal-body');
-      var listBerita = [...dataNews].reverse(); 
-      var beritaHtml = "";
-
-      if (listBerita.length > 0) {
-        listBerita.forEach(b => {
-          let link = (b.Link_Berita || "").trim();
-          if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-          
-          var threat = (b.Threat_Level || "LOW").toUpperCase();
-          var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
-          var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
-          var country = b.Negara || "GLOBAL";
-
-          beritaHtml += `
-            <div class="news-card" style="${border}">
-              <div class="news-header-flex">
-                <h4 class="news-title"><span class="ticker-country">[${country}]</span> ${b.Judul_Berita || "Tanpa Judul"}</h4>
-                ${tag}
-              </div>
-              <p class="news-desc">${b.Ringkasan_Berita || ""}</p>
-              ${link ? `<a href="${link}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
-            </div>
-          `;
-        });
-      } else {
-        beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP</h4><p class="news-desc">Belum ada data berita yang termuat di sistem.</p></div>`;
-      }
-
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">📰 REKAPITULASI SEMUA ARSIP BERITA & INTELIJEN</h2>
-        <div class="risk-box">Menampilkan seluruh daftar berita geopolitik dan ekonomi global. Artikel terbaru otomatis tersusun di urutan paling atas. Total arsip aktif: <b>${listBerita.length} berita</b>.</div>
-        ${beritaHtml}
-      `;
-
-      document.getElementById('news-modal').style.display = 'flex';
-    }
-
     function openModal(isoCode, lat, lng) {
-      if (isoCode === "GLOBAL") { openGlobalModal(); return; }
-
       var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
       if (!negara) return;
-
-      var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode).reverse();
-      var beritaHtml = "";
-
-      if (listBerita.length > 0) {
-        listBerita.forEach(b => {
-          let link = (b.Link_Berita || "").trim();
-          if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-          var threat = (b.Threat_Level || "LOW").toUpperCase();
-          var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
-          var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
-
-          beritaHtml += `
-            <div class="news-card" style="${border}">
-              <div class="news-header-flex"><h4 class="news-title">${b.Judul_Berita || "Tanpa Judul"}</h4>${tag}</div>
-              <p class="news-desc">${b.Ringkasan_Berita || ""}</p>
-              ${link ? `<a href="${link}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
-            </div>
-          `;
-        });
-      } else {
-        beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU AKTIF</h4><p class="news-desc">Belum ada laporan krisis mendesak untuk wilayah ini.</p></div>`;
-      }
-
-      var modalWeatherElemId = `modal-weather-${isoCode}`;
-      var modalBody = document.getElementById('modal-body');
-      var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
-      var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
-
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${negara.Negara}</h2>
-        
-        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
-          <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
-          ${isConflict 
-            ? '<span style="font-size: 11px; font-weight: bold; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444;">⚔️ KONFLIK AKTIF / WASPADA</span>' 
-            : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
-        </div>
-
-        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
-          <div style="margin-bottom: 4px;">📌 <strong>Status Musim Saat Ini:</strong> <span style="color:#fbbf24; font-weight:bold;">${formatZonaIklim(negara.Tipe_Zona_Iklim)}</span></div>
-          <div style="margin-bottom: 4px;">📍 <strong>Region Acuan:</strong> ${negara.Region_Acuan || negara.Catatan_Geografi || '-'}</div>
-          <div style="font-size: 11px; color: #94a3b8; font-style: italic;">ℹ️ Note: ${negara.Catatan_Geografi || 'Informasi iklim dihitung dinamis berdasarkan posisi astronomis wilayah dan bulan berjalan.'}</div>
-        </div>
-
-        <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
-        <div class="macro-grid-4card">
-          <div class="macro-card">
-            <div class="macro-label">PDB (GDP) NOMINAL</div>
-            <div class="macro-val-main">${negara.GDP_Nominal || 'N/A'}</div>
-            <div class="macro-val-sub">YoY: <strong>${negara.GDP_YoY || '-'}</strong> | QoQ: <strong>${negara.GDP_QoQ || '-'}</strong></div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">INFLASI (CPI)</div>
-            <div class="macro-val-main">${negara.Inflasi_YoY || 'N/A'} <span style="font-size:10px; color:#94a3b8;">YoY</span></div>
-            <div class="macro-val-sub">MoM: <strong>${negara.Inflasi_MoM || '-'}</strong></div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">SUKU BUNGA ACUAN</div>
-            <div class="macro-val-main">${negara.Suku_Bunga || 'N/A'}</div>
-            <div class="macro-val-sub">Acuan Bank Sentral</div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">PENGANGGURAN</div>
-            <div class="macro-val-main" style="color:#f59e0b;">${pengangguranVal}</div>
-            <div class="macro-val-sub">Tingkat Tenaga Kerja</div>
-          </div>
-        </div>
-
-        <div class="dossier-section-title">👥 DEMOGRAFI & STRUKTUR KELAS SOSIAL</div>
-        <div class="demo-grid">
-          <div class="demo-card">
-            <div class="macro-label">KEMISKINAN</div>
-            <div class="macro-val-main" style="color:#ef4444;">${negara.Kemiskinan_Pct || 'N/A'}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">KELAS MENENGAH</div>
-            <div class="macro-val-main" style="color:#38bdf8;">${negara.Kelas_Menengah_Pct || 'N/A'}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">KELAS ATAS / KAYA</div>
-            <div class="macro-val-main" style="color:#fbbf24;">${negara.Kelas_Atas_Pct || 'N/A'}</div>
-          </div>
-        </div>
-
-        <div class="dossier-section-title">🌍 CUACA REAL-TIME STASIUN TERDEKAT</div>
-        <div class="weather-live-box" id="${modalWeatherElemId}">
-          <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-        </div>
-
-        <div class="risk-box">
-          <strong style="color:#fbbf24;">⚠️ REALITA SOSIAL & RISIKO LAPANGAN:</strong><br>
-          ${negara.Realita_Sosial || 'Data analisis sosial tidak tersedia.'}
-        </div>
-
-        <div class="dossier-section-title">📰 ARSIP BERITA & ISU STRATEGIS TERKINI</div>
-        ${beritaHtml}
-      `;
-
-      document.getElementById('news-modal').style.display = 'flex';
-
-      if (lat && lng) {
-        fetchLiveWeather(lat, lng, modalWeatherElemId);
-      }
-    }
-
-    function openGlobalModal() {
-      var listBerita = dataNews.filter(b => b.Kode_ISO === "GLOBAL").reverse();
-      var beritaHtml = "";
-      listBerita.forEach(b => {
-        let link = (b.Link_Berita || "").trim();
-        if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-        beritaHtml += `
-          <div class="news-card" style="border-left: 4px solid #38bdf8;">
-            <div class="news-header-flex"><h4 class="news-title">${b.Judul_Berita}</h4></div>
-            <p class="news-desc">${b.Ringkasan_Berita}</p>
-            ${link ? `<a href="${link}" target="_blank" class="news-link">Baca Artikel &rarr;</a>` : ''}
-          </div>
-        `;
-      });
-
       document.getElementById('modal-body').innerHTML = `
-        <h2 class="modal-header-title">🌐 LAPORAN INTELIJEN MAKRO GLOBAL</h2>
-        <div class="risk-box">Isu makroekonomi global, komoditas, dan perdagangan internasional.</div>
-        ${beritaHtml || '<p>Tidak ada berita global.</p>'}
+        <h2 class="modal-header-title">📊 ANALISIS: ${negara.Negara}</h2>
+        <div class="risk-box">GDP: <b>${negara.GDP_Nominal || '-'}</b> | Inflasi: <b>${negara.Inflasi_YoY || '-'}</b> | Suku Bunga: <b>${negara.Suku_Bunga || '-'}</b></div>
       `;
       document.getElementById('news-modal').style.display = 'flex';
     }
 
     function closeModal() { document.getElementById('news-modal').style.display = 'none'; }
 
+    function openAllNewsArchive() {
+      var listBerita = [...dataNews].reverse();
+      var html = listBerita.map(b => `<div class="news-card"><h4 class="news-title">[${b.Negara || "GLOBAL"}] ${b.Judul_Berita || ""}</h4><p class="news-desc">${b.Ringkasan_Berita || ""}</p></div>`).join('');
+      document.getElementById('modal-body').innerHTML = `<h2 class="modal-header-title">📰 ARSIP BERITA</h2>${html || '<p>Tidak ada berita.</p>'}`;
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
-      if (!newsList || newsList.length === 0) return;
+      if (!newsList || newsList.length === 0) {
+        tickerContent.innerHTML = `<span class="ticker-item">Sistem Siap. Belum ada berita terkini.</span>`;
+        return;
+      }
       var html = "";
       newsList.slice(-12).reverse().forEach(b => {
-        var country = b.Negara || "GLOBAL";
-        var title = b.Judul_Berita || "Tanpa Judul";
-        var link = (b.Link_Berita || "").trim();
-        if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-        if (link && link !== "#") {
-          html += `<a href="${link}" target="_blank" class="ticker-item"><span class="ticker-country">[${country}]</span> ${title}</a> &bull; `;
-        } else {
-          html += `<span class="ticker-item" onclick="openModal('${b.Kode_ISO || "GLOBAL"}')"><span class="ticker-country">[${country}]</span> ${title}</span> &bull; `;
-        }
+        html += `<span class="ticker-item"><span class="ticker-country">[${b.Negara || "GLOBAL"}]</span> ${b.Judul_Berita || "Update Terkini"}</span> &bull; `;
       });
       tickerContent.innerHTML = html;
     }
 
-    /* MENAMPILKAN LABEL PERAIRAN, LAUT, SELAT & SUNGAI MURNI TANPA TITIK */
     function addStrategicPoints() {
       seaLabelsLayerGroup.clearLayers();
-
-      var perairanDunia = [
-        {name:"Laut Tiongkok Selatan", lat:14.0, lng:113.0},
-        {name:"Laut Tiongkok Timur", lat:29.0, lng:125.0},
-        {name:"Laut Jepang", lat:40.0, lng:135.0},
-        {name:"Laut Kuning", lat:35.0, lng:123.0},
-        {name:"Laut Filipina", lat:20.0, lng:130.0},
-        {name:"Laut Okhotsk", lat:53.0, lng:150.0},
-        {name:"Laut Bering", lat:58.0, lng:-175.0},
-        {name:"Laut Lakadewa", lat:10.0, lng:74.0},
-        {name:"Laut Andaman", lat:10.0, lng:95.0},
-        {name:"Tlk. Benggala", lat:15.0, lng:88.0},
-        {name:"Tlk. Thailand", lat:9.5, lng:101.5},
-        {name:"Laut Jawa", lat:-5.0, lng:112.0},
-        {name:"Laut Sulawesi", lat:3.0, lng:122.0},
-        {name:"Laut Banda", lat:-6.0, lng:127.0},
-        {name:"Laut Arafura", lat:-9.0, lng:135.0},
-        {name:"Laut Timor", lat:-10.5, lng:126.0},
-        {name:"Laut Kaspia", lat:41.5, lng:51.0},
-        {name:"Laut Merah", lat:20.0, lng:38.5},
-        {name:"Laut Arab", lat:16.0, lng:64.0},
-        {name:"Teluk Persia", lat:27.0, lng:51.0},
-        {name:"Tlk. Aden", lat:12.5, lng:48.0},
-        {name:"Tlk. Oman", lat:24.5, lng:58.5},
-        {name:"Tlk. Guinea", lat:1.0, lng:2.0},
-        {name:"Laut Hitam", lat:43.5, lng:34.0},
-        {name:"Laut Azov", lat:46.0, lng:37.0},
-        {name:"Laut Mediterania", lat:35.0, lng:18.0},
-        {name:"Laut Baltik", lat:57.0, lng:20.0},
-        {name:"Laut Utara", lat:56.0, lng:3.0},
-        {name:"Laut Barents", lat:75.0, lng:40.0},
-        {name:"Laut Ionia", lat:38.0, lng:19.0},
-        {name:"Laut Adriatik", lat:42.5, lng:15.5},
-        {name:"Tlk. Biskaya", lat:45.0, lng:-4.0},
-        {name:"Laut Karibia", lat:15.0, lng:-75.0},
-        {name:"Tlk. Meksiko", lat:25.0, lng:-90.0},
-        {name:"Laut Labrador", lat:60.0, lng:-55.0},
-        {name:"Tlk. Hudson", lat:60.0, lng:-85.0},
-        {name:"Selat Hormuz", lat:26.5, lng:56.3},
-        {name:"Terusan Suez", lat:30.6, lng:32.3},
-        {name:"Selat Malaka", lat:3.0, lng:101.5},
-        {name:"Selat Bab el-Mandeb", lat:12.6, lng:43.3},
-        {name:"Selat Gibraltar", lat:35.9, lng:-5.5},
-        {name:"Terusan Panama", lat:9.1, lng:-79.7},
-        {name:"Selat Taiwan", lat:24.0, lng:119.5},
-        {name:"Selat Bosporus", lat:41.1, lng:29.0},
-        {name:"Sungai Merah", lat:20.8, lng:106.5},
-        {name:"Sungai Dnieper", lat:47.5, lng:34.5},
-        {name:"Sungai Nil", lat:26.0, lng:32.8},
-        {name:"Sungai Mekong", lat:10.5, lng:105.2}
-      ];
-
-      perairanDunia.forEach(function(p) {
-        var label = L.tooltip({
-          permanent: true,
-          direction: 'center',
-          className: 'sea-label'
-        })
-        .setLatLng([p.lat, p.lng])
-        .setContent(p.name);
-        
-        seaLabelsLayerGroup.addLayer(label);
+      [{name:"Laut Tiongkok Selatan", lat:14.0, lng:113.0}, {name:"Selat Malaka", lat:3.0, lng:101.5}].forEach(p => {
+        seaLabelsLayerGroup.addLayer(L.tooltip({ permanent: true, direction: 'center', className: 'sea-label' }).setLatLng([p.lat, p.lng]).setContent(p.name));
       });
     }
 
-    /* KONTROL DINAMIS: MULTI-TIER ZOOM FILTER UNTUK NEGARA & PERAIRAN */
     function checkZoomAndToggleLabels() {
       var currentZoom = map.getZoom();
-
-      countryLabelsLayerGroup.eachLayer(function(layer) {
-        var thres = layer.zoomThreshold || 3;
-        if (currentZoom >= thres) {
-          if (!map.hasLayer(layer)) layer.addTo(map);
-        } else {
-          if (map.hasLayer(layer)) map.removeLayer(layer);
-        }
+      countryLabelsLayerGroup.eachLayer(layer => {
+        if (currentZoom >= 3) { if (!map.hasLayer(layer)) layer.addTo(map); }
+        else { if (map.hasLayer(layer)) map.removeLayer(layer); }
       });
-
-      if (currentZoom >= 5) {
-        if (!map.hasLayer(seaLabelsLayerGroup)) {
-          map.addLayer(seaLabelsLayerGroup);
-        }
-      } else {
-        if (map.hasLayer(seaLabelsLayerGroup)) {
-          map.removeLayer(seaLabelsLayerGroup);
-        }
-      }
+      if (currentZoom >= 5) { if (!map.hasLayer(seaLabelsLayerGroup)) map.addLayer(seaLabelsLayerGroup); }
+      else { if (map.hasLayer(seaLabelsLayerGroup)) map.removeLayer(seaLabelsLayerGroup); }
     }
 
     function addOceanLabels() {
       [{name:"Samudra Pasifik", lat:0, lng:-150}, {name:"Samudra Atlantik", lat:20, lng:-35}, {name:"Samudra Hindia", lat:-15, lng:75}]
-      .forEach(o => {
-        L.tooltip({permanent: true, direction: 'center', className: 'ocean-label'}).setLatLng([o.lat, o.lng]).setContent(o.name).addTo(map);
-      });
+      .forEach(o => L.tooltip({permanent: true, direction: 'center', className: 'ocean-label'}).setLatLng([o.lat, o.lng]).setContent(o.name).addTo(map));
     }
 
     map.on('zoomend', checkZoomAndToggleLabels);
 
-    // MAIN FETCH & CONFIG PARSER
-    fetch(apiUrl)
-      .then(r => r.json())
-      .then(data => {
-        if (data.status === "success") {
-          dataMakro = data.dataMakro || [];
-          dataNews = data.dataNews || [];
-          dataConfig = data.dataConfig || [];
-          databasePerairan = data.dataPerairan || []; // Mengambil data perairan langsung dari Google Sheets
+    /* EKSEKUSI PARALEL (ANTI-HANG) */
+    Promise.allSettled([
+      fetch(apiUrl).then(r => r.json()),
+      fetch(geojsonUrl).then(r => r.json())
+    ]).then(results => {
+      var apiRes = results[0];
+      var geoRes = results[1];
 
-          var configObj = {};
-          dataConfig.forEach(item => {
-            if (item.Parameter) configObj[item.Parameter.trim()] = item.Value ? item.Value.trim() : "";
-          });
+      if (apiRes.status === 'fulfilled' && apiRes.value && apiRes.value.status === "success") {
+        var data = apiRes.value;
+        dataMakro = data.dataMakro || [];
+        dataNews = data.dataNews || [];
+        dataConfig = data.dataConfig || [];
+        databasePerairan = data.dataPerairan || [];
 
-          if (configObj.Maintenance_Mode && configObj.Maintenance_Mode.toUpperCase() === 'ON') {
-            var mDesc = document.getElementById('maintenance-desc');
-            var mRow = dataConfig.find(item => item.Parameter === "Maintenance_Mode");
-            if (mRow && mRow.Keterangan) {
-              mDesc.innerText = mRow.Keterangan;
-            }
-            document.getElementById('maintenance-screen').style.display = 'flex';
-            document.getElementById('notice-modal').style.display = 'none';
-            return null;
-          }
+        renderTicker(dataNews);
+      } else {
+        document.getElementById('ticker-content').innerHTML = '<span class="ticker-item" style="color:#f59e0b;">⚠️ Menghubungkan ke Sheets... Peta siap digunakan.</span>';
+      }
 
-          if (configObj.Alert_Message && configObj.Alert_Message !== "(Kosong)" && configObj.Alert_Message !== "") {
-            var alertBanner = document.getElementById('alert-banner');
-            alertBanner.innerText = "📢 " + configObj.Alert_Message;
-            alertBanner.style.display = 'block';
-            document.getElementById('search-container').style.top = '72px';
-            document.getElementById('menu-toggle-btn').style.top = '72px';
-          }
-
-          renderTicker(dataNews);
-        }
-        return fetch(geojsonUrl);
-      })
-      .then(r => r ? r.json() : null)
-      .then(geo => {
-        if (!geo) return;
-        mapGeoJsonLayer = L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
+      if (geoRes.status === 'fulfilled' && geoRes.value) {
+        mapGeoJsonLayer = L.geoJson(geoRes.value, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
         addMicroStates(); 
         addStrategicPoints();
         addOceanLabels();
         checkZoomAndToggleLabels(); 
-      })
-      .catch(e => console.error('Error:', e));
+      }
+    }).catch(e => console.error('Error:', e));
   </script>
 </body>
 </html>
