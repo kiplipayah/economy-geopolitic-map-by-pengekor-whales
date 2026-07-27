@@ -393,8 +393,8 @@
     var map = L.map('map', { zoomControl: false, minZoom: 3 }).setView([20, 0], 3);
     var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
     
-    // API URL TERBARU HASIL DEPLOY APPS SCRIPT
-    var apiUrl = 'https://script.google.com/macros/s/AKfycbzmIxezLMNK2xX8w_UsVzvTQWDE9H-yEe2IQP0ndOCvZbTZKSkVmMCcy0NEB2Zdjw-n/exec'; 
+    // API URL HASIL DEPLOYMENT TERBARU
+    var apiUrl = 'https://script.google.com/macros/s/AKfycbxnWluWRvSbSCeWvSjCbMPC7eXC9xQlwne5INBCzQ2YLDxsilgGcBdoRX_drvwMnmk/exec'; 
 
     var dataMakro = [];
     var dataNews = []; 
@@ -405,7 +405,7 @@
     var countryLabelsLayerGroup = L.layerGroup(); 
     var sgpLayerInstance = null; // Instance marker khusus Singapura
 
-    // TELEGRAM ADMIN & GAMBAR QRIS (USERNAME TELEGRAM DIPERBARUI KE @seabank_singapore)
+    // TELEGRAM ADMIN & GAMBAR QRIS
     var telegramAdminUsername = "seabank_singapore";
     var qrisImageUrl = "https://e.top4top.io/p_3860gj3gp1.jpg";
 
@@ -456,7 +456,7 @@
         return;
       }
 
-      btnSubmit.innerText = "⏳ Memeriksa Pengguna...";
+      btnSubmit.innerText = "⏳ Memeriksa ke Sheets...";
       btnSubmit.disabled = true;
 
       fetch(apiUrl, {
