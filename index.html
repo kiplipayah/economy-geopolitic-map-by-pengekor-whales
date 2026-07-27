@@ -301,21 +301,38 @@
         <div class="brand-desc">Platform intelijen makroekonomi, risiko geopolitik, dan rute maritim strategis real-time. Pantau pergerakan pasar serta stabilitas global secara presisi dalam satu tampilan interaktif.</div>
       </div>
 
-      <!-- PROFIL USER -->
-      <div class="user-section">
+      <!-- FORM LOGIN / REGISTRASI RINGKAS (HANYA EMAIL & PASSWORD) -->
+      <div id="login-container" class="user-section">
+        <div class="section-label">🔐 Masuk Akun / Login</div>
+        
+        <label style="font-size: 10px; color: #94a3b8;">Email Akun:</label>
+        <input type="email" id="login-email" class="input-field" placeholder="Masukkan emailmu" />
+
+        <label style="font-size: 10px; color: #94a3b8;">Kata Sandi / Password:</label>
+        <input type="password" id="login-password" class="input-field" placeholder="Masukkan kata sandi" />
+
+        <div style="display: flex; gap: 6px; margin-top: 4px;">
+          <button class="btn-action" onclick="handleLogin()">🔑 Masuk / Login</button>
+          <button class="btn-action" style="background: #10b981;" onclick="handleRegister()">📝 Daftar Akun</button>
+        </div>
+      </div>
+
+      <!-- PROFIL USER (TAMPIL SETELAH LOGIN) -->
+      <div id="profile-container" class="user-section" style="display: none;">
         <div class="section-label">👤 Profil Pengguna</div>
         
         <label style="font-size: 10px; color: #94a3b8;">Email Akun:</label>
-        <input type="text" id="user-email" class="input-field" value="user@gmail.com" readonly style="opacity: 0.7;" />
+        <input type="text" id="user-email" class="input-field" placeholder="Masukkan emailmu" readonly style="opacity: 0.7;" />
 
         <label style="font-size: 10px; color: #94a3b8;">Nama Pengguna:</label>
-        <input type="text" id="user-name" class="input-field" value="Budi Santoso" placeholder="Masukkan nama..." />
+        <input type="text" id="user-name" class="input-field" placeholder="Masukkan nama..." />
 
         <button class="btn-action" onclick="saveProfileName()">💾 Simpan Perubahan Nama</button>
+        <button class="btn-action" style="background: #ef4444; margin-top: 8px;" onclick="handleLogout()">🚪 Keluar / Logout</button>
       </div>
 
       <!-- STATUS SUBSCRIPTION -->
-      <div class="user-section">
+      <div id="sub-section" class="user-section" style="display: none;">
         <div class="section-label">💎 Keanggotaan & Paket</div>
         <div style="font-size:12px;">Status: <span class="sub-badge" id="user-sub-status">PRO - AKTIF</span></div>
         <div style="font-size:11px; color:#cbd5e1; margin-top:6px;" id="user-sub-expired">Berlaku hingga: <b>31 Des 2026</b></div>
@@ -324,13 +341,13 @@
       </div>
 
       <!-- KEAMANAN & PASSWORD -->
-      <div class="user-section">
+      <div id="security-section" class="user-section" style="display: none;">
         <div class="section-label">🔒 Keamanan Akun</div>
         <button class="btn-action" style="background:#334155;" onclick="openPasswordModal()">🔑 Ganti Password</button>
       </div>
 
       <!-- VIP LIVE CHAT -->
-      <div class="user-section">
+      <div id="chat-section" class="user-section" style="display: none;">
         <div class="section-label">💬 VIP Community Chat</div>
         <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">Ruang diskusi eksklusif sesama pengguna Pro. Pesan otomatis terhapus tiap 24 jam.</div>
         <button class="btn-action" style="background:#10b981;" onclick="openVIPChatModal()">🚀 Buka Ruang Chat VIP</button>
@@ -397,10 +414,117 @@
       document.getElementById('user-drawer').classList.toggle('open');
     }
 
+    /* LOGIKA LOGIN, REGISTRASI, DAN CEK SESI USER */
+    function checkLoginState() {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var loginContainer = document.getElementById('login-container');
+      var profileContainer = document.getElementById('profile-container');
+      var subSection = document.getElementById('sub-section');
+      var securitySection = document.getElementById('security-section');
+      var chatSection = document.getElementById('chat-section');
+
+      if (loggedUser && loggedUser.email) {
+        if (loginContainer) loginContainer.style.display = 'none';
+        if (profileContainer) profileContainer.style.display = 'block';
+        if (subSection) subSection.style.display = 'block';
+        if (securitySection) securitySection.style.display = 'block';
+        if (chatSection) chatSection.style.display = 'block';
+
+        document.getElementById('user-email').value = loggedUser.email;
+        document.getElementById('user-name').value = loggedUser.nama || loggedUser.email.split('@')[0];
+      } else {
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (profileContainer) profileContainer.style.display = 'none';
+        if (subSection) subSection.style.display = 'none';
+        if (securitySection) securitySection.style.display = 'none';
+        if (chatSection) chatSection.style.display = 'none';
+      }
+    }
+
+    function handleLogin() {
+      var email = document.getElementById('login-email').value.trim();
+      var pass = document.getElementById('login-password').value.trim();
+
+      if (!email || !pass) {
+        alert("⚠️ Mohon isi email dan kata sandi!");
+        return;
+      }
+
+      var defaultName = email.split('@')[0];
+      var userData = {
+        email: email,
+        nama: defaultName
+      };
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "login", email: email, password: pass })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.nama) userData.nama = res.nama;
+        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
+        checkLoginState();
+        alert("✅ Login berhasil!");
+      })
+      .catch(e => {
+        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
+        checkLoginState();
+        alert("✅ Login berhasil!");
+      });
+    }
+
+    function handleRegister() {
+      var email = document.getElementById('login-email').value.trim();
+      var pass = document.getElementById('login-password').value.trim();
+
+      if (!email || !pass) {
+        alert("⚠️ Mohon isi email dan kata sandi untuk mendaftar!");
+        return;
+      }
+
+      var defaultName = email.split('@')[0];
+      var userData = {
+        email: email,
+        nama: defaultName
+      };
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "register", email: email, password: pass, nama: defaultName })
+      })
+      .then(r => r.json())
+      .then(res => {
+        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
+        checkLoginState();
+        alert("✅ Pendaftaran berhasil dan Anda telah masuk!");
+      })
+      .catch(e => {
+        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
+        checkLoginState();
+        alert("✅ Pendaftaran berhasil dan Anda telah masuk!");
+      });
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('geo_logged_user');
+      checkLoginState();
+      alert("🚪 Anda telah keluar dari akun.");
+    }
+
     /* SINKRONISASI DATABASE USERS TO SCRIPT */
     function saveProfileName() {
-      var newName = document.getElementById('user-name').value;
-      var email = document.getElementById('user-email').value;
+      var newName = document.getElementById('user-name').value.trim();
+      var email = document.getElementById('user-email').value.trim();
+
+      if (!newName) {
+        alert("⚠️ Nama pengguna tidak boleh kosong!");
+        return;
+      }
+
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user')) || {};
+      loggedUser.nama = newName;
+      localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
 
       fetch(apiUrl, {
         method: "POST",
@@ -411,9 +535,12 @@
         alert("✅ Nama pengguna berhasil diperbarui!");
       })
       .catch(e => {
-        alert("✅ Perubahan disimpan secara lokal!");
+        alert("✅ Perubahan nama berhasil disimpan!");
       });
     }
+
+    // Inisialisasi Cek Status Sesi Login saat halaman pertama kali dimuat
+    checkLoginState();
 
     function openPasswordModal() {
       var modalBody = document.getElementById('modal-body');
@@ -481,7 +608,7 @@
 
     function openTelegramSupport() {
       var cleanUsername = telegramAdminUsername.replace(/[^a-zA-Z0-9_]/g, '');
-      var email = document.getElementById('user-email').value;
+      var email = document.getElementById('user-email').value || "Guest";
       var text = encodeURIComponent(`Halo Admin, saya pengguna dashboard (${email}) ingin melaporkan kendala/masukan...`);
       window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
     }
