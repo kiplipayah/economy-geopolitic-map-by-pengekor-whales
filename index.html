@@ -113,7 +113,7 @@
       padding: 7px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; box-sizing: border-box;
     }
     .btn-action {
-      background: #0284c7; color: white; border: none; padding: 7px 12px;
+      background: #0284c7; color: white; border: none; padding: 8px 12px;
       border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px;
       width: 100%; text-align: center; margin-top: 4px; transition: background 0.2s;
     }
@@ -240,6 +240,16 @@
       width: 100%; transition: background 0.2s ease;
     }
     .btn-notice:hover { background: #0369a1; }
+
+    /* CARD TAMPILAN PROFIL SPESIAL SETELAH LOGIN */
+    .user-welcome-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #38bdf8;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);
+    }
   </style>
 </head>
 <body>
@@ -301,34 +311,28 @@
         <div class="brand-desc">Platform intelijen makroekonomi, risiko geopolitik, dan rute maritim strategis real-time. Pantau pergerakan pasar serta stabilitas global secara presisi dalam satu tampilan interaktif.</div>
       </div>
 
-      <!-- FORM LOGIN / REGISTRASI RINGKAS (HANYA EMAIL & PASSWORD) -->
+      <!-- FORM LOGIN (HANYA EMAIL & PASSWORD, TANPA DAFTAR AKUN) -->
       <div id="login-container" class="user-section">
         <div class="section-label">🔐 Masuk Akun / Login</div>
         
         <label style="font-size: 10px; color: #94a3b8;">Email Akun:</label>
-        <input type="email" id="login-email" class="input-field" placeholder="Masukkan emailmu" />
+        <input type="email" id="login-email" class="input-field" placeholder="Masukkan emailmu..." />
 
         <label style="font-size: 10px; color: #94a3b8;">Kata Sandi / Password:</label>
-        <input type="password" id="login-password" class="input-field" placeholder="Masukkan kata sandi" />
+        <input type="password" id="login-password" class="input-field" placeholder="Masukkan kata sandi..." />
 
-        <div style="display: flex; gap: 6px; margin-top: 4px;">
-          <button class="btn-action" onclick="handleLogin()">🔑 Masuk / Login</button>
-          <button class="btn-action" style="background: #10b981;" onclick="handleRegister()">📝 Daftar Akun</button>
-        </div>
+        <button id="btn-login-submit" class="btn-action" style="margin-top: 6px;" onclick="handleLogin()">🔑 Masuk / Login</button>
       </div>
 
-      <!-- PROFIL USER (TAMPIL SETELAH LOGIN) -->
+      <!-- PROFIL SPESIAL USER (TAMPIL SETELAH BERHASIL LOGIN) -->
       <div id="profile-container" class="user-section" style="display: none;">
-        <div class="section-label">👤 Profil Pengguna</div>
-        
-        <label style="font-size: 10px; color: #94a3b8;">Email Akun:</label>
-        <input type="text" id="user-email" class="input-field" placeholder="Masukkan emailmu" readonly style="opacity: 0.7;" />
-
-        <label style="font-size: 10px; color: #94a3b8;">Nama Pengguna:</label>
-        <input type="text" id="user-name" class="input-field" placeholder="Masukkan nama..." />
-
-        <button class="btn-action" onclick="saveProfileName()">💾 Simpan Perubahan Nama</button>
-        <button class="btn-action" style="background: #ef4444; margin-top: 8px;" onclick="handleLogout()">🚪 Keluar / Logout</button>
+        <div class="user-welcome-card">
+          <div style="font-size: 26px; margin-bottom: 4px;">👑</div>
+          <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Selamat Datang Kembali,</div>
+          <div id="profile-display-name" style="font-size: 17px; font-weight: bold; color: #fbbf24; margin: 4px 0;">User</div>
+          <div id="profile-display-email" style="font-size: 11px; color: #38bdf8;">user@gmail.com</div>
+        </div>
+        <button class="btn-action" style="background: #ef4444; margin-top: 10px;" onclick="handleLogout()">🚪 Keluar / Logout</button>
       </div>
 
       <!-- STATUS SUBSCRIPTION -->
@@ -358,7 +362,6 @@
         <div class="section-label">📢 Komunitas & Bantuan Direct</div>
         <button class="btn-action" style="background:#0284c7;" onclick="openTelegramSupport()">💬 Lapor Kendala / CS Telegram</button>
 
-        <!-- SOSIAL MEDIA DIRECT LINKS DEFAULT -->
         <div class="social-links">
           <a href="https://telegram.org" target="_blank" class="social-btn">Telegram</a>
           <a href="https://www.tiktok.com" target="_blank" class="social-btn">TikTok</a>
@@ -402,8 +405,8 @@
     var countryLabelsLayerGroup = L.layerGroup(); 
     var sgpLayerInstance = null; // Instance marker khusus Singapura
 
-    // TELEGRAM ADMIN & GAMBAR QRIS
-    var telegramAdminUsername = "seabanksingapore";
+    // TELEGRAM ADMIN & GAMBAR QRIS (USERNAME TELEGRAM DIPERBARUI KE @seabank_singapore)
+    var telegramAdminUsername = "seabank_singapore";
     var qrisImageUrl = "https://e.top4top.io/p_3860gj3gp1.jpg";
 
     function closeNoticeModal() {
@@ -414,7 +417,7 @@
       document.getElementById('user-drawer').classList.toggle('open');
     }
 
-    /* LOGIKA LOGIN, REGISTRASI, DAN CEK SESI USER */
+    /* SISTEM KETAT LOGIN & CEK STATUS SESI USER */
     function checkLoginState() {
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
       var loginContainer = document.getElementById('login-container');
@@ -430,8 +433,10 @@
         if (securitySection) securitySection.style.display = 'block';
         if (chatSection) chatSection.style.display = 'block';
 
-        document.getElementById('user-email').value = loggedUser.email;
-        document.getElementById('user-name').value = loggedUser.nama || loggedUser.email.split('@')[0];
+        // Tampilkan Nama & Email di Kartu Profil
+        var displayName = loggedUser.nama || loggedUser.email.split('@')[0];
+        document.getElementById('profile-display-name').innerText = displayName;
+        document.getElementById('profile-display-email').innerText = loggedUser.email;
       } else {
         if (loginContainer) loginContainer.style.display = 'block';
         if (profileContainer) profileContainer.style.display = 'none';
@@ -444,17 +449,15 @@
     function handleLogin() {
       var email = document.getElementById('login-email').value.trim();
       var pass = document.getElementById('login-password').value.trim();
+      var btnSubmit = document.getElementById('btn-login-submit');
 
       if (!email || !pass) {
         alert("⚠️ Mohon isi email dan kata sandi!");
         return;
       }
 
-      var defaultName = email.split('@')[0];
-      var userData = {
-        email: email,
-        nama: defaultName
-      };
+      btnSubmit.innerText = "⏳ Memeriksa ke Sheets...";
+      btnSubmit.disabled = true;
 
       fetch(apiUrl, {
         method: "POST",
@@ -462,106 +465,61 @@
       })
       .then(r => r.json())
       .then(res => {
-        if (res && res.nama) userData.nama = res.nama;
-        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
-        checkLoginState();
-        alert("✅ Login berhasil!");
+        btnSubmit.innerText = "🔑 Masuk / Login";
+        btnSubmit.disabled = false;
+
+        // VERIFIKASI KETAT RESPONSE GOOGLE SHEETS
+        if (res && res.status === "success") {
+          var userData = {
+            email: res.email || email,
+            nama: res.nama || email.split('@')[0]
+          };
+          localStorage.setItem('geo_logged_user', JSON.stringify(userData));
+          checkLoginState();
+          alert("✅ Login Berhasil! Selamat datang, " + userData.nama);
+        } else {
+          alert("❌ Login Gagal! " + (res.message || "Email atau kata sandi tidak ditemukan di database."));
+        }
       })
       .catch(e => {
-        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
-        checkLoginState();
-        alert("✅ Login berhasil!");
-      });
-    }
-
-    function handleRegister() {
-      var email = document.getElementById('login-email').value.trim();
-      var pass = document.getElementById('login-password').value.trim();
-
-      if (!email || !pass) {
-        alert("⚠️ Mohon isi email dan kata sandi untuk mendaftar!");
-        return;
-      }
-
-      var defaultName = email.split('@')[0];
-      var userData = {
-        email: email,
-        nama: defaultName
-      };
-
-      fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify({ action: "register", email: email, password: pass, nama: defaultName })
-      })
-      .then(r => r.json())
-      .then(res => {
-        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
-        checkLoginState();
-        alert("✅ Pendaftaran berhasil dan Anda telah masuk!");
-      })
-      .catch(e => {
-        localStorage.setItem('geo_logged_user', JSON.stringify(userData));
-        checkLoginState();
-        alert("✅ Pendaftaran berhasil dan Anda telah masuk!");
+        btnSubmit.innerText = "🔑 Masuk / Login";
+        btnSubmit.disabled = false;
+        alert("❌ KONEKSI GAGAL! Pastikan email & password sudah terdaftar di Google Sheets dan server aktif.");
       });
     }
 
     function handleLogout() {
       localStorage.removeItem('geo_logged_user');
+      document.getElementById('login-email').value = "";
+      document.getElementById('login-password').value = "";
       checkLoginState();
       alert("🚪 Anda telah keluar dari akun.");
     }
 
-    /* SINKRONISASI DATABASE USERS TO SCRIPT */
-    function saveProfileName() {
-      var newName = document.getElementById('user-name').value.trim();
-      var email = document.getElementById('user-email').value.trim();
-
-      if (!newName) {
-        alert("⚠️ Nama pengguna tidak boleh kosong!");
-        return;
-      }
-
-      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user')) || {};
-      loggedUser.nama = newName;
-      localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
-
-      fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify({ action: "updateProfile", email: email, nama: newName })
-      })
-      .then(r => r.json())
-      .then(res => {
-        alert("✅ Nama pengguna berhasil diperbarui!");
-      })
-      .catch(e => {
-        alert("✅ Perubahan nama berhasil disimpan!");
-      });
-    }
-
-    // Inisialisasi Cek Status Sesi Login saat halaman pertama kali dimuat
+    // Inisialisasi Cek Status Sesi Login
     checkLoginState();
 
     function openPasswordModal() {
       var modalBody = document.getElementById('modal-body');
+      var userEmail = document.getElementById('profile-display-email').innerText;
+      
       modalBody.innerHTML = `
         <h2 class="modal-header-title">🔑 Ganti Password Akun</h2>
         <div class="user-section" style="margin-top:15px;">
-          <label style="font-size:11px; color:#94a3b8;">Password Lama:</label>
-          <input type="password" id="pass-old" class="input-field" placeholder="***" />
+          <label style="font-size:11px; color:#94a3b8;">Email Akun:</label>
+          <input type="text" value="${userEmail}" class="input-field" readonly style="opacity:0.7;" />
 
           <label style="font-size:11px; color:#94a3b8;">Password Baru:</label>
-          <input type="password" id="pass-new" class="input-field" placeholder="***" />
+          <input type="password" id="pass-new" class="input-field" placeholder="Masukkan password baru..." />
 
-          <button class="btn-action" style="margin-top:10px;" onclick="submitNewPassword()">Update Password Sekarang</button>
+          <button class="btn-action" style="margin-top:10px;" onclick="submitNewPassword('${userEmail}')">Update Password Sekarang</button>
         </div>
       `;
       document.getElementById('news-modal').style.display = 'flex';
     }
 
-    function submitNewPassword() {
+    function submitNewPassword(email) {
       var newPass = document.getElementById('pass-new').value;
-      var email = document.getElementById('user-email').value;
       if (!newPass) { alert("Masukkan password baru!"); return; }
 
       fetch(apiUrl, {
@@ -580,7 +538,7 @@
     }
 
     function openPaymentModal() {
-      var email = document.getElementById('user-email').value;
+      var email = document.getElementById('profile-display-email').innerText;
       var modalBody = document.getElementById('modal-body');
       modalBody.innerHTML = `
         <div class="modal-box-center">
@@ -608,7 +566,7 @@
 
     function openTelegramSupport() {
       var cleanUsername = telegramAdminUsername.replace(/[^a-zA-Z0-9_]/g, '');
-      var email = document.getElementById('user-email').value || "Guest";
+      var email = document.getElementById('profile-display-email') ? document.getElementById('profile-display-email').innerText : "Guest";
       var text = encodeURIComponent(`Halo Admin, saya pengguna dashboard (${email}) ingin melaporkan kendala/masukan...`);
       window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
     }
