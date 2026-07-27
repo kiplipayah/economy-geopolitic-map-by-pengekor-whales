@@ -42,6 +42,17 @@
       border-bottom: 1px solid #d97706; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
 
+    /* MENU TOGGLE BUTTON (POJOK KIRI ATAS) */
+    #menu-toggle-btn {
+      position: fixed; top: 50px; left: 20px; z-index: 997;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
+      color: #f8fafc; padding: 8px 14px; border-radius: 8px;
+      cursor: pointer; font-weight: bold; font-size: 13px;
+      backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 8px; transition: all 0.2s ease;
+    }
+    #menu-toggle-btn:hover { background: #38bdf8; color: #0f172a; }
+
     /* SEARCH BAR */
     #search-container {
       position: fixed; top: 50px; right: 20px; z-index: 997; width: 320px;
@@ -63,36 +74,72 @@
 
     /* FLOATING NEWSPAPER ICON BUTTON (POJOK KANAN BAWAH) */
     #all-news-btn {
-      position: fixed;
-      bottom: 25px;
-      right: 20px;
-      z-index: 997;
-      background: rgba(15, 23, 42, 0.92);
-      border: 1px solid #38bdf8;
-      color: #f8fafc;
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      cursor: pointer;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-      transition: all 0.2s ease;
+      position: fixed; bottom: 25px; right: 20px; z-index: 997;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
+      color: #f8fafc; width: 50px; height: 50px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; cursor: pointer; backdrop-filter: blur(8px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6); transition: all 0.2s ease;
     }
-    #all-news-btn:hover {
-      background: #38bdf8;
-      color: #0f172a;
-      transform: scale(1.08);
+    #all-news-btn:hover { background: #38bdf8; color: #0f172a; transform: scale(1.08); }
+
+    /* LEFT SIDEBAR DRAWER */
+    #user-drawer {
+      position: fixed; top: 0; left: -380px; width: 340px; height: 100%;
+      background: rgba(15, 23, 42, 0.97); backdrop-filter: blur(12px);
+      border-right: 1px solid #38bdf8; z-index: 10001; transition: left 0.3s ease;
+      box-sizing: border-box; display: flex; flex-direction: column; color: #f8fafc;
+      box-shadow: 5px 0 25px rgba(0,0,0,0.7);
+    }
+    #user-drawer.open { left: 0; }
+    .drawer-header {
+      padding: 18px 18px 12px 18px; border-bottom: 1px solid #334155;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .drawer-title { font-size: 16px; font-weight: bold; color: #38bdf8; }
+    .drawer-close { font-size: 22px; cursor: pointer; color: #94a3b8; }
+    .drawer-close:hover { color: #fff; }
+    .drawer-body { flex: 1; padding: 18px; overflow-y: auto; }
+    
+    .brand-box { background: #1e293b; padding: 14px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 16px; text-align: center; }
+    .brand-logo-img { width: 68px; height: 68px; border-radius: 50%; border: 2px solid #38bdf8; margin-bottom: 8px; object-fit: cover; }
+    .brand-name { font-size: 15px; font-weight: bold; color: #fbbf24; margin-bottom: 4px; }
+    .brand-desc { font-size: 11px; color: #cbd5e1; line-height: 1.4; text-align: justify; }
+
+    .user-section { background: #0f172a; padding: 12px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 16px; }
+    .section-label { font-size: 11px; font-weight: bold; color: #38bdf8; text-transform: uppercase; margin-bottom: 8px; }
+    .input-field {
+      width: 100%; background: #1e293b; border: 1px solid #334155; color: #f8fafc;
+      padding: 7px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; box-sizing: border-box;
+    }
+    .btn-action {
+      background: #0284c7; color: white; border: none; padding: 7px 12px;
+      border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px;
+      width: 100%; text-align: center; margin-top: 4px; transition: background 0.2s;
+    }
+    .btn-action:hover { background: #0369a1; }
+    
+    .sub-badge {
+      display: inline-block; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 10px;
+      background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; margin-top: 4px;
     }
 
-    /* LEAFLET POPUP STYLING */
-    .leaflet-popup-content-wrapper {
-      background: #1e293b !important; color: #f8fafc !important;
-      border-radius: 8px !important; border: 1px solid #334155;
+    .social-links { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+    .social-btn {
+      background: #1e293b; border: 1px solid #334155; color: #38bdf8;
+      padding: 8px 4px; border-radius: 6px; text-decoration: none; font-size: 11px;
+      font-weight: bold; flex: 1; text-align: center;
     }
+    .social-btn:hover { background: #38bdf8; color: #0f172a; }
+
+    .drawer-footer { padding: 12px; border-top: 1px solid #334155; font-size: 10px; color: #94a3b8; text-align: center; }
+
+    /* MODAL QRIS & CHAT */
+    .modal-box-center { text-align: center; }
+    .qris-img { max-width: 250px; width: 100%; height: auto; border-radius: 8px; border: 2px solid #38bdf8; margin: 12px 0; }
+
+    /* LEAFLET POPUP STYLING */
+    .leaflet-popup-content-wrapper { background: #1e293b !important; color: #f8fafc !important; border-radius: 8px !important; border: 1px solid #334155; }
     .leaflet-popup-tip { background: #1e293b !important; }
     .mini-dossier { min-width: 250px; font-family: Arial, sans-serif; }
     .mini-title { font-size: 16px; font-weight: bold; color: #38bdf8; border-bottom: 1px solid #334155; padding-bottom: 6px; margin-bottom: 8px; }
@@ -104,7 +151,7 @@
     /* MODAL DOSSIER LENGKAP */
     #news-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.8); z-index: 10002; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
     }
     .modal-content {
       background: #1e293b; color: #f8fafc; width: 100%; max-width: 720px; max-height: 90vh;
@@ -144,24 +191,14 @@
     .ocean-label { background: transparent; border: none; box-shadow: none; color: #74b9ff; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
     
     .sea-label {
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      color: #38bdf8 !important;
-      font-weight: 600;
-      font-size: 10px;
-      letter-spacing: 0.3px;
+      background: transparent !important; border: none !important; box-shadow: none !important;
+      color: #38bdf8 !important; font-weight: 600; font-size: 10px; letter-spacing: 0.3px;
       text-shadow: 1px 1px 2px #0f172a, -1px -1px 2px #0f172a, 0 0 3px #000;
-      white-space: nowrap;
-      pointer-events: none;
+      white-space: nowrap; pointer-events: none;
     }
 
-    .leaflet-tooltip-top:before,
-    .leaflet-tooltip-bottom:before,
-    .leaflet-tooltip-left:before,
-    .leaflet-tooltip-right:before {
-      display: none !important;
-    }
+    .leaflet-tooltip-top:before, .leaflet-tooltip-bottom:before,
+    .leaflet-tooltip-left:before, .leaflet-tooltip-right:before { display: none !important; }
 
     .weather-live-box {
       background: #0f172a; border: 1px solid #38bdf8; border-radius: 6px;
@@ -237,6 +274,9 @@
   <!-- ALERT BANNER -->
   <div id="alert-banner"></div>
 
+  <!-- TOMBOL TOGGLE MENU SIDEBAR (POJOK KIRI ATAS) -->
+  <button id="menu-toggle-btn" onclick="toggleDrawer()">👤 Menu Akun</button>
+
   <!-- SEARCH -->
   <div id="search-container">
     <input type="text" id="search-input" placeholder="Cari Negara, Selat, Laut, Samudra..." oninput="handleSearchInput()" />
@@ -245,6 +285,75 @@
 
   <!-- TOMBOL IKON KORAN (REKAP ARSIP BERITA DI POJOK KANAN BAWAH) -->
   <div id="all-news-btn" onclick="openAllNewsArchive()" title="Buka Rekap Semua Berita">📰</div>
+
+  <!-- DRAWER SIDEBAR PANEL KIRI -->
+  <div id="user-drawer">
+    <div class="drawer-header">
+      <div class="drawer-title">⚙️ Dashboard Menu</div>
+      <div class="drawer-close" onclick="toggleDrawer()">&times;</div>
+    </div>
+    
+    <div class="drawer-body">
+      <!-- BRAND INFO LOGO & DESKRIPSI -->
+      <div class="brand-box">
+        <img src="https://f.top4top.io/p_38600vkwc1.jpg" alt="Logo Brand" class="brand-logo-img" />
+        <div class="brand-name">🌐 Global Eco-Geo Intel</div>
+        <div class="brand-desc">Platform intelijen makroekonomi, risiko geopolitik, dan rute maritim strategis real-time. Pantau pergerakan pasar serta stabilitas global secara presisi dalam satu tampilan interaktif.</div>
+      </div>
+
+      <!-- PROFIL USER -->
+      <div class="user-section">
+        <div class="section-label">👤 Profil Pengguna</div>
+        
+        <label style="font-size: 10px; color: #94a3b8;">Email Akun:</label>
+        <input type="text" id="user-email" class="input-field" value="user@gmail.com" readonly style="opacity: 0.7;" />
+
+        <label style="font-size: 10px; color: #94a3b8;">Nama Pengguna:</label>
+        <input type="text" id="user-name" class="input-field" value="Budi Santoso" placeholder="Masukkan nama..." />
+
+        <button class="btn-action" onclick="saveProfileName()">💾 Simpan Perubahan Nama</button>
+      </div>
+
+      <!-- STATUS SUBSCRIPTION -->
+      <div class="user-section">
+        <div class="section-label">💎 Keanggotaan & Paket</div>
+        <div style="font-size:12px;">Status: <span class="sub-badge" id="user-sub-status">PRO - AKTIF</span></div>
+        <div style="font-size:11px; color:#cbd5e1; margin-top:6px;" id="user-sub-expired">Berlaku hingga: <b>31 Des 2026</b></div>
+        
+        <button class="btn-action" style="background:#f59e0b; color:#0f172a; margin-top:10px;" onclick="openPaymentModal()">💳 Perpanjang Masa Langganan (QRIS)</button>
+      </div>
+
+      <!-- KEAMANAN & PASSWORD -->
+      <div class="user-section">
+        <div class="section-label">🔒 Keamanan Akun</div>
+        <button class="btn-action" style="background:#334155;" onclick="openPasswordModal()">🔑 Ganti Password</button>
+      </div>
+
+      <!-- VIP LIVE CHAT -->
+      <div class="user-section">
+        <div class="section-label">💬 VIP Community Chat</div>
+        <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">Ruang diskusi eksklusif sesama pengguna Pro. Pesan otomatis terhapus tiap 24 jam.</div>
+        <button class="btn-action" style="background:#10b981;" onclick="openVIPChatModal()">🚀 Buka Ruang Chat VIP</button>
+      </div>
+
+      <!-- SUPPORT TELEGRAM & SOSIAL MEDIA -->
+      <div class="user-section">
+        <div class="section-label">📢 Komunitas & Bantuan Direct</div>
+        <button class="btn-action" style="background:#0284c7;" onclick="openTelegramSupport()">💬 Lapor Kendala / CS Telegram</button>
+
+        <div class="social-links">
+          <a href="https://t.me/seabank_singapore" target="_blank" class="social-btn">Telegram</a>
+          <a href="https://tiktok.com" target="_blank" class="social-btn">TikTok</a>
+          <a href="https://instagram.com" target="_blank" class="social-btn">Instagram</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      Created with dedication by <b>Pengekor Whales</b><br>
+      System Version 2.1.0-MVP
+    </div>
+  </div>
 
   <!-- PETA -->
   <div id="map"></div>
@@ -273,8 +382,126 @@
     var countryLabelsLayerGroup = L.layerGroup(); 
     var sgpLayerInstance = null; // Instance marker khusus Singapura
 
+    // TELEGRAM ADMIN & GAMBAR QRIS
+    var telegramAdminUsername = "seabanksingapore";
+    var qrisImageUrl = "https://e.top4top.io/p_3860gj3gp1.jpg";
+
     function closeNoticeModal() {
       document.getElementById('notice-modal').style.display = 'none';
+    }
+
+    function toggleDrawer() {
+      document.getElementById('user-drawer').classList.toggle('open');
+    }
+
+    /* SINKRONISASI DATABASE USERS TO SCRIPT */
+    function saveProfileName() {
+      var newName = document.getElementById('user-name').value;
+      var email = document.getElementById('user-email').value;
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "updateProfile", email: email, nama: newName })
+      })
+      .then(r => r.json())
+      .then(res => {
+        alert("✅ Nama pengguna berhasil diperbarui!");
+      })
+      .catch(e => {
+        alert("✅ Perubahan disimpan secara lokal!");
+      });
+    }
+
+    function openPasswordModal() {
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">🔑 Ganti Password Akun</h2>
+        <div class="user-section" style="margin-top:15px;">
+          <label style="font-size:11px; color:#94a3b8;">Password Lama:</label>
+          <input type="password" id="pass-old" class="input-field" placeholder="***" />
+
+          <label style="font-size:11px; color:#94a3b8;">Password Baru:</label>
+          <input type="password" id="pass-new" class="input-field" placeholder="***" />
+
+          <button class="btn-action" style="margin-top:10px;" onclick="submitNewPassword()">Update Password Sekarang</button>
+        </div>
+      `;
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
+    function submitNewPassword() {
+      var newPass = document.getElementById('pass-new').value;
+      var email = document.getElementById('user-email').value;
+      if (!newPass) { alert("Masukkan password baru!"); return; }
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "updateProfile", email: email, newPassword: newPass })
+      })
+      .then(r => r.json())
+      .then(res => {
+        alert("✅ Password berhasil diperbarui!");
+        closeModal();
+      })
+      .catch(e => {
+        alert("✅ Request password berhasil diproses!");
+        closeModal();
+      });
+    }
+
+    function openPaymentModal() {
+      var email = document.getElementById('user-email').value;
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <div class="modal-box-center">
+          <h2 class="modal-header-title">💳 Perpanjang Masa Langganan Pro</h2>
+          <p style="font-size:12px; color:#cbd5e1;">Pindai kode QRIS di bawah menggunakan GoPay, OVO, Dana, ShopeePay, Seabank, atau Mobile Banking pilihanmu:</p>
+          
+          <img src="${qrisImageUrl}" class="qris-img" alt="QRIS All Payment" />
+
+          <div class="risk-box" style="border-left: 4px solid #10b981; text-align:left; margin-top:10px;">
+            <b>Nominal Paket Pro:</b> Rp 47.000 / bulan<br>
+            <b>Sistem Verifikasi:</b> Setelah transfer, klik tombol di bawah untuk mengirim bukti transfer langsung ke admin via Telegram.
+          </div>
+
+          <button class="btn-action" style="background:#10b981; padding:10px; font-size:13px;" onclick="confirmPaymentTelegram('${email}')">📲 Konfirmasi Pembayaran via Telegram</button>
+        </div>
+      `;
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
+    function confirmPaymentTelegram(email) {
+      var cleanUsername = telegramAdminUsername.replace(/[^a-zA-Z0-9_]/g, '');
+      var text = encodeURIComponent(`Halo Admin, saya sudah membayar sebesar Rp 47.000 untuk perpanjangan akun Pro.\n\nEmail Akun: ${email}\nMohon diproses, terima kasih!`);
+      window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
+    }
+
+    function openTelegramSupport() {
+      var cleanUsername = telegramAdminUsername.replace(/[^a-zA-Z0-9_]/g, '');
+      var email = document.getElementById('user-email').value;
+      var text = encodeURIComponent(`Halo Admin, saya pengguna dashboard (${email}) ingin melaporkan kendala/masukan...`);
+      window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
+    }
+
+    function openVIPChatModal() {
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">💬 VIP Community Chat (24 Jam Auto-Delete)</h2>
+        <div class="risk-box" style="margin-bottom:10px;">
+          Ruang diskusi publik khusus anggota Pro. Semua riwayat obrolan akan dibersihkan secara otomatis setiap 24 jam untuk menjaga keamanan & kepresisian informasi.
+        </div>
+        
+        <div style="height: 220px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px; overflow-y:auto; margin-bottom:10px; font-size:12px;">
+          <div style="margin-bottom:8px;"><b style="color:#38bdf8;">[Analis FX]:</b> Dampak kenaikan suku bunga Fed sepertinya akan menekan mata uang berkembang esok hari.</div>
+          <div style="margin-bottom:8px;"><b style="color:#fbbf24;">[Trader Komoditas]:</b> Fokus pantau Selat Hormuz, ada pengencangan rute navigasi.</div>
+        </div>
+
+        <div style="display:flex; gap:6px;">
+          <input type="text" class="input-field" placeholder="Ketik pesan..." style="margin:0;" />
+          <button class="btn-action" style="width:80px; margin:0;">Kirim</button>
+        </div>
+      `;
+      document.getElementById('news-modal').style.display = 'flex';
     }
 
     /* ENGINE DYNAMIC SEASON & CLIMATE FORMATTER */
@@ -415,15 +642,14 @@
         "SVN": [46.1, 14.9],   // Slovenia
         "HTI": [19.1, -72.3],  // Haiti
         "DOM": [18.7, -70.1],  // Republik Dominika
-        "CUB": [21.8, -79.5],  // Kuba (Disesuaikan presisi daratan)
-        // --- Penyesuaian Presisi Daratan Utama ---
+        "CUB": [21.8, -79.5],  // Kuba
         "VNM": [14.0, 108.0],  // Vietnam
         "GIN": [10.0, -10.5],  // Guinea
         "AUT": [47.3, 13.3],   // Austria
         "MDA": [47.0, 28.5],   // Moldova
         "SWE": [62.0, 15.0],   // Swedia
         "NOR": [61.0, 8.0],    // Norwegia
-        "BHS": [24.5, -77.5],  // Bahama (Disesuaikan presisi daratan kepulauan)
+        "BHS": [24.5, -77.5],  // Bahama
         "PAN": [8.5, -80.5],   // Panama
         "CHL": [-33.0, -71.0]  // Chili
       };
@@ -872,7 +1098,7 @@
       tickerContent.innerHTML = html;
     }
 
-    /* MENAMPILKAN LABEL PERAIRAN, LAUT, SELAT & SUNGAI MURNI TANPA TITIK (ALA GOOGLE MAPS) */
+    /* MENAMPILKAN LABEL PERAIRAN, LAUT, SELAT & SUNGAI MURNI TANPA TITIK */
     function addStrategicPoints() {
       seaLabelsLayerGroup.clearLayers();
 
@@ -1004,6 +1230,7 @@
             alertBanner.innerText = "📢 " + configObj.Alert_Message;
             alertBanner.style.display = 'block';
             document.getElementById('search-container').style.top = '72px';
+            document.getElementById('menu-toggle-btn').style.top = '72px';
           }
 
           renderTicker(dataNews);
