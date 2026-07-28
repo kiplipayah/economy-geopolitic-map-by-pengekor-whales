@@ -307,8 +307,8 @@
       <!-- BRAND INFO LOGO & DESKRIPSI -->
       <div class="brand-box">
         <img src="https://f.top4top.io/p_38600vkwc1.jpg" alt="Logo Brand" class="brand-logo-img" />
-        <div class="brand-name">🌐 Global Eco-Geo Intel</div>
-        <div class="brand-desc">Platform intelijen makroekonomi, risiko geopolitik, dan rute maritim strategis real-time. Pantau pergerakan pasar serta stabilitas global secara presisi dalam satu tampilan interaktif.</div>
+        <div class="brand-name">🐋 Global Eco-Geo Intel</div>
+        <div class="brand-desc">Ekonomi Map dirancang untuk menyederhanakan proses analisis data agar lebih efisien dan interaktif. Melalui visualisasi yang dinamis.</div>
       </div>
 
       <!-- FORM LOGIN (HANYA EMAIL & PASSWORD, TANPA DAFTAR AKUN) -->
@@ -456,7 +456,7 @@
         return;
       }
 
-      btnSubmit.innerText = "⏳ Memeriksa ke Sheets...";
+      btnSubmit.innerText = "⏳Loading";
       btnSubmit.disabled = true;
 
       fetch(apiUrl, {
@@ -484,7 +484,7 @@
       .catch(e => {
         btnSubmit.innerText = "🔑 Masuk / Login";
         btnSubmit.disabled = false;
-        alert("❌ KONEKSI GAGAL! Pastikan email & password sudah terdaftar di Google Sheets dan server aktif.");
+        alert("❌ KONEKSI GAGAL! Pastikan email & password sudah terdaftar diservet.");
       });
     }
 
@@ -528,7 +528,7 @@
 
       var btn = document.getElementById('btn-update-pass');
       var originalText = btn.innerText;
-      btn.innerText = "⏳ Memperbarui di Database Sheets...";
+      btn.innerText = "⏳ Memperbarui Database";
       btn.disabled = true;
 
       fetch(apiUrl, {
@@ -541,7 +541,7 @@
         btn.disabled = false;
 
         if (res && res.status === "success") {
-          alert("✅ Password berhasil diperbarui di Google Sheets! Gunakan password baru saat login berikutnya.");
+          alert("✅ Password berhasil diperbarui! Gunakan password baru saat login berikutnya.");
           closeModal();
         } else {
           alert("❌ Gagal memperbarui password: " + (res.message || "Terjadi kesalahan pada server database."));
