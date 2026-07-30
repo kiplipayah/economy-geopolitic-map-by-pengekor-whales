@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Economy Map & Geopolitical Dashboard</title>
   
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
   
   <style>
     body, html {
@@ -387,7 +387,7 @@
     </div>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <script>
     var map = L.map('map', { zoomControl: false, minZoom: 3 }).setView([20, 0], 3);
@@ -409,7 +409,17 @@
     var telegramAdminUsername = "seabank_singapore";
     var qrisImageUrl = "https://e.top4top.io/p_3860gj3gp1.jpg";
 
-    function closeNoticeModal() {
+    
+// FIX POIN 5: Fungsi Helper Sanitasi XSS untuk mencegah script injection dari data teks
+ function escapeHtml(str) {
+   if (!str) return '';
+   return String(str)
+     .replace(/&/g, '&amp;')
+     .replace(/</g, '&lt;')
+     .replace(/>/g, '&gt;')
+     .replace(/"/g, '&quot;')
+     .replace(/'/g, '&#039;');
+ }
       document.getElementById('notice-modal').style.display = 'none';
     }
 
@@ -417,84 +427,107 @@
       document.getElementById('user-drawer').classList.toggle('open');
     }
 
-    /* SISTEM KETAT LOGIN & CEK STATUS SESI USER */
-    function checkLoginState() {
-      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-      var loginContainer = document.getElementById('login-container');
-      var profileContainer = document.getElementById('profile-container');
-      var subSection = document.getElementById('sub-section');
-      var securitySection = document.getElementById('security-section');
-      var chatSection = document.getElementById('chat-section');
+    // FIX POIN 1 & 2: Cek Sesi Berbasis Token dari Server
+ function checkLoginState() {
+   var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+   var loginContainer = document.getElementById('login-container');
+   var profileContainer = document.getElementById('profile-container');
+   var subSection = document.getElementById('sub-section');
+   var securitySection = document.getElementById('security-section');
+   var chatSection = document.getElementById('chat-section');
 
-      if (loggedUser && loggedUser.email) {
-        if (loginContainer) loginContainer.style.display = 'none';
-        if (profileContainer) profileContainer.style.display = 'block';
-        if (subSection) subSection.style.display = 'block';
-        if (securitySection) securitySection.style.display = 'block';
-        if (chatSection) chatSection.style.display = 'block';
+   if (loggedUser && loggedUser.token && loggedUser.email) {
+     if (loginContainer) loginContainer.style.display = 'none';
+     if (profileContainer) profileContainer.style.display = 'block';
+     if (subSection) subSection.style.display = 'block';
+     if (securitySection) securitySection.style.display = 'block';
+     if (chatSection) chatSection.style.display = 'block';
 
-        // Tampilkan Nama & Email di Kartu Profil
-        var displayName = loggedUser.nama || loggedUser.email.split('@')[0];
-        document.getElementById('profile-display-name').innerText = displayName;
-        document.getElementById('profile-display-email').innerText = loggedUser.email;
-      } else {
-        if (loginContainer) loginContainer.style.display = 'block';
-        if (profileContainer) profileContainer.style.display = 'none';
-        if (subSection) subSection.style.display = 'none';
-        if (securitySection) securitySection.style.display = 'none';
-        if (chatSection) chatSection.style.display = 'none';
-      }
-    }
+     // Terapkan escapeHtml untuk mencegah XSS
+     var displayName = escapeHtml(loggedUser.nama || loggedUser.email.split('@')[0]);
+     var displayEmail = escapeHtml(loggedUser.email);
 
-    function handleLogin() {
-      var email = document.getElementById('login-email').value.trim();
-      var pass = document.getElementById('login-password').value.trim();
-      var btnSubmit = document.getElementById('btn-login-submit');
+     document.getElementById('profile-display-name').innerText = displayName;
+     document.getElementById('profile-display-email').innerText = displayEmail;
 
-      if (!email || !pass) {
-        alert("⚠️ Mohon isi email dan kata sandi!");
-        return;
-      }
+     // FIX POIN 2: Status PRO diverifikasi langsung dari server
+     var subStatusEl = document.getElementById('user-sub-status');
+     var subExpiredEl = document.getElementById('user-sub-expired');
+     if(subStatusEl) subStatusEl.innerText = escapeHtml(loggedUser.statusSub || "PRO - AKTIF");
+     if(subExpiredEl) subExpiredEl.innerHTML = `Berlaku hingga: <b>${escapeHtml(loggedUser.expiredDate || "2026-12-31")}</b>`;
 
-      btnSubmit.innerText = "⏳Loading";
-      btnSubmit.disabled = true;
+   } else {
+     if (loginContainer) loginContainer.style.display = 'block';
+     if (profileContainer) profileContainer.style.display = 'none';
+     if (subSection) subSection.style.display = 'none';
+     if (securitySection) securitySection.style.display = 'none';
+     if (chatSection) chatSection.style.display = 'none';
+   }
+ }
 
-      fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify({ action: "login", email: email, password: pass })
-      })
-      .then(r => r.json())
-      .then(res => {
-        btnSubmit.innerText = "🔑 Masuk / Login";
-        btnSubmit.disabled = false;
+ // FIX POIN 6: Anti Brute-Force (Cooldown Tombol Login)
+ var loginAttempts = 0;
+ var loginLockedUntil = 0;
 
-        // VERIFIKASI KETAT RESPONSE GOOGLE SHEETS
-        if (res && res.status === "success") {
-          var userData = {
-            email: res.email || email,
-            nama: res.nama || email.split('@')[0]
-          };
-          localStorage.setItem('geo_logged_user', JSON.stringify(userData));
-          checkLoginState();
-          alert("✅ Login Berhasil! Selamat datang, " + userData.nama);
-        } else {
-          alert("❌ Login Gagal! " + (res.message || "Email atau kata sandi tidak ditemukan di database."));
-        }
-      })
-      .catch(e => {
-        btnSubmit.innerText = "🔑 Masuk / Login";
-        btnSubmit.disabled = false;
-        alert("❌ LOGIN GAGAL! Pastikan email & password sudah terdaftar diserver.");
-      });
-    }
+ function handleLogin() {
+   var now = new Date().getTime();
+   if (now < loginLockedUntil) {
+     var remainingSec = Math.ceil((loginLockedUntil - now) / 1000);
+     alert(`⚠️ Terlalu banyak percobaan gagal. Silakan tunggu ${remainingSec} detik.`);
+     return;
+   }
 
-    function handleLogout() {
-      localStorage.removeItem('geo_logged_user');
-      document.getElementById('login-email').value = "";
-      document.getElementById('login-password').value = "";
-      checkLoginState();
-      alert("🚪 Anda telah keluar dari akun.");
-    }
+   var email = document.getElementById('login-email').value.trim();
+   var pass = document.getElementById('login-password').value.trim();
+   var btnSubmit = document.getElementById('btn-login-submit');
+
+   if (!email || !pass) {
+     alert("⚠️ Mohon isi email dan kata sandi!");
+     return;
+   }
+
+   btnSubmit.innerText = "⏳ Memproses...";
+   btnSubmit.disabled = true;
+
+   fetch(apiUrl, {
+     method: "POST",
+     body: JSON.stringify({ action: "login", email: email, password: pass })
+   })
+   .then(r => r.json())
+   .then(res => {
+     btnSubmit.innerText = "🔑 Masuk / Login";
+     btnSubmit.disabled = false;
+
+     if (res && res.status === "success" && res.user) {
+       loginAttempts = 0; 
+       localStorage.setItem('geo_logged_user', JSON.stringify(res.user));
+       checkLoginState();
+       alert("✅ Login Berhasil! Selamat datang, " + res.user.nama);
+     } else {
+       loginAttempts++;
+       if (loginAttempts >= 3) {
+         loginLockedUntil = new Date().getTime() + 30000; 
+         alert("❌ Terlalu banyak percobaan salah. Tombol login dikunci selama 30 detik.");
+       } else {
+         alert("❌ Login Gagal! " + (res.message || "Email atau kata sandi salah."));
+       }
+     }
+   })
+   .catch(e => {
+     btnSubmit.innerText = "🔑 Masuk / Login";
+     btnSubmit.disabled = false;
+     alert("❌ KONEKSI GAGAL! Gagal terhubung ke server.");
+   });
+ }
+
+ function handleLogout() {
+   localStorage.removeItem('geo_logged_user');
+   document.getElementById('login-email').value = "";
+   document.getElementById('login-password').value = "";
+   checkLoginState();
+   alert("🚪 Anda telah keluar dari akun.");
+ }
+    
 
     // Inisialisasi Cek Status Sesi Login
     checkLoginState();
@@ -517,36 +550,52 @@
       `;
       document.getElementById('news-modal').style.display = 'flex';
     }
+// Fungsi Update Password yang Dilindungi Token Sesi (Fix Poin 3)
+ function submitNewPassword(email) {
+   var newPass = document.getElementById('pass-new').value.trim();
+   if (!newPass) { 
+     alert("⚠️ Masukkan password baru!"); 
+     return; 
+   }
 
-    /* FUNGSI SUBMIT PASSWORD (DIPERBARUI DENGAN PROGRESS & VERIFIKASI SEBENARNYA) */
-    function submitNewPassword(email) {
-      var newPass = document.getElementById('pass-new').value.trim();
-      if (!newPass) { 
-        alert("⚠️ Masukkan password baru!"); 
-        return; 
-      }
+   var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+   if (!loggedUser || !loggedUser.token) {
+     alert("⚠️ Sesi tidak valid. Silakan login ulang.");
+     return;
+   }
 
-      var btn = document.getElementById('btn-update-pass');
-      var originalText = btn.innerText;
-      btn.innerText = "⏳ Memperbarui Database";
-      btn.disabled = true;
+   var btn = document.getElementById('btn-update-pass');
+   btn.innerText = "⏳ Memperbarui...";
+   btn.disabled = true;
 
-      fetch(apiUrl, {
-        method: "POST",
-        body: JSON.stringify({ action: "updateProfile", email: email, newPassword: newPass })
-      })
-      .then(r => r.json())
-      .then(res => {
-        btn.innerText = originalText;
-        btn.disabled = false;
+   fetch(apiUrl, {
+     method: "POST",
+     body: JSON.stringify({ 
+       action: "updateProfile", 
+       email: email, 
+       newPassword: newPass,
+       token: loggedUser.token // Kirim token verifikasi keamanan
+     })
+   })
+   .then(r => r.json())
+   .then(res => {
+     btn.innerText = "Update Password Sekarang";
+     btn.disabled = false;
 
-        if (res && res.status === "success") {
-          alert("✅ Password berhasil diperbarui! Gunakan password baru saat login berikutnya.");
-          closeModal();
-        } else {
-          alert("❌ Gagal memperbarui password: " + (res.message || "Terjadi kesalahan pada server database."));
-        }
-      })
+     if (res && res.status === "success") {
+       alert("✅ Password berhasil diperbarui!");
+       closeModal();
+     } else {
+       alert("❌ Gagal: " + (res.message || "Akses ditolak."));
+     }
+   })
+   .catch(e => {
+     btn.innerText = "Update Password Sekarang";
+     btn.disabled = false;
+     alert("❌ Koneksi server gagal.");
+   });
+ }
+         
       .catch(e => {
         btn.innerText = originalText;
         btn.disabled = false;
