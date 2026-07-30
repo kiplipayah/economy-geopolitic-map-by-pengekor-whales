@@ -871,7 +871,7 @@
             <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${negara.Keunggulan_Ekspor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${negara.Kebutuhan_Impor || '-'}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${negara.Korelasi_Rantai_Pasok || '-'}</p>
-            <button class="btn-news" onclick="openModal('${feature.id}', ${lat}, ${lng})">🔒 Akses Informasi Penuh</button>
+            <button class="btn-news" onclick="handleDossierAccess('${feature.id}', ${lat}, ${lng})">🔒 Akses Informasi Penuh</button>
           </div>
         `, { maxWidth: 300 });
 
@@ -1401,6 +1401,44 @@
         checkZoomAndToggleLabels(); 
       })
       .catch(e => console.error('Error:', e));
+
+// FUNGSI CEK AKSES KLIK TOMBOL DOSSIER (PAYWALL LOGIC)
+    function handleDossierAccess(isoCode, lat, lng) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      
+      // Jika sudah login & punya token valid, buka dossier normal
+      if (loggedUser && loggedUser.token) {
+        openModal(isoCode, lat, lng);
+      } else {
+        // Jika belum login, tampilkan pop-up ajakan login/berlangganan diskon
+        openPaywallModal();
+      }
+    }
+
+    // MODAL PAYWALL KHUSUS VISITOR BELUM LOGIN
+    function openPaywallModal() {
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <div class="modal-box-center" style="padding: 10px;">
+          <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
+          <h2 class="modal-header-title" style="border:none; text-align:center; color:#38bdf8;">Akses Informasi Penuh</h2>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 20px;">
+            Fitur ini menyajikan data makro mendalam, analisis wilayah komprehensif, dan rekap arsip berita tanpa batas.<br><br>
+            Masuk ke akun Anda atau berlangganan sekarang untuk membuka seluruh informasi dengan <b>diskon spesial</b>!
+          </p>
+          <div style="display: flex; gap: 10px; flex-direction: column;">
+            <button class="btn-action" style="background: #0284c7; padding: 12px; font-size: 13px;" onclick="closeModal(); toggleDrawer();">🔑 Masuk Akun</button>
+            <button class="btn-action" style="background: #10b981; padding: 12px; font-size: 13px; margin:0;" onclick="closeModal(); openPaymentModalFromOutside();">💳 Berlangganan (Klaim Diskon)</button>
+          </div>
+        </div>
+      `;
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
+    function openPaymentModalFromOutside() {
+      toggleDrawer();
+      openPaymentModal();
+    }
   </script>
 </body>
 </html>
