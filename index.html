@@ -241,16 +241,76 @@
     }
     .btn-notice:hover { background: #0369a1; }
 
-    /* CARD TAMPILAN PROFIL SPESIAL SETELAH LOGIN */
-    .user-welcome-card {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border: 1px solid #38bdf8;
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.15);
+    /* BRAND BOX LOGO SEBELUM LOGIN */
+    .brand-box { 
+      background: #1e293b; 
+      padding: 14px; 
+      border-radius: 8px; 
+      border: 1px solid #334155; 
+      margin-bottom: 16px; 
+      text-align: center; 
     }
-  </style>
+
+    /* CARD PROFIL EXECUTIVE (TAMPIL SETELAH LOGIN, MENGGANTIKAN BRAND BOX) */
+    .user-welcome-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-left: 4px solid #38bdf8;
+      border-radius: 8px;
+      padding: 14px;
+      text-align: left;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .user-welcome-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .user-welcome-title {
+      font-size: 10px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .user-welcome-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin: 2px 0 4px 0;
+    }
+    .user-welcome-email {
+      font-size: 11px;
+      color: #cbd5e1;
+    }
+
+    /* TOMBOL LOGOUT DI BAGIAN PALING BAWAH */
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 9px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 11px;
+      width: 100%;
+      text-align: center;
+      transition: all 0.2s ease;
+      margin-top: 10px;
+    }
+    .btn-logout:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }  </style>
 </head>
 <body>
 
@@ -303,15 +363,27 @@
       <div class="drawer-close" onclick="toggleDrawer()">&times;</div>
     </div>
     
-    <div class="drawer-body">
-      <!-- BRAND INFO LOGO & DESKRIPSI -->
-      <div class="brand-box">
+       
+
+      <div class="drawer-body">
+      <!-- 1. BRAND INFO LOGO (HANYA TAMPIL SAAT BELUM LOGIN) -->
+      <div id="brand-box" class="brand-box">
         <img src="https://f.top4top.io/p_38600vkwc1.jpg" alt="Logo Brand" class="brand-logo-img" />
         <div class="brand-name">🐋 Economy Map</div>
         <div class="brand-desc">Ekonomi Map dirancang untuk menyederhanakan proses analisis data agar lebih efisien dan interaktif. Melalui visualisasi yang dinamis.</div>
       </div>
 
-      <!-- FORM LOGIN (HANYA EMAIL & PASSWORD, TANPA DAFTAR AKUN) -->
+      <!-- 2. PROFIL EXECUTIVE (TAMPIL DI PALING ATAS SETELAH LOGIN, MENGGANTIKAN BRAND BOX) -->
+      <div id="profile-container" style="display: none;">
+        <div class="user-welcome-card">
+          <div class="user-welcome-badge">AUTHENTICATED MEMBER</div>
+          <div class="user-welcome-title">Selamat Datang Kembali,</div>
+          <div id="profile-display-name" class="user-welcome-name">User</div>
+          <div id="profile-display-email" class="user-welcome-email">user@gmail.com</div>
+        </div>
+      </div>
+
+      <!-- 3. FORM LOGIN (HANYA SAAT BELUM LOGIN) -->
       <div id="login-container" class="user-section">
         <div class="section-label">🔐 Masuk Akun / Login</div>
         
@@ -324,16 +396,8 @@
         <button id="btn-login-submit" class="btn-action" style="margin-top: 6px;" onclick="handleLogin()">🔑 Masuk / Login</button>
       </div>
 
-      <!-- PROFIL SPESIAL USER (TAMPIL SETELAH BERHASIL LOGIN) -->
-      <div id="profile-container" class="user-section" style="display: none;">
-        <div class="user-welcome-card">
-          <div style="font-size: 26px; margin-bottom: 4px;">👑</div>
-          <div style="font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">Selamat Datang Kembali,</div>
-          <div id="profile-display-name" style="font-size: 17px; font-weight: bold; color: #fbbf24; margin: 4px 0;">User</div>
-          <div id="profile-display-email" style="font-size: 11px; color: #38bdf8;">user@gmail.com</div>
-        </div>
-        <button class="btn-action" style="background: #ef4444; margin-top: 10px;" onclick="handleLogout()">🚪 Keluar / Logout</button>
-      </div>
+    
+
 
       <!-- STATUS SUBSCRIPTION -->
       <div id="sub-section" class="user-section" style="display: none;">
@@ -367,6 +431,11 @@
           <a href="https://www.tiktok.com" target="_blank" class="social-btn">TikTok</a>
           <a href="https://www.instagram.com" target="_blank" class="social-btn">Instagram</a>
         </div>
+      </div>
+
+      <!-- 4. TOMBOL LOGOUT (DIPINDAH KE PALING BAWAH) -->
+      <div id="logout-container" style="display: none;">
+        <button class="btn-logout" onclick="handleLogout()">🚪 Keluar / Logout Akun</button>
       </div>
     </div>
 
@@ -429,18 +498,25 @@
 
     function checkLoginState() {
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var brandBox = document.getElementById('brand-box');
       var loginContainer = document.getElementById('login-container');
       var profileContainer = document.getElementById('profile-container');
       var subSection = document.getElementById('sub-section');
       var securitySection = document.getElementById('security-section');
       var chatSection = document.getElementById('chat-section');
+      var logoutContainer = document.getElementById('logout-container');
 
       if (loggedUser && loggedUser.token && loggedUser.email) {
+        // Sembunyikan Logo Brand & Form Login saat sudah login
+        if (brandBox) brandBox.style.display = 'none';
         if (loginContainer) loginContainer.style.display = 'none';
+
+        // Tampilkan Profil Executive & Fitur Pro
         if (profileContainer) profileContainer.style.display = 'block';
         if (subSection) subSection.style.display = 'block';
         if (securitySection) securitySection.style.display = 'block';
         if (chatSection) chatSection.style.display = 'block';
+        if (logoutContainer) logoutContainer.style.display = 'block';
 
         var displayName = escapeHtml(loggedUser.nama || loggedUser.email.split('@')[0]);
         var displayEmail = escapeHtml(loggedUser.email);
@@ -454,11 +530,16 @@
         if(subExpiredEl) subExpiredEl.innerHTML = `Berlaku hingga: <b>${escapeHtml(loggedUser.expiredDate || "2026-12-31")}</b>`;
 
       } else {
+        // Tampilkan Logo Brand & Form Login saat belum login
+        if (brandBox) brandBox.style.display = 'block';
         if (loginContainer) loginContainer.style.display = 'block';
+
+        // Sembunyikan Fitur Pro
         if (profileContainer) profileContainer.style.display = 'none';
         if (subSection) subSection.style.display = 'none';
         if (securitySection) securitySection.style.display = 'none';
         if (chatSection) chatSection.style.display = 'none';
+        if (logoutContainer) logoutContainer.style.display = 'none';
       }
     }
 
@@ -843,12 +924,25 @@
             <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${escapeHtml(negara.Keunggulan_Ekspor || '-')}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${escapeHtml(negara.Kebutuhan_Impor || '-')}</p>
             <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${escapeHtml(negara.Korelasi_Rantai_Pasok || '-')}</p>
-            <button class="btn-news" onclick="handleDossierAccess('${feature.id}', ${lat}, ${lng})">🔒 Akses Informasi Penuh</button>
+            <button id="btn-dossier-${feature.id}" class="btn-news" onclick="handleDossierAccess('${feature.id}', ${lat}, ${lng})">🔒 Akses Informasi Penuh</button>
           </div>
         `, { maxWidth: 300 });
 
         layer.on('popupopen', function() {
           fetchLiveWeather(lat, lng, weatherElemId);
+          
+          // Cek status login dinamis saat popup dibuka
+          var btnEl = document.getElementById(`btn-dossier-${feature.id}`);
+          if (btnEl) {
+            var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+            if (loggedUser && loggedUser.token) {
+              btnEl.innerHTML = "📂 Buka Intelijen Lengkap";
+              btnEl.style.background = "#0284c7";
+            } else {
+              btnEl.innerHTML = "🔒 Akses Informasi Penuh";
+              btnEl.style.background = "#d97706";
+            }
+          }
         });
 
       } else {
@@ -905,14 +999,25 @@
           <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${escapeHtml(negaraSGP.Keunggulan_Ekspor || '-')}</p>
           <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${escapeHtml(negaraSGP.Kebutuhan_Impor || '-')}</p>
           <p style="margin:4px 0; font-size:11px;"><strong>Rantai Pasok:</strong> ${escapeHtml(negaraSGP.Korelasi_Rantai_Pasok || '-')}</p>
-          <button class="btn-news" onclick="openModal('SGP', ${lat}, ${lng})">📂 Lihat Berita & Intelijen Lengkap</button>
+          <button id="btn-dossier-SGP" class="btn-news" onclick="handleDossierAccess('SGP', ${lat}, ${lng})">🔒 Akses Informasi Penuh</button>
         </div>
       `, { maxWidth: 300 });
 
       sgpLayerInstance.on('popupopen', function() {
         fetchLiveWeather(lat, lng, weatherElemId);
-      });
-    }
+        
+        var btnEl = document.getElementById("btn-dossier-SGP");
+        if (btnEl) {
+          var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+          if (loggedUser && loggedUser.token) {
+            btnEl.innerHTML = "📂 Buka Intelijen Lengkap";
+            btnEl.style.background = "#0284c7";
+          } else {
+            btnEl.innerHTML = "🔒 Akses Informasi Penuh";
+            btnEl.style.background = "#d97706";
+          }
+        }
+      });    }
 
     function handleSearchInput() {
       var query = document.getElementById('search-input').value.trim().toLowerCase();
