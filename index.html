@@ -705,25 +705,106 @@
       window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
     }
 
+   var chatInterval = null;
+
     function openVIPChatModal() {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      
+      if (!loggedUser || !loggedUser.token) {
+        alert("⚠️ Anda harus login terlebih dahulu untuk mengakses VIP Chat.");
+        return;
+      }
+
       var modalBody = document.getElementById('modal-body');
       modalBody.innerHTML = `
-        <h2 class="modal-header-title">💬 VIP Community Chat (24 Jam Auto-Delete)</h2>
+        <h2 class="modal-header-title">💬 VIP Community Chat (Live)</h2>
         <div class="risk-box" style="margin-bottom:10px;">
-          Ruang diskusi publik khusus anggota Pro. Semua riwayat obrolan akan dibersihkan secara otomatis setiap 24 jam untuk menjaga keamanan & kepresisian informasi.
+          Ruang diskusi eksklusif anggota Pro. Silakan berbagi pandangan pasar & geopolitik secara bijak.
         </div>
         
-        <div style="height: 220px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px; overflow-y:auto; margin-bottom:10px; font-size:12px;">
-          <div style="margin-bottom:8px;"><b style="color:#38bdf8;">[Analis FX]:</b> Dampak kenaikan suku bunga Fed sepertinya akan menekan mata uang berkembang esok hari.</div>
-          <div style="margin-bottom:8px;"><b style="color:#fbbf24;">[Trader Komoditas]:</b> Fokus pantau Selat Hormuz, ada pengencangan rute navigasi.</div>
+        <div id="chat-box-messages" style="height: 260px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px; overflow-y:auto; margin-bottom:10px; font-size:12px;">
+          <div style="color:#94a3b8; text-align:center; padding-top:20px;">🔄 Memuat obrolan...</div>
         </div>
 
         <div style="display:flex; gap:6px;">
-          <input type="text" class="input-field" placeholder="Ketik pesan..." style="margin:0;" />
-          <button class="btn-action" style="width:80px; margin:0;">Kirim</button>
+          <input type="text" id="chat-input-text" class="input-field" placeholder="Ketik pesan..." style="margin:0;" onkeypress="if(event.key==='Enter') submitVIPMessage()" />
+          <button id="btn-send-chat" class="btn-action" style="width:90px; margin:0;" onclick="submitVIPMessage()">Kirim</button>
         </div>
       `;
+
       document.getElementById('news-modal').style.display = 'flex';
+      
+      loadVIPMessages();
+      clearInterval(chatInterval);
+      chatInterval = setInterval(loadVIPMessages, 5000);
+    } function loadVIPMessages() {
+      var chatContainer = document.getElementById('chat-box-messages');
+      if (!chatContainer) return;
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "getChat" })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.status === "success" && res.data) {
+          if (res.data.length === 0) {
+            chatContainer.innerHTML = `<div style="color:#94a3b8; text-align:center; margin-top:20px;">Belum ada pesan. Buat obrolan pertama! 👋</div>`;
+            return;
+          }
+          var html = "";
+          res.data.forEach(item => {
+            html += `
+              <div style="margin-bottom:8px; border-bottom:1px solid #1e293b; padding-bottom:4px;">
+                <b style="color:#38bdf8;">[${escapeHtml(item.nama)}]:</b> 
+                <span style="color:#cbd5e1;">${escapeHtml(item.pesan)}</span>
+              </div>
+            `;
+          });
+          chatContainer.innerHTML = html;
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+      })
+      .catch(e => console.error("Gagal memuat chat:", e));
+    }
+
+    function submitVIPMessage() {
+      var inputEl = document.getElementById('chat-input-text');
+      var pesan = inputEl.value.trim();
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+
+      if (!pesan) return;
+      if (!loggedUser) return alert("Sesi kadaluarsa.");
+
+      var btn = document.getElementById('btn-send-chat');
+      btn.innerText = "⏳...";
+      btn.disabled = true;
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "sendChat",
+          email: loggedUser.email,
+          nama: loggedUser.nama || loggedUser.email.split('@')[0],
+          pesan: pesan
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.innerText = "Kirim";
+        btn.disabled = false;
+        if (res && res.status === "success") {
+          inputEl.value = "";
+          loadVIPMessages();
+        } else {
+          alert("❌ Gagal mengirim pesan.");
+        }
+      })
+      .catch(e => {
+        btn.innerText = "Kirim";
+        btn.disabled = false;
+        alert("❌ Error koneksi.");
+      });
     }
 
     function formatZonaIklim(code) {
@@ -1300,7 +1381,10 @@
       document.getElementById('news-modal').style.display = 'flex';
     }
 
-    function closeModal() { document.getElementById('news-modal').style.display = 'none'; }
+    function closeModal() { 
+      document.getElementById('news-modal').style.display = 'none'; 
+      if (chatInterval) clearInterval(chatInterval);
+    }
 
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
