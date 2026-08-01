@@ -790,12 +790,17 @@ var customCenters = {
           
           <img src="${qrisImageUrl}" class="qris-img" alt="QRIS All Payment" />
 
-          <div class="risk-box" style="border-left: 4px solid #10b981; text-align:left; margin-top:10px;">
-            <b>Nominal Paket Pro:</b> Rp 47.000 / bulan<br>
-            <b>Sistem Verifikasi:</b> Setelah transfer, klik tombol di bawah untuk mengirim bukti transfer langsung ke admin via Telegram.
+          <div class="risk-box" style="border-left: 4px solid #10b981; text-align:left; margin-top:10px; padding: 12px;">
+            <div style="display:inline-block; font-size:10px; font-weight:bold; color:#fbbf24; background:rgba(251, 191, 36, 0.15); border:1px solid #fbbf24; padding:2px 8px; border-radius:4px; margin-bottom:8px; text-transform:uppercase;">
+              🔥 PROMO SPESIAL DISKON 85% (KOTA/WILAYAH TERBATAS)
+            </div><br>
+            <b>Investasi Akses Pro:</b> <s style="color:#94a3b8; font-size:11px;">Rp 170.000</s> <b style="color:#10b981; font-size:15px; margin-left:4px;">Rp 25.000</b> <span style="font-size:11px; color:#cbd5e1;">/ bulan</span>
+            <div style="margin-top:8px; font-size:11px; color:#cbd5e1; border-top:1px dashed #334155; padding-top:6px;">
+              <b>⚡ Sistem Verifikasi Otomatis:</b> Setelah transfer, cukup klik tombol di bawah untuk mengirim bukti pembayaran langsung ke Admin via Telegram.
+            </div>
           </div>
 
-          <button class="btn-action" style="background:#10b981; padding:10px; font-size:13px;" onclick="confirmPaymentTelegram('${email}')">📲 Konfirmasi Pembayaran via Telegram</button>
+          <button class="btn-action" style="background:#10b981; padding:12px; font-size:13px; margin-top:12px;" onclick="confirmPaymentTelegram('${email}')">📲 Konfirmasi Pembayaran via Telegram</button>
         </div>
       `;
       document.getElementById('news-modal').style.display = 'flex';
@@ -803,7 +808,7 @@ var customCenters = {
 
     function confirmPaymentTelegram(email) {
       var cleanUsername = telegramAdminUsername.replace(/[^a-zA-Z0-9_]/g, '');
-      var text = encodeURIComponent(`Halo Admin, saya sudah membayar sebesar Rp 47.000 untuk perpanjangan akun Pro.\n\nEmail Akun: ${email}\nMohon diproses, terima kasih!`);
+      var text = encodeURIComponent(`Halo Admin, saya sudah membayar Promo Akses Pro sebesar Rp 25.000.\n\nEmail Akun: ${email}\nMohon diproses verifikasinya, terima kasih!`);
       window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
     }
 
@@ -1756,19 +1761,19 @@ dataCalendar = data.dataCalendar || [];
           // Jalankan countdown ticker saat data diterima
           initCountdownTicker(dataCalendar); // <--- TAMBAHAN
 
+          // 1. Ekstrak data config dulu sampai selesai
           var configObj = {};
           dataConfig.forEach(item => {
+            if (item.Parameter) configObj[item.Parameter.trim()] = item.Value ? item.Value.trim() : "";
+          });
 
-// ==========================================
-          // LOGIC KONTROL DYNAMIS MARKET LIVE (ON / OFF)
-          // ==========================================
+          // 2. Baru eksekusi logic sakelar (DI LUAR forEach)
           var modeMarket = (configObj.Market_Live_Mode || "ON").toUpperCase();
           var pesanMarket = configObj.Market_Live_Message || "Fitur Market Live sedang diistirahatkan sementara.";
           var marketContainer = document.getElementById('market-ticker-container');
 
           if (marketContainer) {
             if (modeMarket === 'OFF') {
-              // 🔴 MODE OFF: Matikan TradingView, Tampilkan Teks Kustom dari Google Sheet
               marketContainer.innerHTML = `
                 <div class="market-badge">📈 MARKET LIVE</div>
                 <div class="market-wrap">
@@ -1778,7 +1783,6 @@ dataCalendar = data.dataCalendar || [];
                 </div>
               `;
             } else {
-              // 🟢 MODE ON: Muat Widget TradingView Live Otomatis
               marketContainer.innerHTML = `
                 <div class="market-badge">📈 MARKET LIVE</div>
                 <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
@@ -1809,9 +1813,6 @@ dataCalendar = data.dataCalendar || [];
               widgetContainer.appendChild(tvScript);
             }
           }
-
-            if (item.Parameter) configObj[item.Parameter.trim()] = item.Value ? item.Value.trim() : "";
-          });
 
           if (configObj.Maintenance_Mode && configObj.Maintenance_Mode.toUpperCase() === 'ON') {
             var mDesc = document.getElementById('maintenance-desc');
