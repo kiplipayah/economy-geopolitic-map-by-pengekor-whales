@@ -313,7 +313,7 @@
     }  
 
 /* ==========================================
-   MARKET TICKER BAR (LIVE KOMODITAS & FX)
+   MARKET TICKER BAR (TRADINGVIEW WIDGET)
    ========================================== */
 #market-ticker-container {
   position: fixed; top: 38px; left: 0; width: 100%; height: 30px;
@@ -323,17 +323,6 @@
 .market-badge {
   background: #0284c7; color: #fff; padding: 0 12px; height: 100%;
   display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2;
-}
-.market-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
-.market-move { display: inline-block; animation: marketTicker 45s linear infinite; padding-left: 100%; }
-.market-move:hover { animation-play-state: paused; }
-.market-item { display: inline-block; padding: 0 18px; font-size: 12px; color: #f1f2f6; }
-.market-up { color: #10b981; font-weight: bold; margin-left: 4px; }
-.market-down { color: #ef4444; font-weight: bold; margin-left: 4px; }
-
-@keyframes marketTicker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-100%); }
 }
 
 /* ==========================================
@@ -414,18 +403,28 @@
     <div class="ticker-wrap"><div class="ticker-move" id="ticker-content"><span class="ticker-item">Menghubungkan ke jaringan intelijen berita...</span></div></div>
   </div>
 
-<!-- MARKET TICKER BAR (KOMODITAS & FX) -->
+<!-- MARKET TICKER BAR (TRADINGVIEW LIVE WIDGET) -->
 <div id="market-ticker-container">
   <div class="market-badge">📈 MARKET LIVE</div>
-  <div class="market-wrap">
-    <div class="market-move" id="market-ticker-content">
-      <span class="market-item">Minyak WTI: $74.50 <span class="market-up">+1.2%</span></span> &bull;
-      <span class="market-item">Minyak Brent: $78.20 <span class="market-up">+0.9%</span></span> &bull;
-      <span class="market-item">Emas (XAU/USD): $2,380.50 <span class="market-up">+0.5%</span></span> &bull;
-      <span class="market-item">Gas Alam: $2.15 <span class="market-down">-0.8%</span></span> &bull;
-      <span class="market-item">Bitcoin (BTC): $65,400 <span class="market-up">+2.4%</span></span> &bull;
-      <span class="market-item">USD/IDR: Rp 16,250 <span class="market-up">+0.1%</span></span>
-    </div>
+  <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        { "proName": "TVC:USOIL", "title": "Minyak WTI" },
+        { "proName": "TVC:UKOIL", "title": "Minyak Brent" },
+        { "proName": "TVC:GOLD", "title": "Emas (XAU/USD)" },
+        { "proName": "TVC:NATURALGAS", "title": "Gas Alam" },
+        { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin (BTC)" },
+        { "proName": "FX_IDC:USDIDR", "title": "USD/IDR" }
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "colorTheme": "dark",
+      "locale": "id"
+    }
+    </script>
   </div>
 </div>
 
