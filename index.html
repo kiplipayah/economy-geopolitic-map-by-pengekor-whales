@@ -15,7 +15,7 @@
     }
     #map { width: 100%; height: 100vh; background: transparent !important; }
     
-    /* TICKER BAR */
+    /* 1. BREAKING NEWS TICKER */
     #news-ticker-container {
       position: fixed; top: 0; left: 0; width: 100%; height: 38px;
       background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
@@ -34,6 +34,42 @@
 
     @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
+    /* 2. MARKET LIVE TICKER */
+    #market-ticker-container {
+      position: fixed; top: 38px; left: 0; width: 100%; height: 30px;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+      border-bottom: 1px solid #334155; z-index: 998; display: flex; align-items: center; overflow: hidden;
+    }
+    .market-badge {
+      background: #0284c7; color: #fff; padding: 0 12px; height: 100%;
+      display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2;
+    }
+    .market-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
+    .market-move { display: inline-block; animation: marketTicker 35s linear infinite; padding-left: 100%; font-size: 12px; color: #f1f2f6; }
+    .market-move:hover { animation-play-state: paused; }
+    @keyframes marketTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
+    /* 3. EVENT COUNTDOWN TICKER */
+    #event-ticker-container {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 32px;
+      background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+      border-top: 1px solid #ef4444; z-index: 999; display: flex; align-items: center; overflow: hidden;
+    }
+    .event-badge {
+      background: #ef4444; color: #fff; padding: 0 12px; height: 100%;
+      display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2; gap: 6px;
+    }
+    .event-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
+    .event-move { display: inline-block; animation: eventTicker 45s linear infinite; padding-left: 100%; font-size: 12px; color: #f1f2f6; }
+    .event-move:hover { animation-play-state: paused; }
+    .event-time-highlight { color: #facc15; font-weight: bold; font-family: monospace; }
+    .event-pulse-dot {
+      width: 7px; height: 7px; background-color: #ffffff; border-radius: 50%;
+      animation: eventPulse 1.2s infinite;
+    }
+    @keyframes eventTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+    @keyframes eventPulse { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.8); } }
+
     /* ALERT BANNER */
     #alert-banner {
       display: none; position: fixed; top: 68px; left: 0; width: 100%;
@@ -42,7 +78,7 @@
       border-bottom: 1px solid #d97706; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
     }
 
-    /* MENU TOGGLE BUTTON (POJOK KIRI ATAS) */
+    /* MENU TOGGLE BUTTON */
     #menu-toggle-btn {
       position: fixed; top: 78px; left: 20px; z-index: 997;
       background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
@@ -58,7 +94,6 @@
       position: fixed; top: 78px; right: 20px; z-index: 997; width: 320px;
       background: rgba(15, 23, 42, 0.92); padding: 8px 12px; border-radius: 8px;
       backdrop-filter: blur(8px); border: 1px solid #334155; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-      transition: top 0.3s ease;
     }
     #search-input {
       width: 100%; background: #1e293b; border: 1px solid #334155; color: #f8fafc;
@@ -72,7 +107,19 @@
     .search-result-item { padding: 9px 12px; font-size: 12px; color: #f1f2f6; cursor: pointer; border-bottom: 1px solid #1e293b; }
     .search-result-item:hover { background: #38bdf8; color: #0f172a; }
 
-    /* FLOATING NEWSPAPER ICON BUTTON (POJOK KANAN BAWAH) */
+    /* HEATMAP CONTROL */
+    #heatmap-control {
+      position: fixed; bottom: 108px; right: 20px; z-index: 997;
+      background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
+      padding: 8px 12px; border-radius: 8px; backdrop-filter: blur(8px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5); color: #f8fafc; font-size: 12px;
+    }
+    #heatmap-select {
+      background: #1e293b; border: 1px solid #334155; color: #f8fafc;
+      padding: 5px 8px; border-radius: 6px; font-size: 11px; margin-top: 4px; outline: none; cursor: pointer; width: 100%;
+    }
+
+    /* FLOATING NEWSPAPER ICON BUTTON */
     #all-news-btn {
       position: fixed; bottom: 45px; right: 20px; z-index: 997;
       background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
@@ -83,7 +130,7 @@
     }
     #all-news-btn:hover { background: #38bdf8; color: #0f172a; transform: scale(1.08); }
 
-    /* LEFT SIDEBAR DRAWER */
+    /* DRAWER MENU SIDEBAR */
     #user-drawer {
       position: fixed; top: 0; left: -380px; width: 340px; height: 100%;
       background: rgba(15, 23, 42, 0.97); backdrop-filter: blur(12px);
@@ -134,11 +181,10 @@
 
     .drawer-footer { padding: 12px; border-top: 1px solid #334155; font-size: 10px; color: #94a3b8; text-align: center; }
 
-    /* MODAL QRIS & CHAT */
     .modal-box-center { text-align: center; }
     .qris-img { max-width: 250px; width: 100%; height: auto; border-radius: 8px; border: 2px solid #38bdf8; margin: 12px 0; }
 
-    /* LEAFLET POPUP STYLING */
+    /* LEAFLET POPUP & LABELS */
     .leaflet-popup-content-wrapper { background: #1e293b !important; color: #f8fafc !important; border-radius: 8px !important; border: 1px solid #334155; }
     .leaflet-popup-tip { background: #1e293b !important; }
     .mini-dossier { min-width: 250px; font-family: Arial, sans-serif; }
@@ -148,7 +194,7 @@
     .mini-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
     .mini-value { font-size: 11px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
 
-    /* MODAL DOSSIER LENGKAP */
+    /* MODAL POPUP */
     #news-modal {
       display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.8); z-index: 10002; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
@@ -167,10 +213,6 @@
     .macro-card { background: #0f172a; padding: 10px 8px; border-radius: 6px; border: 1px solid #334155; text-align: center; }
     .macro-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.3px; }
     .macro-val-main { font-size: 14px; font-weight: bold; color: #38bdf8; margin-top: 3px; }
-    .macro-val-sub { font-size: 10px; color: #cbd5e1; margin-top: 3px; }
-
-    .demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-    .demo-card { background: #0f172a; padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center; }
 
     .risk-box { background: #0f172a; padding: 12px; border-radius: 6px; border-left: 4px solid #f59e0b; font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 15px; border-top: 1px solid #334155; border-right: 1px solid #334155; border-bottom: 1px solid #334155; }
 
@@ -188,7 +230,6 @@
     .btn-news:hover { background: #0369a1; }
 
     .country-label { background: transparent; border: none; box-shadow: none; color: #ffffff; font-weight: bold; font-size: 10px; text-shadow: 1px 1px 2px #000, -1px -1px 2px #000; }
-    .ocean-label { background: transparent; border: none; box-shadow: none; color: #74b9ff; font-weight: bold; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
     
     .sea-label {
       background: transparent !important; border: none !important; box-shadow: none !important;
@@ -204,21 +245,6 @@
       background: #0f172a; border: 1px solid #38bdf8; border-radius: 6px;
       padding: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;
     }
-
-    #maintenance-screen {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.98); z-index: 99999;
-      flex-direction: column; justify-content: center; align-items: center;
-      color: #f8fafc; text-align: center; padding: 20px; box-sizing: border-box;
-      backdrop-filter: blur(12px);
-    }
-    .maintenance-card {
-      background: #1e293b; border: 1px solid #ef4444; padding: 40px 30px;
-      border-radius: 16px; max-width: 520px; box-shadow: 0 10px 30px rgba(239, 68, 68, 0.2);
-    }
-    .maintenance-icon { font-size: 50px; margin-bottom: 15px; }
-    .maintenance-title { font-size: 22px; font-weight: bold; color: #ef4444; margin-bottom: 10px; }
-    .maintenance-desc { font-size: 14px; color: #cbd5e1; line-height: 1.6; }
 
     #notice-modal {
       display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -241,235 +267,101 @@
     }
     .btn-notice:hover { background: #0369a1; }
 
-    /* BRAND BOX LOGO SEBELUM LOGIN */
-    .brand-box { 
-      background: #1e293b; 
-      padding: 14px; 
-      border-radius: 8px; 
-      border: 1px solid #334155; 
-      margin-bottom: 16px; 
-      text-align: center; 
-    }
-
-    /* CARD PROFIL EXECUTIVE (TAMPIL SETELAH LOGIN, MENGGANTIKAN BRAND BOX) */
     .user-welcome-card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-left: 4px solid #38bdf8;
-      border-radius: 8px;
-      padding: 14px;
-      text-align: left;
-      margin-bottom: 16px;
+      background: #1e293b; border: 1px solid #334155; border-left: 4px solid #38bdf8;
+      border-radius: 8px; padding: 14px; text-align: left; margin-bottom: 16px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
     .user-welcome-badge {
-      display: inline-block;
-      font-size: 9px;
-      font-weight: 700;
-      color: #38bdf8;
-      background: rgba(56, 189, 248, 0.1);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
+      display: inline-block; font-size: 9px; font-weight: 700; color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 2px 6px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;
     }
-    .user-welcome-title {
-      font-size: 10px;
-      color: #94a3b8;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-    }
-    .user-welcome-name {
-      font-size: 15px;
-      font-weight: 700;
-      color: #f8fafc;
-      margin: 2px 0 4px 0;
-    }
-    .user-welcome-email {
-      font-size: 11px;
-      color: #cbd5e1;
-    }
+    .user-welcome-title { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.6px; }
+    .user-welcome-name { font-size: 15px; font-weight: 700; color: #f8fafc; margin: 2px 0 4px 0; }
+    .user-welcome-email { font-size: 11px; color: #cbd5e1; }
 
-    /* TOMBOL LOGOUT DI BAGIAN PALING BAWAH */
     .btn-logout {
-      background: rgba(239, 68, 68, 0.1);
-      color: #f87171;
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      padding: 9px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-      font-size: 11px;
-      width: 100%;
-      text-align: center;
-      transition: all 0.2s ease;
-      margin-top: 10px;
+      background: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 9px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 11px;
+      width: 100%; text-align: center; transition: all 0.2s ease; margin-top: 10px;
     }
-    .btn-logout:hover {
-      background: #ef4444;
-      color: #ffffff;
-    }  
-
-/* ==========================================
-   MARKET TICKER BAR (TRADINGVIEW WIDGET)
-   ========================================== */
-#market-ticker-container {
-  position: fixed; top: 38px; left: 0; width: 100%; height: 30px;
-  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
-  border-bottom: 1px solid #334155; z-index: 998; display: flex; align-items: center; overflow: hidden;
-}
-.market-badge {
-  background: #0284c7; color: #fff; padding: 0 12px; height: 100%;
-  display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2;
-}
-
-/* Styling & Animasi Running Text Khusus Mode OFF (Super Ringan) */
-.market-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
-.market-move { display: inline-block; animation: marketTicker 35s linear infinite; padding-left: 100%; font-size: 12px; color: #f1f2f6; }
-.market-move:hover { animation-play-state: paused; }
-@keyframes marketTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-
-/* ==========================================
-   HEATMAP SWITCHER (DROP DOWN MODE PETA)
-   ========================================== */
-#heatmap-control {
-  position: fixed; bottom: 108px; right: 20px; z-index: 997;
-  background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
-  padding: 8px 12px; border-radius: 8px; backdrop-filter: blur(8px);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.5); color: #f8fafc; font-size: 12px;
-}
-#heatmap-select {
-  background: #1e293b; border: 1px solid #334155; color: #f8fafc;
-  padding: 5px 8px; border-radius: 6px; font-size: 11px; margin-top: 4px; outline: none; cursor: pointer; width: 100%;
-}
-
-/* ==========================================
-   EVENT TICKER BAR (RUNNING COUNTDOWN BINTANG 3)
-   ========================================== */
-#event-ticker-container {
-  position: fixed; 
-  bottom: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 32px;
-  background: rgba(15, 23, 42, 0.95); 
-  backdrop-filter: blur(8px);
-  border-top: 1px solid #ef4444; 
-  z-index: 999; 
-  display: flex; 
-  align-items: center; 
-  overflow: hidden;
-  font-family: 'Segoe UI', Arial, sans-serif;
-}
-.event-badge {
-  background: #ef4444; color: #fff; padding: 0 12px; height: 100%;
-  display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2; gap: 6px;
-}
-.event-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
-.event-move { display: inline-block; animation: eventTicker 45s linear infinite; padding-left: 100%; font-size: 12px; color: #f1f2f6; }
-.event-move:hover { animation-play-state: paused; }
-.event-time-highlight { color: #facc15; font-weight: bold; font-family: monospace; }
-.event-pulse-dot {
-  width: 7px; height: 7px; background-color: #ffffff; border-radius: 50%;
-  animation: eventPulse 1.2s infinite;
-}
-@keyframes eventTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-@keyframes eventPulse { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.8); } }
-
-</style>
+    .btn-logout:hover { background: #ef4444; color: #ffffff; }  
+  </style>
 </head>
 <body>
 
-  <!-- POPUP NOTIFIKASI AWAL (MOBILE ROTATION) -->
+  <!-- NOTICE MOBILE MODAL -->
   <div id="notice-modal">
     <div class="notice-card">
       <div class="notice-icon">📱</div>
-      <div class="notice-title">Catatan untuk Pengguna Ponsel</div>
+      <div class="notice-title">Catatan Pengguna Mobile</div>
       <div class="notice-desc">
-        Disarankan mengaktifkan rotasi layar (mode lanskap) untuk pengalaman menjelajah peta yang lebih optimal, luas, dan nyaman.
+        Aktifkan rotasi layar (mode lanskap) untuk pengalaman navigasi peta intelijen yang lebih luas dan intuitif.
       </div>
       <button class="btn-notice" onclick="closeNoticeModal()">Siap, Mengerti!</button>
     </div>
   </div>
 
-  <!-- MAINTENANCE OVERLAY -->
-  <div id="maintenance-screen">
-    <div class="maintenance-card">
-      <div class="maintenance-icon">🛠️</div>
-      <div class="maintenance-title">SEDANG DALAM PERBAIKAN</div>
-      <div class="maintenance-desc" id="maintenance-desc">Sistem sedang memperbarui database makroekonomi secara besar-besaran. Silakan kembali beberapa saat lagi.</div>
-    </div>
-  </div>
-
-  <!-- TICKER -->
+  <!-- BREAKING NEWS TICKER -->
   <div id="news-ticker-container">
     <div class="ticker-badge">🔴 BREAKING NEWS</div>
     <div class="ticker-wrap"><div class="ticker-move" id="ticker-content"><span class="ticker-item">Menghubungkan ke jaringan intelijen berita...</span></div></div>
   </div>
 
-<!-- MARKET TICKER BAR -->
-<div id="market-ticker-container">
-  <div class="market-badge">📈 MARKET LIVE</div>
-</div>
-
-<!-- EVENT TICKER BAR (COUNTDOWN BINTANG 3 G20) -->
-<div id="event-ticker-container">
-  <div class="event-badge">
-    <span class="event-pulse-dot"></span> 🔴 NEXT BIG EVENT
+  <!-- MARKET LIVE TICKER -->
+  <div id="market-ticker-container">
+    <div class="market-badge">📈 MARKET LIVE</div>
+    <div class="market-wrap"><div class="market-move" id="market-ticker-content"><span style="color:#94a3b8;">Memuat data pasar...</span></div></div>
   </div>
-  <div class="event-wrap">
-    <div class="event-move" id="event-ticker-content">
-      <span style="color:#94a3b8;">Memuat jadwal event terdekat...</span>
+
+  <!-- EVENT TICKER -->
+  <div id="event-ticker-container">
+    <div class="event-badge">
+      <span class="event-pulse-dot"></span> 🔴 NEXT BIG EVENT
+    </div>
+    <div class="event-wrap">
+      <div class="event-move" id="event-ticker-content">
+        <span style="color:#94a3b8;">Memuat jadwal event terdekat...</span>
+      </div>
     </div>
   </div>
-</div>
 
-
-  <!-- ALERT BANNER -->
-  <div id="alert-banner"></div>
-
-  <!-- TOMBOL TOGGLE MENU SIDEBAR (POJOK KIRI ATAS) -->
   <button id="menu-toggle-btn" onclick="toggleDrawer()">👤 Menu Akun</button>
 
-  <!-- SEARCH -->
+  <!-- SEARCH BAR -->
   <div id="search-container">
     <input type="text" id="search-input" placeholder="Cari Negara, Selat, Laut, Samudra..." oninput="handleSearchInput()" />
     <div id="search-results"></div>
   </div>
 
-<!-- CONTROL SWITCHER MODE WARNA PETA (SUKU BUNGA DEFAULT, RISIKO & INFLASI PRO ONLY) -->
-<div id="heatmap-control">
-  <div style="font-weight: bold; color: #38bdf8; font-size: 11px; margin-bottom: 2px;">🎨 MODE WARNA PETA</div>
-  <select id="heatmap-select" onchange="changeHeatmapMode(this.value)">
-    <option value="interest">🏦 Suku Bunga Acuan (Default)</option>
-    <option value="risk">⚔️ Risiko Konflik 🔒</option>
-    <option value="inflation">📈 Tingkat Inflasi (YoY) 🔒</option>
-  </select>
-</div>
+  <!-- HEATMAP CONTROL -->
+  <div id="heatmap-control">
+    <div style="font-weight: bold; color: #38bdf8; font-size: 11px; margin-bottom: 2px;">🎨 MODE WARNA PETA</div>
+    <select id="heatmap-select" onchange="changeHeatmapMode(this.value)">
+      <option value="interest">🏦 Suku Bunga Acuan (Default)</option>
+      <option value="risk">⚔️ Risiko Konflik 🔒</option>
+      <option value="inflation">📈 Tingkat Inflasi (YoY) 🔒</option>
+    </select>
+  </div>
 
-  <!-- TOMBOL IKON KORAN (REKAP ARSIP BERITA DI POJOK KANAN BAWAH) -->
+  <!-- ALL NEWS FLOAT BUTTON -->
   <div id="all-news-btn" onclick="openAllNewsArchive()" title="Buka Rekap Semua Berita">📰</div>
 
-  <!-- DRAWER SIDEBAR PANEL KIRI -->
+  <!-- USER DRAWER SIDEBAR -->
   <div id="user-drawer">
     <div class="drawer-header">
       <div class="drawer-title">⚙️ Dashboard Menu</div>
       <div class="drawer-close" onclick="toggleDrawer()">&times;</div>
     </div>
     
-       
-
-      <div class="drawer-body">
-      <!-- 1. BRAND INFO LOGO (HANYA TAMPIL SAAT BELUM LOGIN) -->
+    <div class="drawer-body">
       <div id="brand-box" class="brand-box">
         <img src="https://f.top4top.io/p_38600vkwc1.jpg" alt="Logo Brand" class="brand-logo-img" />
         <div class="brand-name">🐋 Economy Map</div>
-        <div class="brand-desc">Ekonomi Map dirancang untuk menyederhanakan proses analisis data agar lebih efisien dan interaktif. Melalui visualisasi yang dinamis.</div>
+        <div class="brand-desc">Ekonomi Map dirancang untuk menyederhanakan proses analisis data agar lebih efisien dan interaktif melalui visualisasi spasial dinamis.</div>
       </div>
 
-      <!-- 2. PROFIL EXECUTIVE (TAMPIL DI PALING ATAS SETELAH LOGIN, MENGGANTIKAN BRAND BOX) -->
       <div id="profile-container" style="display: none;">
         <div class="user-welcome-card">
           <div class="user-welcome-badge">AUTHENTICATED MEMBER</div>
@@ -479,49 +371,63 @@
         </div>
       </div>
 
-      <!-- 3. FORM LOGIN (HANYA SAAT BELUM LOGIN) -->
+      <!-- FORM LOGIN & REGISTER TOGGLE -->
       <div id="login-container" class="user-section">
-        <div class="section-label">🔐 Masuk Akun / Login</div>
+        <div class="section-label" id="form-auth-title">🔐 Masuk Akun / Login</div>
         
+        <div id="register-nama-box" style="display: none;">
+          <label style="font-size: 10px; color: #94a3b8;">Nama Lengkap:</label>
+          <input type="text" id="login-nama" class="input-field" placeholder="Nama Anda..." />
+        </div>
+
         <label style="font-size: 10px; color: #94a3b8;">Email Akun:</label>
         <input type="email" id="login-email" class="input-field" placeholder="Masukkan emailmu..." />
 
         <label style="font-size: 10px; color: #94a3b8;">Kata Sandi / Password:</label>
         <input type="password" id="login-password" class="input-field" placeholder="Masukkan kata sandi..." />
 
-        <button id="btn-login-submit" class="btn-action" style="margin-top: 6px;" onclick="handleLogin()">🔑 Masuk / Login</button>
+        <button id="btn-login-submit" class="btn-action" style="margin-top: 6px;" onclick="handleAuthSubmit()">🔑 Masuk / Login</button>
+        <button id="btn-toggle-auth" class="btn-action" style="background: transparent; border: 1px solid #334155; color: #38bdf8; margin-top: 6px;" onclick="toggleAuthMode()">Belum punya akun? Buat Akun Baru</button>
       </div>
 
-    
-
-
-      <!-- STATUS SUBSCRIPTION -->
+      <!-- KEANGGOTAAN PRO -->
       <div id="sub-section" class="user-section" style="display: none;">
         <div class="section-label">💎 Keanggotaan & Paket</div>
         <div style="font-size:12px;">Status: <span class="sub-badge" id="user-sub-status">PRO - AKTIF</span></div>
         <div style="font-size:11px; color:#cbd5e1; margin-top:6px;" id="user-sub-expired">Berlaku hingga: <b>31 Des 2026</b></div>
-        
         <button class="btn-action" style="background:#f59e0b; color:#0f172a; margin-top:10px;" onclick="openPaymentModal()">💳 Perpanjang Masa Langganan (QRIS)</button>
       </div>
 
-      <!-- KEAMANAN & PASSWORD -->
+      <!-- AI ASSISTANT GEMINI PRO -->
+      <div id="ai-section" class="user-section" style="display: none;">
+        <div class="section-label">🤖 Gemini AI Macro Assistant</div>
+        <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">Tanyakan korelasi makroekonomi langsung ke AI.</div>
+        <button class="btn-action" style="background:#8b5cf6;" onclick="openAIAssistantModal()">✨ Tanya Gemini AI</button>
+      </div>
+
+      <!-- SECURITY SECTION -->
       <div id="security-section" class="user-section" style="display: none;">
         <div class="section-label">🔒 Keamanan Akun</div>
         <button class="btn-action" style="background:#334155;" onclick="openPasswordModal()">🔑 Ganti Password</button>
       </div>
 
-      <!-- VIP LIVE CHAT -->
+      <!-- VIP CHAT -->
       <div id="chat-section" class="user-section" style="display: none;">
         <div class="section-label">💬 VIP Community Chat</div>
-        <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">Ruang diskusi eksklusif sesama pengguna Pro. Pesan otomatis terhapus tiap 24 jam.</div>
+        <div style="font-size:11px; color:#cbd5e1; margin-bottom:8px;">Ruang diskusi eksklusif sesama pengguna Pro.</div>
         <button class="btn-action" style="background:#10b981;" onclick="openVIPChatModal()">🚀 Buka Ruang Chat VIP</button>
       </div>
 
-      <!-- SUPPORT TELEGRAM & SOSIAL MEDIA -->
+      <!-- ADMIN PANEL BUTTON (KHUSUS ROLE ADMIN) -->
+      <div id="admin-section" class="user-section" style="display: none; border-color: #ef4444;">
+        <div class="section-label" style="color:#ef4444;">⚡ Panel Admin Server</div>
+        <button class="btn-action" style="background:#ef4444;" onclick="openAdminPanelModal()">🛠️ Kelola Member & PRO</button>
+      </div>
+
+      <!-- DIRECT HELP -->
       <div class="user-section">
         <div class="section-label">📢 Komunitas & Bantuan Direct</div>
         <button class="btn-action" style="background:#0284c7;" onclick="openTelegramSupport()">💬 Lapor Kendala / CS Telegram</button>
-
         <div class="social-links">
           <a href="https://t.me/pengekorwhales" target="_blank" class="social-btn">Telegram</a>
           <a href="https://tiktok.com/@pengekorwhales" target="_blank" class="social-btn">TikTok</a>
@@ -529,7 +435,6 @@
         </div>
       </div>
 
-      <!-- 4. TOMBOL LOGOUT (DIPINDAH KE PALING BAWAH) -->
       <div id="logout-container" style="display: none;">
         <button class="btn-logout" onclick="handleLogout()">🚪 Keluar / Logout Akun</button>
       </div>
@@ -537,14 +442,13 @@
 
     <div class="drawer-footer">
       Created by <b>Pengekor Whales</b><br>
-      System Version 1.0
+      System Version 2.0 Secure
     </div>
   </div>
 
-  <!-- PETA -->
   <div id="map"></div>
 
-  <!-- MODAL DOSSIER LENGKAP -->
+  <!-- MODAL CONTAINER -->
   <div id="news-modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -558,7 +462,7 @@
     var map = L.map('map', { zoomControl: false, minZoom: 3 }).setView([20, 0], 3);
     var geojsonUrl = 'https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json';
     
-    // API URL HASIL DEPLOYMENT
+    // URL Deployment Apps Script
     var apiUrl = 'https://script.google.com/macros/s/AKfycbxnWluWRvSbSCeWvSjCbMPC7eXC9xQlwne5INBCzQ2YLDxsilgGcBdoRX_drvwMnmk/exec'; 
 
     var dataMakro = [];
@@ -568,56 +472,41 @@
     var dataCalendar = []; 
     var tickerCountdownInterval = null; 
     var mapGeoJsonLayer = null;
-    var seaLabelsLayerGroup = L.layerGroup(); 
-    var countryLabelsLayerGroup = L.layerGroup(); 
+    var seaLabelsLayerGroup = L.layerGroup().addTo(map); 
+    var countryLabelsLayerGroup = L.layerGroup().addTo(map); 
     var sgpLayerInstance = null; 
-var currentHeatmapMode = 'interest'; // Default awal diganti ke Suku Bunga Acuan
+    var currentHeatmapMode = 'interest';
+    var isAuthRegisterMode = false;
 
-// HELPER: Cek apakah Akun Pro masih aktif (Belum Kadaluarsa/Expired)
-function checkUserProActive(loggedUser) {
-  if (!loggedUser || !loggedUser.token) return false;
-  if (!loggedUser.expiredDate) return true;
-  
-  var expDate = parseEventDate(loggedUser.expiredDate);
-  if (!expDate) return true;
-  
-  // Set hingga akhir hari dari tanggal expired (23:59:59)
-  expDate.setHours(23, 59, 59, 999);
-  return expDate.getTime() >= new Date().getTime();
-}
+    var customCenters = {
+      "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], "FRA": [46.2, 2.2], 
+      "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], 
+      "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5], "MAR": [31.79, -7.09],
+      "MYS": [3.8, 102.3], "HRV": [45.1, 15.2], "BIH": [43.9, 17.6], "MNE": [42.7, 19.3], 
+      "SVN": [46.1, 14.9], "HTI": [19.1, -72.3], "DOM": [18.7, -70.1], "CUB": [21.8, -79.5], 
+      "VNM": [14.0, 108.0], "GIN": [10.0, -10.5], "AUT": [47.3, 13.3], "MDA": [47.0, 28.5], 
+      "SWE": [62.0, 15.0], "NOR": [61.0, 8.0], "BHS": [24.5, -77.5], "PAN": [8.5, -80.5], 
+      "CHL": [-33.0, -71.0], "SGP": [1.3521, 103.8198]
+    };
 
-// PUSAT KOORDINAT ACUAN NEGARA (GLOBAL SCOPE)
-var customCenters = {
-  "RUS": [61.5, 90.0], "USA": [37.0, -95.7], "CAN": [56.1, -106.3], "FRA": [46.2, 2.2], 
-  "IDN": [-0.78, 113.92], "CHN": [35.8, 104.1], "AUS": [-25.2, 133.7], "BRA": [-14.2, -51.9], 
-  "ZAF": [-30.5, 22.9], "JPN": [36.2, 138.2], "MEX": [23.6, -102.5], "MAR": [31.79, -7.09],
-  "MYS": [3.8, 102.3], "HRV": [45.1, 15.2], "BIH": [43.9, 17.6], "MNE": [42.7, 19.3], 
-  "SVN": [46.1, 14.9], "HTI": [19.1, -72.3], "DOM": [18.7, -70.1], "CUB": [21.8, -79.5], 
-  "VNM": [14.0, 108.0], "GIN": [10.0, -10.5], "AUT": [47.3, 13.3], "MDA": [47.0, 28.5], 
-  "SWE": [62.0, 15.0], "NOR": [61.0, 8.0], "BHS": [24.5, -77.5], "PAN": [8.5, -80.5], 
-  "CHL": [-33.0, -71.0], "SGP": [1.3521, 103.8198]
-};
-
-    // TELEGRAM ADMIN & GAMBAR QRIS
     var telegramAdminUsername = "seabank_singapore";
     var qrisImageUrl = "https://e.top4top.io/p_3860gj3gp1.jpg";
 
-    function closeNoticeModal() {
-      document.getElementById('notice-modal').style.display = 'none';
-    }
-
-    function toggleDrawer() {
-      document.getElementById('user-drawer').classList.toggle('open');
-    }
+    function closeNoticeModal() { document.getElementById('notice-modal').style.display = 'none'; }
+    function toggleDrawer() { document.getElementById('user-drawer').classList.toggle('open'); }
 
     function escapeHtml(str) {
       if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function checkUserProActive(loggedUser) {
+      if (!loggedUser || !loggedUser.token) return false;
+      if (!loggedUser.expiredDate) return true;
+      var expDate = parseEventDate(loggedUser.expiredDate);
+      if (!expDate) return true;
+      expDate.setHours(23, 59, 59, 999);
+      return expDate.getTime() >= new Date().getTime();
     }
 
     function checkLoginState() {
@@ -628,6 +517,8 @@ var customCenters = {
       var subSection = document.getElementById('sub-section');
       var securitySection = document.getElementById('security-section');
       var chatSection = document.getElementById('chat-section');
+      var aiSection = document.getElementById('ai-section');
+      var adminSection = document.getElementById('admin-section');
       var logoutContainer = document.getElementById('logout-container');
 
       var isActivePro = checkUserProActive(loggedUser);
@@ -635,20 +526,16 @@ var customCenters = {
       if (loggedUser && loggedUser.token && loggedUser.email) {
         if (brandBox) brandBox.style.display = 'none';
         if (loginContainer) loginContainer.style.display = 'none';
-
         if (profileContainer) profileContainer.style.display = 'block';
         if (subSection) subSection.style.display = 'block';
         if (securitySection) securitySection.style.display = 'block';
         if (logoutContainer) logoutContainer.style.display = 'block';
-
-        // Kunci VIP Chat jika akun sudah Expired
         if (chatSection) chatSection.style.display = isActivePro ? 'block' : 'none';
+        if (aiSection) aiSection.style.display = isActivePro ? 'block' : 'none';
+        if (adminSection) adminSection.style.display = (loggedUser.role === "ADMIN") ? 'block' : 'none';
 
-        var displayName = escapeHtml(loggedUser.nama || loggedUser.email.split('@')[0]);
-        var displayEmail = escapeHtml(loggedUser.email);
-
-        document.getElementById('profile-display-name').innerText = displayName;
-        document.getElementById('profile-display-email').innerText = displayEmail;
+        document.getElementById('profile-display-name').innerText = escapeHtml(loggedUser.nama || loggedUser.email.split('@')[0]);
+        document.getElementById('profile-display-email').innerText = escapeHtml(loggedUser.email);
 
         var subStatusEl = document.getElementById('user-sub-status');
         var subExpiredEl = document.getElementById('user-sub-expired');
@@ -674,34 +561,71 @@ var customCenters = {
       } else {
         if (brandBox) brandBox.style.display = 'block';
         if (loginContainer) loginContainer.style.display = 'block';
-
         if (profileContainer) profileContainer.style.display = 'none';
         if (subSection) subSection.style.display = 'none';
         if (securitySection) securitySection.style.display = 'none';
         if (chatSection) chatSection.style.display = 'none';
+        if (aiSection) aiSection.style.display = 'none';
+        if (adminSection) adminSection.style.display = 'none';
         if (logoutContainer) logoutContainer.style.display = 'none';
       }
     }
 
-    var loginAttempts = 0;
-    var loginLockedUntil = 0;
+    function toggleAuthMode() {
+      isAuthRegisterMode = !isAuthRegisterMode;
+      document.getElementById('form-auth-title').innerText = isAuthRegisterMode ? "📝 Daftar Akun Baru" : "🔐 Masuk Akun / Login";
+      document.getElementById('register-nama-box').style.display = isAuthRegisterMode ? "block" : "none";
+      document.getElementById('btn-login-submit').innerText = isAuthRegisterMode ? "📝 Daftar Sekarang" : "🔑 Masuk / Login";
+      document.getElementById('btn-toggle-auth').innerText = isAuthRegisterMode ? "Sudah punya akun? Login disini" : "Belum punya akun? Buat Akun Baru";
+    }
+
+    function handleAuthSubmit() {
+      if (isAuthRegisterMode) {
+        handleRegister();
+      } else {
+        handleLogin();
+      }
+    }
+
+    function handleRegister() {
+      var email = document.getElementById('login-email').value.trim();
+      var pass = document.getElementById('login-password').value.trim();
+      var nama = document.getElementById('login-nama').value.trim();
+      var btnSubmit = document.getElementById('btn-login-submit');
+
+      if (!email || !pass) return alert("⚠️ Isi email dan password!");
+
+      btnSubmit.innerText = "⏳ Mendaftar...";
+      btnSubmit.disabled = true;
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "register", email: email, password: pass, nama: nama })
+      })
+      .then(r => r.json())
+      .then(res => {
+        btnSubmit.innerText = "📝 Daftar Sekarang";
+        btnSubmit.disabled = false;
+        if (res && res.status === "success") {
+          alert("✅ Registrasi Berhasil! Silakan masuk ke akun Anda.");
+          toggleAuthMode();
+        } else {
+          alert("❌ Gagal: " + (res.message || "Email telah terdaftar."));
+        }
+      })
+      .catch(e => {
+        btnSubmit.innerText = "📝 Daftar Sekarang";
+        btnSubmit.disabled = false;
+        alert("❌ Error koneksi.");
+      });
+    }
 
     function handleLogin() {
-      var now = new Date().getTime();
-      if (now < loginLockedUntil) {
-        var remainingSec = Math.ceil((loginLockedUntil - now) / 1000);
-        alert(`⚠️ Terlalu banyak percobaan gagal. Silakan tunggu ${remainingSec} detik.`);
-        return;
-      }
-
       var email = document.getElementById('login-email').value.trim();
       var pass = document.getElementById('login-password').value.trim();
       var btnSubmit = document.getElementById('btn-login-submit');
 
-      if (!email || !pass) {
-        alert("⚠️ Mohon isi email dan kata sandi!");
-        return;
-      }
+      if (!email || !pass) return alert("⚠️ Mohon isi email dan kata sandi!");
 
       btnSubmit.innerText = "⏳ Memproses...";
       btnSubmit.disabled = true;
@@ -716,18 +640,11 @@ var customCenters = {
         btnSubmit.disabled = false;
 
         if (res && res.status === "success" && res.user) {
-          loginAttempts = 0; 
           localStorage.setItem('geo_logged_user', JSON.stringify(res.user));
           checkLoginState();
           alert("✅ Login Berhasil! Selamat datang, " + res.user.nama);
         } else {
-          loginAttempts++;
-          if (loginAttempts >= 3) {
-            loginLockedUntil = new Date().getTime() + 30000; 
-            alert("❌ Terlalu banyak percobaan salah. Tombol login dikunci selama 30 detik.");
-          } else {
-            alert("❌ Login Gagal! " + (res.message || "Email atau kata sandi salah."));
-          }
+          alert("❌ Login Gagal! " + (res.message || "Email atau kata sandi salah."));
         }
       })
       .catch(e => {
@@ -768,16 +685,10 @@ var customCenters = {
 
     function submitNewPassword(email) {
       var newPass = document.getElementById('pass-new').value.trim();
-      if (!newPass) { 
-        alert("⚠️ Masukkan password baru!"); 
-        return; 
-      }
+      if (!newPass) return alert("⚠️ Masukkan password baru!");
 
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-      if (!loggedUser || !loggedUser.token) {
-        alert("⚠️ Sesi tidak valid. Silakan login ulang.");
-        return;
-      }
+      if (!loggedUser || !loggedUser.token) return alert("⚠️ Sesi tidak valid.");
 
       var btn = document.getElementById('btn-update-pass');
       btn.innerText = "⏳ Memperbarui...";
@@ -796,9 +707,8 @@ var customCenters = {
       .then(res => {
         btn.innerText = "Update Password Sekarang";
         btn.disabled = false;
-
         if (res && res.status === "success") {
-          alert("✅ Password berhasil diperbarui!");
+          alert("✅ Password berhasil diperbarui secara aman!");
           closeModal();
         } else {
           alert("❌ Gagal: " + (res.message || "Akses ditolak."));
@@ -811,6 +721,52 @@ var customCenters = {
       });
     }
 
+    function openAIAssistantModal() {
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">✨ Gemini AI Macro Assistant</h2>
+        <div class="risk-box">Konsultasikan korelasi ekonomi makro atau dampak geopolitik terkini secara cepat dengan AI.</div>
+        <textarea id="ai-prompt-input" class="input-field" style="height:80px;" placeholder="Contoh: Bagaimana dampak suku bunga Fed terhadap nilai tukar Rupiah?"></textarea>
+        <button id="btn-ask-ai" class="btn-action" style="background:#8b5cf6;" onclick="submitAIPrompt()">🚀 Tanya AI Sekarang</button>
+        <div id="ai-response-box" style="margin-top:12px; font-size:12px; color:#cbd5e1; white-space:pre-wrap; background:#0f172a; padding:10px; border-radius:6px; border:1px solid #334155; display:none;"></div>
+      `;
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
+    function submitAIPrompt() {
+      var prompt = document.getElementById('ai-prompt-input').value.trim();
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!prompt || !loggedUser) return;
+
+      var btn = document.getElementById('btn-ask-ai');
+      var box = document.getElementById('ai-response-box');
+
+      btn.innerText = "⏳ AI Sedang Menganalisis...";
+      btn.disabled = true;
+      box.style.display = "block";
+      box.innerText = "🤖 Memproses jawaban dari Gemini AI Server...";
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({ action: "askGeminiAI", email: loggedUser.email, token: loggedUser.token, prompt: prompt })
+      })
+      .then(r => r.json())
+      .then(res => {
+        btn.innerText = "🚀 Tanya AI Sekarang";
+        btn.disabled = false;
+        if (res && res.status === "success") {
+          box.innerText = res.result;
+        } else {
+          box.innerText = "❌ Gagal: " + (res.message || "AI Error.");
+        }
+      })
+      .catch(e => {
+        btn.innerText = "🚀 Tanya AI Sekarang";
+        btn.disabled = false;
+        box.innerText = "❌ Gagal terhubung ke server AI.";
+      });
+    }
+
     function openPaymentModal() {
       var email = document.getElementById('profile-display-email').innerText;
       var modalBody = document.getElementById('modal-body');
@@ -818,19 +774,13 @@ var customCenters = {
         <div class="modal-box-center">
           <h2 class="modal-header-title">👑 Buka Akses Penuh Intelijen Pro</h2>
           <p style="font-size:12px; color:#cbd5e1;">Pindai kode QRIS di bawah menggunakan GoPay, OVO, Dana, ShopeePay, Seabank, atau Mobile Banking pilihanmu:</p>
-          
           <img src="${qrisImageUrl}" class="qris-img" alt="QRIS All Payment" />
-
           <div class="risk-box" style="border-left: 4px solid #10b981; text-align:left; margin-top:10px; padding: 12px;">
             <div style="display:inline-block; font-size:10px; font-weight:bold; color:#fbbf24; background:rgba(251, 191, 36, 0.15); border:1px solid #fbbf24; padding:2px 8px; border-radius:4px; margin-bottom:8px; text-transform:uppercase;">
-              🔥 PROMO SPESIAL DISKON 85% (KOTA/WILAYAH TERBATAS)
+              🔥 PROMO SPESIAL DISKON 85%
             </div><br>
             <b>Investasi Akses Pro:</b> <s style="color:#94a3b8; font-size:11px;">Rp 170.000</s> <b style="color:#10b981; font-size:15px; margin-left:4px;">Rp 25.000</b> <span style="font-size:11px; color:#cbd5e1;">/ bulan</span>
-            <div style="margin-top:8px; font-size:11px; color:#cbd5e1; border-top:1px dashed #334155; padding-top:6px;">
-              <b>⚡ Sistem Verifikasi Otomatis:</b> Setelah transfer, cukup klik tombol di bawah untuk mengirim bukti pembayaran langsung ke Admin via Telegram.
-            </div>
           </div>
-
           <button class="btn-action" style="background:#10b981; padding:12px; font-size:13px; margin-top:12px;" onclick="confirmPaymentTelegram('${email}')">📲 Konfirmasi Pembayaran via Telegram</button>
         </div>
       `;
@@ -850,27 +800,19 @@ var customCenters = {
       window.open(`https://t.me/${cleanUsername}?text=${text}`, '_blank');
     }
 
-   var chatInterval = null;
+    var chatInterval = null;
 
     function openVIPChatModal() {
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-      
-      if (!loggedUser || !loggedUser.token) {
-        alert("⚠️ Anda harus login terlebih dahulu untuk mengakses VIP Chat.");
-        return;
-      }
+      if (!loggedUser || !loggedUser.token) return alert("⚠️ Anda harus login terlebih dahulu.");
 
       var modalBody = document.getElementById('modal-body');
       modalBody.innerHTML = `
         <h2 class="modal-header-title">💬 VIP Community Chat (Live)</h2>
-        <div class="risk-box" style="margin-bottom:10px;">
-          Ruang diskusi eksklusif anggota Pro. Silakan berbagi pandangan pasar & geopolitik secara bijak.
-        </div>
-        
+        <div class="risk-box" style="margin-bottom:10px;">Ruang diskusi eksklusif anggota Pro.</div>
         <div id="chat-box-messages" style="height: 260px; background:#0f172a; border:1px solid #334155; border-radius:6px; padding:10px; overflow-y:auto; margin-bottom:10px; font-size:12px;">
           <div style="color:#94a3b8; text-align:center; padding-top:20px;">🔄 Memuat obrolan...</div>
         </div>
-
         <div style="display:flex; gap:6px;">
           <input type="text" id="chat-input-text" class="input-field" placeholder="Ketik pesan..." style="margin:0;" onkeypress="if(event.key==='Enter') submitVIPMessage()" />
           <button id="btn-send-chat" class="btn-action" style="width:90px; margin:0;" onclick="submitVIPMessage()">Kirim</button>
@@ -878,19 +820,19 @@ var customCenters = {
       `;
 
       document.getElementById('news-modal').style.display = 'flex';
-      
       loadVIPMessages();
       clearInterval(chatInterval);
       chatInterval = setInterval(loadVIPMessages, 5000);
     } 
 
-function loadVIPMessages() {
+    function loadVIPMessages() {
       var chatContainer = document.getElementById('chat-box-messages');
-      if (!chatContainer) return;
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!chatContainer || !loggedUser) return;
 
       fetch(apiUrl, {
         method: "POST",
-        body: JSON.stringify({ action: "getChat" })
+        body: JSON.stringify({ action: "getChat", email: loggedUser.email, token: loggedUser.token })
       })
       .then(r => r.json())
       .then(res => {
@@ -901,12 +843,7 @@ function loadVIPMessages() {
           }
           var html = "";
           res.data.forEach(item => {
-            html += `
-              <div style="margin-bottom:8px; border-bottom:1px solid #1e293b; padding-bottom:4px;">
-                <b style="color:#38bdf8;">[${escapeHtml(item.nama)}]:</b> 
-                <span style="color:#cbd5e1;">${escapeHtml(item.pesan)}</span>
-              </div>
-            `;
+            html += `<div style="margin-bottom:8px; border-bottom:1px solid #1e293b; padding-bottom:4px;"><b style="color:#38bdf8;">[${escapeHtml(item.nama)}]:</b> <span style="color:#cbd5e1;">${escapeHtml(item.pesan)}</span></div>`;
           });
           chatContainer.innerHTML = html;
           chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -920,8 +857,7 @@ function loadVIPMessages() {
       var pesan = inputEl.value.trim();
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
 
-      if (!pesan) return;
-      if (!loggedUser) return alert("Sesi kadaluarsa.");
+      if (!pesan || !loggedUser) return;
 
       var btn = document.getElementById('btn-send-chat');
       btn.innerText = "⏳...";
@@ -932,7 +868,7 @@ function loadVIPMessages() {
         body: JSON.stringify({
           action: "sendChat",
           email: loggedUser.email,
-          nama: loggedUser.nama || loggedUser.email.split('@')[0],
+          token: loggedUser.token,
           pesan: pesan
         })
       })
@@ -944,7 +880,7 @@ function loadVIPMessages() {
           inputEl.value = "";
           loadVIPMessages();
         } else {
-          alert("❌ Gagal mengirim pesan.");
+          alert("❌ Gagal: " + (res.message || "Pengiriman pesan ditolak server."));
         }
       })
       .catch(e => {
@@ -954,61 +890,172 @@ function loadVIPMessages() {
       });
     }
 
+    // TICKERS
+    function renderNewsTicker() {
+      var tickerContent = document.getElementById('ticker-content');
+      if (!tickerContent) return;
+
+      if (!dataNews || dataNews.length === 0) {
+        tickerContent.innerHTML = `<span class="ticker-item">Tidak ada berita terbaru.</span>`;
+        return;
+      }
+
+      var html = "";
+      var recentNews = dataNews.slice().reverse().slice(0, 15);
+      recentNews.forEach(item => {
+        var countryName = item.Kode_ISO ? `[${escapeHtml(item.Kode_ISO)}]` : '';
+        html += `<span class="ticker-item"><span class="ticker-country">${countryName}</span> <b>${escapeHtml(item.Judul_Berita || '')}</b> - ${escapeHtml(item.Ringkasan_Berita || '')}</span>`;
+      });
+
+      tickerContent.innerHTML = html;
+    }
+
+    function renderMarketTicker() {
+      var marketContent = document.getElementById('market-ticker-content');
+      if (!marketContent) return;
+
+      if (!dataMakro || dataMakro.length === 0) {
+        marketContent.innerHTML = `<span style="padding:0 20px;">Data pasar belum tersedia.</span>`;
+        return;
+      }
+
+      var html = "";
+      dataMakro.forEach(item => {
+        if (item.Negara && item.Suku_Bunga) {
+          html += `<span style="display:inline-block; padding:0 20px;"><b>${escapeHtml(item.Negara)}:</b> Rate ${escapeHtml(item.Suku_Bunga)} | CPI ${escapeHtml(item.Inflasi_YoY || '-')}</span>`;
+        }
+      });
+
+      marketContent.innerHTML = html;
+    }
+
+    function renderEventTicker() {
+      var eventContainer = document.getElementById('event-ticker-content');
+      if (!eventContainer) return;
+
+      if (!dataCalendar || dataCalendar.length === 0) {
+        eventContainer.innerHTML = `<span style="padding:0 20px; color:#94a3b8;">Belum ada jadwal event global mendatang.</span>`;
+        return;
+      }
+
+      startEventCountdown();
+    }
+
+    function startEventCountdown() {
+      if (tickerCountdownInterval) clearInterval(tickerCountdownInterval);
+
+      function updateTimer() {
+        var eventContainer = document.getElementById('event-ticker-content');
+        if (!eventContainer) return;
+
+        var now = new Date().getTime();
+        var html = "";
+
+        dataCalendar.forEach(item => {
+          var targetDate = parseEventDate(item.Tanggal || item.date);
+          if (targetDate) {
+            var diff = targetDate.getTime() - now;
+            var label = escapeHtml(item.Event || item.nama_event || 'Event');
+            var iso = item.Kode_ISO ? `[${escapeHtml(item.Kode_ISO)}] ` : '';
+
+            if (diff > 0) {
+              var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+              var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              var mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+              var secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+              var countdownStr = `${days}d ${hours}h ${mins}m ${secs}s`;
+              html += `<span style="display:inline-block; padding:0 25px;">${iso}<b>${label}:</b> <span class="event-time-highlight">⏳ ${countdownStr}</span></span>`;
+            } else {
+              html += `<span style="display:inline-block; padding:0 25px;">${iso}<b>${label}:</b> <span style="color:#10b981; font-weight:bold;">🔴 SEDANG BERLANGSUNG</span></span>`;
+            }
+          }
+        });
+
+        if (html === "") {
+          html = `<span style="padding:0 20px; color:#94a3b8;">Tidak ada event mendatang yang terdaftar.</span>`;
+        }
+
+        eventContainer.innerHTML = html;
+      }
+
+      updateTimer();
+      tickerCountdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    function renderSeaLabels() {
+      seaLabelsLayerGroup.clearLayers();
+      if (!databasePerairan || databasePerairan.length === 0) return;
+
+      databasePerairan.forEach(sea => {
+        var lat = parseFloat(sea.Latitude || sea.lat);
+        var lng = parseFloat(sea.Longitude || sea.lng);
+        var nama = sea.Nama_Perairan || sea.nama;
+
+        if (!isNaN(lat) && !isNaN(lng) && nama) {
+          var seaTooltip = L.tooltip({
+            permanent: true, direction: 'center', className: 'sea-label', opacity: 0.85
+          })
+          .setLatLng([lat, lng])
+          .setContent(`🌊 ${escapeHtml(nama)}`);
+
+          seaLabelsLayerGroup.addLayer(seaTooltip);
+        }
+      });
+    }
+
+    function openAllNewsArchive() {
+      var modalBody = document.getElementById('modal-body');
+      var html = `<h2 class="modal-header-title">📰 ARSIP SEMUA INTELIJEN BERITA</h2>`;
+
+      if (!dataNews || dataNews.length === 0) {
+        html += `<div class="news-card"><p class="news-desc">Belum ada berita tersimpan.</p></div>`;
+      } else {
+        var allSorted = dataNews.slice().reverse();
+        allSorted.forEach(b => {
+          let link = (b.Link_Berita || "").trim();
+          if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
+          var threat = (b.Threat_Level || "LOW").toUpperCase();
+          var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
+          var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM</span>` : `<span class="threat-tag threat-low">🟢 LOW</span>`;
+          var country = b.Kode_ISO ? `[${escapeHtml(b.Kode_ISO)}] ` : '';
+
+          html += `
+            <div class="news-card" style="${border}">
+              <div class="news-header-flex">
+                <h4 class="news-title">${country}${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>
+                ${tag}
+              </div>
+              <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
+              ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Artikel Asli &rarr;</a>` : ''}
+            </div>
+          `;
+        });
+      }
+
+      modalBody.innerHTML = html;
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
     function formatZonaIklim(code) {
       if (!code) return '-';
       var c = code.toString().trim().toUpperCase();
       var month = new Date().getMonth(); 
-      
       var mapIklim = {
-        'TROPICAL_MONSOON': 'Tropis Muson',
-        'TROPICAL_RAINFOREST': 'Tropis Hutan Hujan',
-        'TROPICAL_SAVANNA': 'Tropis Sabana',
-        'TROPICAL': 'Tropis (Panas & Lembap)',
-        'TROPIS': 'Tropis (Panas & Lembap)',
-        'EQUATORIAL': 'Ekuatorial (Tropis Basah)',
-        'MEDITERRANEAN': 'Mediterania (Panas Kering / Dingin Sejuk)',
-        'HUMID_CONTINENTAL': 'Kontinental Lembap',
-        'OCEANIC': 'Sedang / Lautan',
-        'DESERT': 'Gurun Panas Ekstrem (Arid)',
-        'GURUN': 'Gurun Panas Ekstrem (Arid)',
-        'ARID_DESERT': 'Gurun Panas Ekstrem (Arid)',
-        'SEMI_ARID': 'Semi-Kering / Stepa',
-        'SUBTROPICAL': 'Subtropis',
-        'SUBTROPIS': 'Subtropis',
-        'SUBARCTIC': 'Subartik',
-        'ARCTIC': 'Arktik / Kutub (Dingin Ekstrem)',
-        'POLAR': 'Arktik / Kutub (Dingin Ekstrem)'
+        'TROPICAL_MONSOON': 'Tropis Muson', 'TROPICAL_RAINFOREST': 'Tropis Hutan Hujan',
+        'TROPICAL_SAVANNA': 'Tropis Sabana', 'TROPICAL': 'Tropis (Panas & Lembap)',
+        'EQUATORIAL': 'Ekuatorial (Tropis Basah)', 'MEDITERRANEAN': 'Mediterania',
+        'HUMID_CONTINENTAL': 'Kontinental Lembap', 'OCEANIC': 'Sedang / Lautan',
+        'DESERT': 'Gurun Panas Ekstrem', 'ARID_DESERT': 'Gurun Panas Ekstrem',
+        'SEMI_ARID': 'Semi-Kering / Stepa', 'SUBTROPICAL': 'Subtropis',
+        'SUBARCTIC': 'Subartik', 'ARCTIC': 'Arktik / Kutub'
       };
 
       if (c === 'NORTH_4SEASONS' || c === 'NORTH_4_SEASONS') {
-        var musim = '';
-        if (month === 11 || month === 0 || month === 1) musim = '❄️ Musim Dingin (Winter)';
-        else if (month >= 2 && month <= 4) musim = '🌸 Musim Semi (Spring)';
-        else if (month >= 5 && month <= 7) musim = '☀️ Musim Panas (Summer)';
-        else musim = '🍂 Musim Gugur (Autumn/Fall)';
+        var musim = (month === 11 || month === 0 || month === 1) ? '❄️ Musim Dingin' : (month >= 2 && month <= 4) ? '🌸 Musim Semi' : (month >= 5 && month <= 7) ? '☀️ Musim Panas' : '🍂 Musim Gugur';
         return `${musim} — Zona 4 Musim (Bumi Utara)`;
       }
-      
-      if (c === 'SOUTH_4SEASONS' || c === 'SOUTH_4_SEASONS') {
-        var musim = '';
-        if (month === 11 || month === 0 || month === 1) musim = '☀️ Musim Panas (Summer)';
-        else if (month >= 2 && month <= 4) musim = '🍂 Musim Gugur (Autumn/Fall)';
-        else if (month >= 5 && month <= 7) musim = '❄️ Musim Dingin (Winter)';
-        else musim = '🌸 Musim Semi (Spring)';
-        return `${musim} — Zona 4 Musim (Bumi Selatan)`;
-      }
-
-      if (c.includes('TROPICAL') || c.includes('TROPIS') || c.includes('EQUATORIAL')) {
-        var musimTropis = (month >= 4 && month <= 9) ? '☀️ Musim Kemarau' : '🌧️ Musim Hujan';
-        var namaZona = mapIklim[c] || c.replace(/_/g, ' ');
-        return `${namaZona} — <i>${musimTropis}</i>`;
-      }
-
-      if (mapIklim[c]) {
-        return mapIklim[c];
-      }
-      
-      return code.replace(/_/g, ' '); 
+      return mapIklim[c] || code.replace(/_/g, ' '); 
     }
 
     function translateWeatherCode(code) {
@@ -1024,25 +1071,13 @@ function loadVIPMessages() {
 
     function fetchLiveWeather(lat, lng, targetElementId) {
       if (!lat || !lng) return;
-      var url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`;
-      
-      fetch(url)
+      fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`)
         .then(r => r.json())
         .then(res => {
           if (res && res.current_weather) {
-            var temp = res.current_weather.temperature;
-            var wind = res.current_weather.windspeed;
-            var code = res.current_weather.weathercode;
-            var cond = translateWeatherCode(code);
             var el = document.getElementById(targetElementId);
             if (el) {
-              el.innerHTML = `
-                <div>
-                  <span style="font-size:15px; font-weight:bold; color:#fbbf24;">${temp}°C</span>
-                  <span style="font-size:12px; color:#cbd5e1; margin-left:6px;">${cond}</span>
-                </div>
-                <div style="font-size:10px; color:#94a3b8;">Angin: <b>${wind} km/h</b></div>
-              `;
+              el.innerHTML = `<div><span style="font-size:15px; font-weight:bold; color:#fbbf24;">${res.current_weather.temperature}°C</span><span style="font-size:12px; color:#cbd5e1; margin-left:6px;">${translateWeatherCode(res.current_weather.weathercode)}</span></div><div style="font-size:10px; color:#94a3b8;">Angin: <b>${res.current_weather.windspeed} km/h</b></div>`;
             }
           }
         })
@@ -1053,68 +1088,45 @@ function loadVIPMessages() {
     }
 
     function getColor(isoCode) {
-  var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-  if (!negara) return '#10b981';
+      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
+      if (!negara) return '#10b981';
 
-  // MODE 1: RISIKO KONFLIK (DEFAULT)
-  if (currentHeatmapMode === 'risk') {
-    if (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON') {
-      return '#ef4444'; // Merah
+      if (currentHeatmapMode === 'risk') {
+        if (negara.Status_Konflik === 'ON') return '#ef4444';
+        var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
+        if (newsForCountry.some(b => ((b.Threat_Level || "").toUpperCase() === 'HIGH'))) return '#ef4444';
+        if (newsForCountry.some(b => ((b.Threat_Level || "").toUpperCase() === 'MEDIUM'))) return '#f59e0b';
+        return '#10b981';
+      } else if (currentHeatmapMode === 'interest') {
+        var rateNum = parseFloat((negara.Suku_Bunga || "0").toString().replace('%', '').replace(',', '.')) || 0;
+        if (rateNum >= 10.0) return '#7f1d1d';
+        if (rateNum >= 6.0) return '#ef4444';
+        if (rateNum >= 3.5) return '#f59e0b';
+        return '#3b82f6';
+      } else if (currentHeatmapMode === 'inflation') {
+        var infNum = parseFloat((negara.Inflasi_YoY || "0").toString().replace('%', '').replace(',', '.')) || 0;  
+        if (infNum >= 10.0) return '#991b1b';
+        if (infNum >= 5.0) return '#ef4444';
+        if (infNum >= 3.0) return '#f59e0b';
+        return '#10b981';
+      }
+      return '#10b981';
     }
-    var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
-    if (newsForCountry.length > 0) {
-      if (newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'HIGH'))) return '#ef4444';
-      if (newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'MEDIUM'))) return '#f59e0b';
+
+    function changeHeatmapMode(mode) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var isPro = checkUserProActive(loggedUser);
+
+      if ((mode === 'risk' || mode === 'inflation') && !isPro) {
+        alert("🔒 Fitur visualisasi Risiko Konflik & Inflasi khusus untuk Member Pro Aktif!");
+        document.getElementById('heatmap-select').value = currentHeatmapMode;
+        openPaywallModal();
+        return;
+      }
+      currentHeatmapMode = mode;
+      if (mapGeoJsonLayer) mapGeoJsonLayer.setStyle(styleNegara);
+      if (sgpLayerInstance) sgpLayerInstance.setStyle({ fillColor: getColor('SGP') });
     }
-    return '#10b981'; // Hijau
-  } 
-
- // MODE 2: SUKU BUNGA ACUAN
-  else if (currentHeatmapMode === 'interest') {
-    var rateStr = (negara.Suku_Bunga || "0").toString().replace('%', '').replace(',', '.').trim();
-    var rateNum = parseFloat(rateStr) || 0;
-    if (rateNum >= 10.0) return '#7f1d1d'; // Merah Tua (>10%)
-    if (rateNum >= 6.0) return '#ef4444';  // Merah (6-10%)
-    if (rateNum >= 3.5) return '#f59e0b';  // Kuning/Oranye (3.5-6%)
-    return '#3b82f6';                      // Biru (<3.5%)
-  } 
-
-// MODE 3: INFLASI YOY
-  else if (currentHeatmapMode === 'inflation') {
-    var infStr = (negara.Inflasi_YoY || "0").toString().replace('%', '').replace(',', '.').trim();
-    var infNum = parseFloat(infStr) || 0;  
-    if (infNum >= 10.0) return '#991b1b'; // Merah Tua (>10%)
-    if (infNum >= 5.0) return '#ef4444';  // Merah (5-10%)
-    if (infNum >= 3.0) return '#f59e0b';  // Kuning (3-5%)
-    return '#10b981';                     // Hijau (<3%)
-  }
-
-  return '#10b981';
-}
-
-
-function changeHeatmapMode(mode) {
-  var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-  var isPro = checkUserProActive(loggedUser);
-
-  // Jika user coba pilih Risiko Konflik atau Inflasi tapi bukan Pro aktif
-  if ((mode === 'risk' || mode === 'inflation') && !isPro) {
-    alert("🔒 Fitur visualisasi Risiko Konflik & Inflasi khusus untuk Member Pro Aktif!");
-    document.getElementById('heatmap-select').value = currentHeatmapMode;
-    openPaywallModal();
-    return;
-  }
-
-  currentHeatmapMode = mode;
-  
-  if (mapGeoJsonLayer) {
-    mapGeoJsonLayer.setStyle(styleNegara);
-  }
-
-  if (sgpLayerInstance) {
-    sgpLayerInstance.setStyle({ fillColor: getColor('SGP') });
-  }
-}
 
     function styleNegara(feature) {
       return { fillColor: getColor(feature.id), weight: 1, opacity: 1, color: '#334155', fillOpacity: 0.85 };
@@ -1122,61 +1134,23 @@ function changeHeatmapMode(mode) {
 
     function onEachFeature(feature, layer) {
       var negara = dataMakro.find(n => n.Kode_ISO === feature.id);
-      
-            
       var centerLatLng = customCenters[feature.id] ? customCenters[feature.id] : layer.getBounds().getCenter();
       var weatherElemId = `popup-weather-${feature.id}`;
 
       if (negara) {
-        var tier3Tiny = [
-          "DOM", "JAM", "PRI", "BLZ", "SLV", "HND", "CRI", "PAN", "TTO", 
-          "SGP", "BHR", "CYP", "GEO", "ARM", "AZE", "BTN", "NPL", "BDI", "RWA", 
-          "TGO", "BEN", "SLE", "LBR", "GNB", "GNQ", "CHE", "AUT", "BEL", "NLD", 
-          "DNK", "CZE", "SVK", "HUN", "PRT", "GRC", "SRB", "HRV", "BIH", "SVN", 
-          "ALB", "MNE", "MKD", "BGR", "ROU", "BLR", "LTU", "LVA", "EST", "IRL", 
-          "ISR", "LBN", "JOR", "KWT", "QAT", "ARE", "OMN", "YEM", "LUX", "LKA",
-          "MDA", "BHS"
-        ];
-        
-        var tier2Medium = [
-          "GBR", "DEU", "ITA", "ESP", "UKR", "POL", "SWE", "NOR", "FIN", "VNM", 
-          "PHL", "MYS", "KOR", "PRK", "IRQ", "SYR", "TUN", "MAR", "CUB", "GTM", 
-          "NIC", "ECU", "BOL", "PRY", "URY", "VEN", "COL", "PER", "CHL", "FRA",
-          "HTI", "SUR", "GUY", "GIN"
-        ];
+        var countryTooltip = L.tooltip({ permanent: true, direction: 'center', className: 'country-label', opacity: 0.9 })
+          .setLatLng(centerLatLng)
+          .setContent(negara.Negara);
 
-        var zoomThreshold = 3; 
-        if (tier2Medium.includes(feature.id)) {
-          zoomThreshold = 5;
-        } else if (tier3Tiny.includes(feature.id)) {
-          zoomThreshold = 6;
-        }
-
-        var countryTooltip = L.tooltip({ 
-          permanent: true, 
-          direction: 'center', 
-          className: 'country-label', 
-          opacity: 0.9 
-        })
-        .setLatLng(centerLatLng)
-        .setContent(negara.Negara);
-
-        countryTooltip.zoomThreshold = zoomThreshold;
         countryLabelsLayerGroup.addLayer(countryTooltip);
 
         var lat = Array.isArray(centerLatLng) ? centerLatLng[0] : centerLatLng.lat;
         var lng = Array.isArray(centerLatLng) ? centerLatLng[1] : centerLatLng.lng;
-        
-        var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || '-';
 
         layer.bindPopup(`
           <div class="mini-dossier">
             <div class="mini-title">${escapeHtml(negara.Negara)}</div>
-
-            <div class="weather-live-box" id="${weatherElemId}">
-              <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-            </div>
-
+            <div class="weather-live-box" id="${weatherElemId}"><span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca...</span></div>
             <div class="mini-grid">
               <div class="mini-card"><div class="mini-label">GDP</div><div class="mini-value">${escapeHtml(negara.GDP_Nominal || '-')}</div></div>
               <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${escapeHtml(negara.Suku_Bunga || '-')}</div></div>
@@ -1190,7 +1164,6 @@ function changeHeatmapMode(mode) {
 
         layer.on('popupopen', function() {
           fetchLiveWeather(lat, lng, weatherElemId);
-          
           var btnEl = document.getElementById(`btn-dossier-${feature.id}`);
           if (btnEl) {
             var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
@@ -1203,80 +1176,14 @@ function changeHeatmapMode(mode) {
             }
           }
         });
-
-      } else {
-        layer.bindPopup("<b style='color:#fff;'>" + escapeHtml(feature.properties.name) + "</b><br/><span style='color:#94a3b8; font-size:11px;'>Data belum terdaftar.</span>");
       }
     }
 
     function addMicroStates() {
       var negaraSGP = dataMakro.find(n => n.Kode_ISO === 'SGP');
       if (!negaraSGP) return;
-
-      var lat = 1.3521;
-      var lng = 103.8198;
-      var weatherElemId = `popup-weather-SGP`;
-
-      sgpLayerInstance = L.circleMarker([lat, lng], {
-        radius: 6,
-        fillColor: getColor('SGP'),
-        color: '#ffffff',
-        weight: 1.5,
-        opacity: 1,
-        fillOpacity: 0.95
-      }).addTo(map);
-
-      var sgpTooltip = L.tooltip({
-        permanent: true,
-        direction: 'top',
-        className: 'country-label',
-        opacity: 0.9
-      })
-      .setLatLng([lat, lng])
-      .setContent(negaraSGP.Negara);
-
-      sgpTooltip.zoomThreshold = 6;
-      countryLabelsLayerGroup.addLayer(sgpTooltip);
-
-      var pengangguranVal = negaraSGP.Tingkat_Pengangguran || negaraSGP.Pengangguran_Pct || '-';
-
-      
-sgpLayerInstance.bindPopup(`
-        <div class="mini-dossier">
-          <div class="mini-title">${escapeHtml(negaraSGP.Negara)}</div>
-
-          <div class="weather-live-box" id="${weatherElemId}">
-            <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-          </div>
-
-          <div class="mini-grid">
-            <div class="mini-card"><div class="mini-label">GDP</div><div class="mini-value">${escapeHtml(negaraSGP.GDP_Nominal || '-')}</div></div>
-            <div class="mini-card"><div class="mini-label">SUKU BUNGA</div><div class="mini-value">${escapeHtml(negaraSGP.Suku_Bunga || '-')}</div></div>
-            <div class="mini-card"><div class="mini-label">INFLASI</div><div class="mini-value">${escapeHtml(negaraSGP.Inflasi_YoY || '-')}</div></div>
-          </div>
-          <p style="margin:4px 0; font-size:11px;"><strong>Ekspor:</strong> ${escapeHtml(negaraSGP.Keunggulan_Ekspor || '-')}</p>
-          <p style="margin:4px 0; font-size:11px;"><strong>Impor:</strong> ${escapeHtml(negaraSGP.Kebutuhan_Impor || '-')}</p>
-          <button id="btn-dossier-SGP" class="btn-news" onclick="handleDossierAccess('SGP', ${lat}, ${lng})">🔒 Akses Informasi Penuh</button>
-        </div>
-      `, { maxWidth: 300 });
-
-      sgpLayerInstance.on('popupopen', function() {
-        fetchLiveWeather(lat, lng, weatherElemId);
-        
-        var btnEl = document.getElementById("btn-dossier-SGP");
-        if (btnEl) {
-          var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-          if (checkUserProActive(loggedUser)) {
-            btnEl.innerHTML = "📂 Buka Intelijen Lengkap";
-            btnEl.style.background = "#0284c7";
-          } else {
-            btnEl.innerHTML = "🔒 Akses Informasi Penuh";
-            btnEl.style.background = "#d97706";
-          }
-        }
-      });
-
-
+      var lat = 1.3521, lng = 103.8198;
+      sgpLayerInstance = L.circleMarker([lat, lng], { radius: 6, fillColor: getColor('SGP'), color: '#ffffff', weight: 1.5, fillOpacity: 0.95 }).addTo(map);
     }
 
     function handleSearchInput() {
@@ -1285,33 +1192,17 @@ sgpLayerInstance.bindPopup(`
       if (!query || query.length < 2) { resultsContainer.style.display = 'none'; return; }
 
       var itemsHtml = ''; var found = 0;
-
-      dataMakro.filter(n => (n.Negara && n.Negara.toLowerCase().includes(query)) || (n.Kode_ISO && n.Kode_ISO.toLowerCase().includes(query))).forEach(n => {
+      dataMakro.filter(n => (n.Negara && n.Negara.toLowerCase().includes(query))).forEach(n => {
         found++;
-        itemsHtml += `<div class="search-result-item" onclick="selectSearchCountry('${n.Kode_ISO}')"><span class="ticker-country">[${escapeHtml(n.Kode_ISO)}]</span> <strong>${escapeHtml(n.Negara)}</strong> (Dossier Makro)</div>`;
+        itemsHtml += `<div class="search-result-item" onclick="selectSearchCountry('${n.Kode_ISO}')">[${escapeHtml(n.Kode_ISO)}] <strong>${escapeHtml(n.Negara)}</strong></div>`;
       });
 
-      databasePerairan.filter(p => (p.Nama && p.Nama.toLowerCase().includes(query)) || (p.Kategori && p.Kategori.toLowerCase().includes(query))).forEach(p => {
-        found++;
-        itemsHtml += `<div class="search-result-item" onclick="selectSearchPerairan('${escapeHtml(p.Nama)}')"><span style="color:#38bdf8; font-weight:bold;">[${escapeHtml(p.Kategori)}]</span> <strong>${escapeHtml(p.Nama)}</strong> (Analisis Jalur Dagang)</div>`;
-      });
-
-      dataNews.filter(b => (b.Judul_Berita && b.Judul_Berita.toLowerCase().includes(query)) || (b.Ringkasan_Berita && b.Ringkasan_Berita.toLowerCase().includes(query))).slice().reverse().slice(0, 5).forEach(b => {
-        found++;
-        itemsHtml += `<div class="search-result-item" onclick="selectSearchNews('${escapeHtml(b.Kode_ISO || "GLOBAL")}')"><span class="ticker-country">[${escapeHtml(b.Negara || "GLOBAL")}]</span> ${escapeHtml(b.Judul_Berita)}</div>`;
-      });
-
-      resultsContainer.innerHTML = found > 0 ? itemsHtml : `<div class="search-result-item" style="cursor:default; color:#94a3b8;">Tidak ada hasil untuk "${escapeHtml(query)}"</div>`;
+      resultsContainer.innerHTML = found > 0 ? itemsHtml : `<div class="search-result-item" style="color:#94a3b8;">Tidak ada hasil</div>`;
       resultsContainer.style.display = 'block';
     }
 
     function selectSearchCountry(isoCode) {
       document.getElementById('search-results').style.display = 'none';
-      if (isoCode === 'SGP' && sgpLayerInstance) {
-        map.setView([1.3521, 103.8198], 7, { animate: true, duration: 1.5 });
-        setTimeout(() => { sgpLayerInstance.openPopup(); }, 1500);
-        return;
-      }
       if (!mapGeoJsonLayer) return;
       mapGeoJsonLayer.eachLayer(layer => {
         if (layer.feature && layer.feature.id === isoCode) {
@@ -1321,133 +1212,42 @@ sgpLayerInstance.bindPopup(`
       });
     }
 
-    function selectSearchPerairan(namaPerairan) {
-      document.getElementById('search-results').style.display = 'none';
-      var item = databasePerairan.find(p => p.Nama && p.Nama.toLowerCase() === namaPerairan.toLowerCase());
-      if (!item) return;
-
-      var latVal = parseFloat(item.Lat) || 0;
-      var lngVal = parseFloat(item.Lng) || 0;
-
-      map.setView([latVal, lngVal], 6, { animate: true, duration: 1.5 });
-      setTimeout(() => { openPerairanModal(item); }, 1500);
-    }
-
-    function selectSearchNews(isoCode) {
-      document.getElementById('search-results').style.display = 'none';
-      if (isoCode === "GLOBAL") { openGlobalModal(); return; }
-      selectSearchCountry(isoCode);
-      setTimeout(() => { openModal(isoCode); }, 1500);
-    }
-
-    function openPerairanModal(item) {
-      var modalWeatherElemId = `modal-weather-perairan`;
-      var modalBody = document.getElementById('modal-body');
-
-      var latVal = parseFloat(item.Lat) || 0;
-      var lngVal = parseFloat(item.Lng) || 0;
-
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">🌊 DOSSIER STRATEGIS MARITIM: ${escapeHtml(item.Nama)}</h2>
-        
-        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
-          <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Kategori Geopolitik:</span>
-          <span style="font-size: 11px; font-weight: bold; color: #38bdf8; background: rgba(56, 189, 248, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #38bdf8;">⚓ ${escapeHtml(item.Kategori)}</span>
-        </div>
-
-        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
-          <div style="margin-bottom: 6px;">📍 <strong>Deskripsi Wilayah:</strong> ${escapeHtml(item.Deskripsi)}</div>
-          <div style="font-size: 11px; color: #cbd5e1;">Koordinat Utama: <b>Lat ${latVal}, Lng ${lngVal}</b></div>
-        </div>
-
-        <div class="dossier-section-title">🚢 ANALISIS RUTE & DAMPAK PERDAGANGAN INTERNASIONAL</div>
-        
-        <div class="news-card" style="border-left: 4px solid #fbbf24; margin-bottom: 10px;">
-          <h4 class="news-title" style="color:#fbbf24; margin-bottom:4px;">🧭 Apakah Ini Rute Pelayaran yang Ideal?</h4>
-          <p class="news-desc">${escapeHtml(item.Rute_Ideal)}</p>
-        </div>
-
-        <div class="news-card" style="border-left: 4px solid #ef4444; margin-bottom: 10px;">
-          <h4 class="news-title" style="color:#ef4444; margin-bottom:4px;">⚠️ Dampak Konflik & Penutupan terhadap Jalur Perdagangan</h4>
-          <p class="news-desc">${escapeHtml(item.Dampak_Perdagangan)}</p>
-        </div>
-
-        <div class="news-card" style="border-left: 4px solid #10b981; margin-bottom: 12px;">
-          <h4 class="news-title" style="color:#10b981; margin-bottom:4px;">⚡ Efisiensi Biaya Logistik & Bahan Bakar</h4>
-          <p class="news-desc">${escapeHtml(item.Efisiensi_Biaya)}</p>
-        </div>
-
-        <div class="dossier-section-title">🌍 CUACA REAL-TIME DI TITIK KUNCI</div>
-        <div class="weather-live-box" id="${modalWeatherElemId}">
-          <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-        </div>
-      `;
-
-      document.getElementById('news-modal').style.display = 'flex';
-      fetchLiveWeather(latVal, lngVal, modalWeatherElemId);
-    }
-
-    function openAllNewsArchive() {
-      var modalBody = document.getElementById('modal-body');
-      var listBerita = [...dataNews].reverse(); 
-      var beritaHtml = "";
-
-      if (listBerita.length > 0) {
-        listBerita.forEach(b => {
-          let link = (b.Link_Berita || "").trim();
-          if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-          
-          var threat = (b.Threat_Level || "LOW").toUpperCase();
-          var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
-          var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
-          var country = b.Negara || "GLOBAL";
-
-          beritaHtml += `
-            <div class="news-card" style="${border}">
-              <div class="news-header-flex">
-                <h4 class="news-title"><span class="ticker-country">[${escapeHtml(country)}]</span> ${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>
-                ${tag}
-              </div>
-              <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
-              ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
-            </div>
-          `;
-        });
-      } else {
-        beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP</h4><p class="news-desc">Belum ada data berita yang termuat di sistem.</p></div>`;
+    function handleDossierAccess(isoCode, lat, lng) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!loggedUser || !loggedUser.token) {
+        openPaywallModal();
+        return;
       }
 
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">📰 REKAPITULASI SEMUA ARSIP BERITA & INTELIJEN</h2>
-        <div class="risk-box">Menampilkan seluruh daftar berita geopolitik dan ekonomi global. Artikel terbaru otomatis tersusun di urutan paling atas. Total arsip aktif: <b>${listBerita.length} berita</b>.</div>
-        ${beritaHtml}
-      `;
+      var btn = document.getElementById(`btn-dossier-${isoCode}`);
+      if(btn) btn.innerText = "⏳ Meminta Data Server...";
 
-      document.getElementById('news-modal').style.display = 'flex';
-    }
-
-    function openModal(isoCode, lat, lng) {
-      if (isoCode === "GLOBAL") { openGlobalModal(); return; }
-
-      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-      if (!negara) return;
-// AUTO-LOOKUP KOORDINAT JIKA LAT/LNG TIDAK DIPASSING
-  if (!lat || !lng) {
-    if (customCenters[isoCode]) {
-      lat = customCenters[isoCode][0];
-      lng = customCenters[isoCode][1];
-    } else if (mapGeoJsonLayer) {
-      mapGeoJsonLayer.eachLayer(layer => {
-        if (layer.feature && layer.feature.id === isoCode) {
-          var c = layer.getBounds().getCenter();
-          lat = c.lat;
-          lng = c.lng;
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "getDossier",
+          email: loggedUser.email,
+          token: loggedUser.token,
+          isoCode: isoCode
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if(btn) btn.innerText = "📂 Buka Intelijen Lengkap";
+        if (res && res.status === "success" && res.dossier) {
+          renderFullDossierModal(res.dossier, lat, lng);
+        } else {
+          openPaywallModal();
         }
+      })
+      .catch(e => {
+        if(btn) btn.innerText = "📂 Buka Intelijen Lengkap";
+        alert("❌ KONEKSI GAGAL: Terjadi gangguan jaringan.");
       });
     }
-  }
 
-      var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode).reverse();
+    function renderFullDossierModal(negara, lat, lng) {
+      var listBerita = dataNews.filter(b => b.Kode_ISO === negara.Kode_ISO).reverse();
       var beritaHtml = "";
 
       if (listBerita.length > 0) {
@@ -1458,137 +1258,64 @@ sgpLayerInstance.bindPopup(`
           var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
           var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
 
-          beritaHtml += `
-            <div class="news-card" style="${border}">
-              <div class="news-header-flex"><h4 class="news-title">${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>${tag}</div>
-              <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
-              ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
-            </div>
-          `;
+          beritaHtml += `<div class="news-card" style="${border}"><div class="news-header-flex"><h4 class="news-title">${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>${tag}</div><p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}</div>`;
         });
       } else {
         beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU AKTIF</h4><p class="news-desc">Belum ada laporan krisis mendesak untuk wilayah ini.</p></div>`;
       }
 
-      var modalWeatherElemId = `modal-weather-${isoCode}`;
+      var modalWeatherElemId = `modal-weather-${negara.Kode_ISO}`;
       var modalBody = document.getElementById('modal-body');
-      var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
-      var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
 
       modalBody.innerHTML = `
-        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>
-        
-        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
-          <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
-          ${isConflict 
-            ? '<span style="font-size: 11px; font-weight: bold; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444;">⚔️ KONFLIK AKTIF / WASPADA</span>' 
-            : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
-        </div>
-
-       <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
+        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM PRO: ${escapeHtml(negara.Negara)}</h2>
+        <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
           <div style="margin-bottom: 4px;">📌 <strong>Status Musim & Iklim:</strong> <span style="color:#fbbf24; font-weight:bold;">${formatZonaIklim(negara.Tipe_Zona_Iklim)}</span></div>
           <div style="margin-bottom: 4px;">🔗 <strong>Korelasi Rantai Pasok:</strong> ${escapeHtml(negara.Korelasi_Rantai_Pasok || '-')}</div>
-          <div style="margin-bottom: 4px;">📍 <strong>Region Acuan:</strong> ${escapeHtml(negara.Region_Acuan || negara.Catatan_Geografi || '-')}</div>
         </div>
-       
-
-        <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
+        <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO MENDALAM</div>
         <div class="macro-grid-4card">
-          <div class="macro-card">
-            <div class="macro-label">PDB (GDP) NOMINAL</div>
-            <div class="macro-val-main">${escapeHtml(negara.GDP_Nominal || 'N/A')}</div>
-            <div class="macro-val-sub">YoY: <strong>${escapeHtml(negara.GDP_YoY || '-')}</strong> | QoQ: <strong>${escapeHtml(negara.GDP_QoQ || '-')}</strong></div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">INFLASI (CPI)</div>
-            <div class="macro-val-main">${escapeHtml(negara.Inflasi_YoY || 'N/A')} <span style="font-size:10px; color:#94a3b8;">YoY</span></div>
-            <div class="macro-val-sub">MoM: <strong>${escapeHtml(negara.Inflasi_MoM || '-')}</strong></div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">SUKU BUNGA ACUAN</div>
-            <div class="macro-val-main">${escapeHtml(negara.Suku_Bunga || 'N/A')}</div>
-            <div class="macro-val-sub">Acuan Bank Sentral</div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">PENGANGGURAN</div>
-            <div class="macro-val-main" style="color:#f59e0b;">${escapeHtml(pengangguranVal)}</div>
-            <div class="macro-val-sub">Tingkat Tenaga Kerja</div>
-          </div>
+          <div class="macro-card"><div class="macro-label">PDB (GDP) NOMINAL</div><div class="macro-val-main">${escapeHtml(negara.GDP_Nominal || 'N/A')}</div></div>
+          <div class="macro-card"><div class="macro-label">INFLASI (CPI)</div><div class="macro-val-main">${escapeHtml(negara.Inflasi_YoY || 'N/A')}</div></div>
+          <div class="macro-card"><div class="macro-label">SUKU BUNGA ACUAN</div><div class="macro-val-main">${escapeHtml(negara.Suku_Bunga || 'N/A')}</div></div>
+          <div class="macro-card"><div class="macro-label">PENGANGGURAN</div><div class="macro-val-main" style="color:#f59e0b;">${escapeHtml(negara.Tingkat_Pengangguran || '-')}</div></div>
         </div>
-
-        <div class="dossier-section-title">👥 DEMOGRAFI & STRUKTUR KELAS SOSIAL</div>
-        <div class="demo-grid">
-          <div class="demo-card">
-            <div class="macro-label">KEMISKINAN</div>
-            <div class="macro-val-main" style="color:#ef4444;">${escapeHtml(negara.Kemiskinan_Pct || 'N/A')}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">KELAS MENENGAH</div>
-            <div class="macro-val-main" style="color:#38bdf8;">${escapeHtml(negara.Kelas_Menengah_Pct || 'N/A')}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">KELAS ATAS / KAYA</div>
-            <div class="macro-val-main" style="color:#fbbf24;">${escapeHtml(negara.Kelas_Atas_Pct || 'N/A')}</div>
-          </div>
-        </div>
-
         <div class="dossier-section-title">🌍 CUACA REAL-TIME STASIUN TERDEKAT</div>
-        <div class="weather-live-box" id="${modalWeatherElemId}">
-          <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-        </div>
-
-        <div class="risk-box">
-          <strong style="color:#fbbf24;">⚠️ REALITA SOSIAL & RISIKO LAPANGAN:</strong><br>
-          ${escapeHtml(negara.Realita_Sosial || 'Data analisis sosial tidak tersedia.')}
-        </div>
-
+        <div class="weather-live-box" id="${modalWeatherElemId}"><span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span></div>
+        <div class="risk-box"><strong style="color:#fbbf24;">⚠️ REALITA SOSIAL & RISIKO LAPANGAN (TERPROTEKSI SERVER):</strong><br>${escapeHtml(negara.Realita_Sosial || 'Analisis terenkripsi.')}</div>
         <div class="dossier-section-title">📰 ARSIP BERITA & ISU STRATEGIS TERKINI</div>
         ${beritaHtml}
       `;
 
       document.getElementById('news-modal').style.display = 'flex';
-
-      if (lat && lng) {
-        fetchLiveWeather(lat, lng, modalWeatherElemId);
-      }
+      if (lat && lng) fetchLiveWeather(lat, lng, modalWeatherElemId);
     }
 
-    function openGlobalModal() {
-      var listBerita = dataNews.filter(b => b.Kode_ISO === "GLOBAL").reverse();
-      var beritaHtml = "";
-      listBerita.forEach(b => {
-        let link = (b.Link_Berita || "").trim();
-        if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-        beritaHtml += `
-          <div class="news-card" style="border-left: 4px solid #38bdf8;">
-            <div class="news-header-flex"><h4 class="news-title">${escapeHtml(b.Judul_Berita)}</h4></div>
-            <p class="news-desc">${escapeHtml(b.Ringkasan_Berita)}</p>
-            ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel &rarr;</a>` : ''}
+    function openPaywallModal() {
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <div class="modal-box-center" style="padding: 10px;">
+          <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
+          <h2 class="modal-header-title" style="border:none; text-align:center; color:#38bdf8;">Akses Informasi Penuh Terkunci</h2>
+          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 20px;">
+            Fitur intelijen ini terverifikasi secara ketat di server.<br>Silakan masuk ke akun Anda atau berlangganan paket Pro untuk membuka akses.
+          </p>
+          <div style="display: flex; gap: 10px; flex-direction: column;">
+            <button class="btn-action" style="background: #0284c7; padding: 12px; font-size: 13px;" onclick="closeModal(); toggleDrawer();">🔑 Masuk Akun</button>
+            <button class="btn-action" style="background: #10b981; padding: 12px; font-size: 13px; margin:0;" onclick="closeModal(); openPaymentModalFromOutside();">💳 Berlangganan Paket PRO</button>
           </div>
-        `;
-      });
-
-      document.getElementById('modal-body').innerHTML = `
-        <h2 class="modal-header-title">🌐 LAPORAN INTELIJEN MAKRO GLOBAL</h2>
-        <div class="risk-box">Isu makroekonomi global, komoditas, dan perdagangan internasional.</div>
-        ${beritaHtml || '<p>Tidak ada berita global.</p>'}
+        </div>
       `;
       document.getElementById('news-modal').style.display = 'flex';
     }
 
-    function closeModal() { 
-      document.getElementById('news-modal').style.display = 'none'; 
-      if (chatInterval) clearInterval(chatInterval);
-    }
-// HELPER PARSER TANGGAL FORMAT HARIAN / ISO
+    function openPaymentModalFromOutside() { toggleDrawer(); openPaymentModal(); }
+    function closeModal() { document.getElementById('news-modal').style.display = 'none'; if (chatInterval) clearInterval(chatInterval); }
+
     function parseEventDate(val) {
       if (!val) return null;
       if (val instanceof Date) return val;
       var str = String(val).trim();
-      if (str.includes('-')) {
-        var d = new Date(str.replace(/-/g, '/'));
-        if (!isNaN(d.getTime())) return d;
-      }
       var parts = str.split(/[\/\s:-]/);
       if (parts.length >= 3) {
         var day = parseInt(parts[0], 10);
@@ -1596,211 +1323,14 @@ sgpLayerInstance.bindPopup(`
         var year = parseInt(parts[2], 10);
         if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
           if (year < 100) year += 2000;
-          var hour = parts[3] ? parseInt(parts[3], 10) : 0;
-          var min = parts[4] ? parseInt(parts[4], 10) : 0;
-          return new Date(year, month, day, hour, min);
+          return new Date(year, month, day);
         }
       }
       var fallback = new Date(str);
       return isNaN(fallback.getTime()) ? null : fallback;
     }
 
-   function formatTimeDiff(diff) {
-      if (diff <= 0) return `<span class="event-time-highlight" style="color:#ef4444;">SEDANG BERLANGSUNG / RILIS!</span>`;
-      
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      var hStr = hours < 10 ? "0" + hours : hours;
-      var mStr = minutes < 10 ? "0" + minutes : minutes;
-      var sStr = seconds < 10 ? "0" + seconds : seconds;
-
-      if (days > 0) {
-        return `<span class="event-time-highlight">${days} Hari ${hStr}j ${mStr}m ${sStr}d</span>`;
-      } else {
-        return `<span class="event-time-highlight">${hStr}j ${mStr}m ${sStr}d</span>`;
-      }
-    }
-
-    // ENGINE COUNTDOWN TICKER REAL-TIME (FILTER 7 HARI & RUNNING TEXT)
-    function initCountdownTicker(calendarData) {
-      var container = document.getElementById('event-ticker-content');
-      if (!container) return;
-
-      if (!calendarData || calendarData.length === 0) {
-        container.innerHTML = '<span style="color:#94a3b8;">Tidak ada kalender event terdaftar.</span>';
-        return;
-      }
-
-      var now = new Date().getTime();
-      var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-
-      // Filter: Bintang 3 + Belum Lewat + Maksimal 7 Hari ke Depan
-      var upcomingEvents = calendarData.filter(function(item) {
-        var star = String(item.Dampak_Star || item.dampak_star || "").trim();
-        if (star !== "3") return false;
-
-        var rawDate = item.Tanggal_Waktu || item.tanggal_waktu || "";
-        var dateObj = parseEventDate(rawDate);
-        if (!dateObj) return false;
-
-        var diff = dateObj.getTime() - now;
-        return diff > 0 && diff <= sevenDaysMs;
-      });
-
-      if (upcomingEvents.length === 0) {
-        container.innerHTML = '<span style="color:#10b981;">🟢 Tidak ada event ⭐⭐⭐ dalam 7 hari ke depan.</span>';
-        return;
-      }
-
-      upcomingEvents.sort(function(a, b) {
-        var dateA = parseEventDate(a.Tanggal_Waktu || a.tanggal_waktu).getTime();
-        var dateB = parseEventDate(b.Tanggal_Waktu || b.tanggal_waktu).getTime();
-        return dateA - dateB;
-      });
-
-      if (tickerCountdownInterval) clearInterval(tickerCountdownInterval);
-
-      function updateCountdown() {
-        var currentTime = new Date().getTime();
-        var htmlParts = [];
-
-        upcomingEvents.forEach(function(target) {
-          var targetTime = parseEventDate(target.Tanggal_Waktu || target.tanggal_waktu).getTime();
-          var diff = targetTime - currentTime;
-
-          var forecastInfo = target.Forecast ? ` (Est: ${escapeHtml(target.Forecast)})` : '';
-          var iso = target.Kode_ISO ? `[${escapeHtml(target.Kode_ISO)}] ` : '';
-          var timeText = formatTimeDiff(diff);
-
-          htmlParts.push(`<span><b style="color:#38bdf8;">${iso}${escapeHtml(target.Judul_Event)}</b>${forecastInfo} rilis dalam ${timeText}</span>`);
-        });
-
-        container.innerHTML = htmlParts.join(' &nbsp;&nbsp;&bull;&nbsp;&nbsp; ');
-      }
-
-      updateCountdown();
-      tickerCountdownInterval = setInterval(updateCountdown, 1000);
-    }
-    function renderTicker(newsList) {
-      var tickerContent = document.getElementById('ticker-content');
-      if (!newsList || newsList.length === 0) return;
-      var html = "";
-      newsList.slice(-12).reverse().forEach(b => {
-        var country = b.Negara || "GLOBAL";
-        var title = b.Judul_Berita || "Tanpa Judul";
-        var link = (b.Link_Berita || "").trim();
-        if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-        if (link && link !== "#") {
-          html += `<a href="${escapeHtml(link)}" target="_blank" class="ticker-item"><span class="ticker-country">[${escapeHtml(country)}]</span> ${escapeHtml(title)}</a> &bull; `;
-        } else {
-          html += `<span class="ticker-item" onclick="openModal('${escapeHtml(b.Kode_ISO || "GLOBAL")}')"><span class="ticker-country">[${escapeHtml(country)}]</span> ${escapeHtml(title)}</span> &bull; `;
-        }
-      });
-      tickerContent.innerHTML = html;
-    }
-
-    function addStrategicPoints() {
-      seaLabelsLayerGroup.clearLayers();
-
-      var perairanDunia = [
-        {name:"Laut Tiongkok Selatan", lat:14.0, lng:113.0},
-        {name:"Laut Tiongkok Timur", lat:29.0, lng:125.0},
-        {name:"Laut Jepang", lat:40.0, lng:135.0},
-        {name:"Laut Kuning", lat:35.0, lng:123.0},
-        {name:"Laut Filipina", lat:20.0, lng:130.0},
-        {name:"Laut Okhotsk", lat:53.0, lng:150.0},
-        {name:"Laut Bering", lat:58.0, lng:-175.0},
-        {name:"Laut Lakadewa", lat:10.0, lng:74.0},
-        {name:"Laut Andaman", lat:10.0, lng:95.0},
-        {name:"Tlk. Benggala", lat:15.0, lng:88.0},
-        {name:"Tlk. Thailand", lat:9.5, lng:101.5},
-        {name:"Laut Jawa", lat:-5.0, lng:112.0},
-        {name:"Laut Sulawesi", lat:3.0, lng:122.0},
-        {name:"Laut Banda", lat:-6.0, lng:127.0},
-        {name:"Laut Arafura", lat:-9.0, lng:135.0},
-        {name:"Laut Timor", lat:-10.5, lng:126.0},
-        {name:"Laut Kaspia", lat:41.5, lng:51.0},
-        {name:"Laut Merah", lat:20.0, lng:38.5},
-        {name:"Laut Arab", lat:16.0, lng:64.0},
-        {name:"Teluk Persia", lat:27.0, lng:51.0},
-        {name:"Tlk. Aden", lat:12.5, lng:48.0},
-        {name:"Tlk. Oman", lat:24.5, lng:58.5},
-        {name:"Tlk. Guinea", lat:1.0, lng:2.0},
-        {name:"Laut Hitam", lat:43.5, lng:34.0},
-        {name:"Laut Azov", lat:46.0, lng:37.0},
-        {name:"Laut Mediterania", lat:35.0, lng:18.0},
-        {name:"Laut Baltik", lat:57.0, lng:20.0},
-        {name:"Laut Utara", lat:56.0, lng:3.0},
-        {name:"Laut Barents", lat:75.0, lng:40.0},
-        {name:"Laut Ionia", lat:38.0, lng:19.0},
-        {name:"Laut Adriatik", lat:42.5, lng:15.5},
-        {name:"Tlk. Biskaya", lat:45.0, lng:-4.0},
-        {name:"Laut Karibia", lat:15.0, lng:-75.0},
-        {name:"Tlk. Meksiko", lat:25.0, lng:-90.0},
-        {name:"Laut Labrador", lat:60.0, lng:-55.0},
-        {name:"Tlk. Hudson", lat:60.0, lng:-85.0},
-        {name:"Selat Hormuz", lat:26.5, lng:56.3},
-        {name:"Terusan Suez", lat:30.6, lng:32.3},
-        {name:"Selat Malaka", lat:3.0, lng:101.5},
-        {name:"Selat Bab el-Mandeb", lat:12.6, lng:43.3},
-        {name:"Selat Gibraltar", lat:35.9, lng:-5.5},
-        {name:"Terusan Panama", lat:9.1, lng:-79.7},
-        {name:"Selat Taiwan", lat:24.0, lng:119.5},
-        {name:"Selat Bosporus", lat:41.1, lng:29.0},
-        {name:"Sungai Merah", lat:20.8, lng:106.5},
-        {name:"Sungai Dnieper", lat:47.5, lng:34.5},
-        {name:"Sungai Nil", lat:26.0, lng:32.8},
-        {name:"Sungai Mekong", lat:10.5, lng:105.2}
-      ];
-
-      perairanDunia.forEach(function(p) {
-        var label = L.tooltip({
-          permanent: true,
-          direction: 'center',
-          className: 'sea-label'
-        })
-        .setLatLng([p.lat, p.lng])
-        .setContent(p.name);
-        
-        seaLabelsLayerGroup.addLayer(label);
-      });
-    }
-
-    function checkZoomAndToggleLabels() {
-      var currentZoom = map.getZoom();
-
-      countryLabelsLayerGroup.eachLayer(function(layer) {
-        var thres = layer.zoomThreshold || 3;
-        if (currentZoom >= thres) {
-          if (!map.hasLayer(layer)) layer.addTo(map);
-        } else {
-          if (map.hasLayer(layer)) map.removeLayer(layer);
-        }
-      });
-
-      if (currentZoom >= 5) {
-        if (!map.hasLayer(seaLabelsLayerGroup)) {
-          map.addLayer(seaLabelsLayerGroup);
-        }
-      } else {
-        if (map.hasLayer(seaLabelsLayerGroup)) {
-          map.removeLayer(seaLabelsLayerGroup);
-        }
-      }
-    }
-
-    function addOceanLabels() {
-      [{name:"Samudra Pasifik", lat:0, lng:-150}, {name:"Samudra Atlantik", lat:20, lng:-35}, {name:"Samudra Hindia", lat:-15, lng:75}]
-      .forEach(o => {
-        L.tooltip({permanent: true, direction: 'center', className: 'ocean-label'}).setLatLng([o.lat, o.lng]).setContent(o.name).addTo(map);
-      });
-    }
-
-    map.on('zoomend', checkZoomAndToggleLabels);
-
+    // INITIALIZATION
     fetch(apiUrl)
       .then(r => r.json())
       .then(data => {
@@ -1809,84 +1339,12 @@ sgpLayerInstance.bindPopup(`
           dataNews = data.dataNews || [];
           dataConfig = data.dataConfig || [];
           databasePerairan = data.dataPerairan || []; 
-dataCalendar = data.dataCalendar || []; 
+          dataCalendar = data.dataCalendar || []; 
 
-          // Jalankan countdown ticker saat data diterima
-          initCountdownTicker(dataCalendar); // <--- TAMBAHAN
-
-          // 1. Ekstrak data config dulu sampai selesai
-          var configObj = {};
-          dataConfig.forEach(item => {
-            if (item.Parameter) configObj[item.Parameter.trim()] = item.Value ? item.Value.trim() : "";
-          });
-
-          // 2. Baru eksekusi logic sakelar (DI LUAR forEach)
-          var modeMarket = (configObj.Market_Live_Mode || "ON").toUpperCase();
-          var pesanMarket = configObj.Market_Live_Message || "Fitur Market Live sedang diistirahatkan sementara.";
-          var marketContainer = document.getElementById('market-ticker-container');
-
-          if (marketContainer) {
-            if (modeMarket === 'OFF') {
-              marketContainer.innerHTML = `
-                <div class="market-badge">📈 MARKET LIVE</div>
-                <div class="market-wrap">
-                  <div class="market-move">
-                    <span>${escapeHtml(pesanMarket)}</span>
-                  </div>
-                </div>
-              `;
-            } else {
-              marketContainer.innerHTML = `
-                <div class="market-badge">📈 MARKET LIVE</div>
-                <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
-                  <div class="tradingview-widget-container__widget"></div>
-                </div>
-              `;
-              
-              var widgetContainer = marketContainer.querySelector('.tradingview-widget-container');
-              var tvScript = document.createElement('script');
-              tvScript.type = 'text/javascript';
-              tvScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
-              tvScript.async = true;
-              tvScript.text = JSON.stringify({
-                "symbols": [
-                  { "proName": "TVC:USOIL", "title": "Minyak WTI" },
-                  { "proName": "TVC:UKOIL", "title": "Minyak Brent" },
-                  { "proName": "TVC:GOLD", "title": "Emas (XAU/USD)" },
-                  { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
-                  { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin (BTC)" },
-                  { "proName": "FX_IDC:USDIDR", "title": "USD/IDR" }
-                ],
-                "showSymbolLogo": true,
-                "isTransparent": true,
-                "displayMode": "adaptive",
-                "colorTheme": "dark",
-                "locale": "id"
-              });
-              widgetContainer.appendChild(tvScript);
-            }
-          }
-
-          if (configObj.Maintenance_Mode && configObj.Maintenance_Mode.toUpperCase() === 'ON') {
-            var mDesc = document.getElementById('maintenance-desc');
-            var mRow = dataConfig.find(item => item.Parameter === "Maintenance_Mode");
-            if (mRow && mRow.Keterangan) {
-              mDesc.innerText = mRow.Keterangan;
-            }
-            document.getElementById('maintenance-screen').style.display = 'flex';
-            document.getElementById('notice-modal').style.display = 'none';
-            return null;
-          }
-
-          if (configObj.Alert_Message && configObj.Alert_Message !== "(Kosong)" && configObj.Alert_Message !== "") {
-            var alertBanner = document.getElementById('alert-banner');
-            alertBanner.innerText = "📢 " + configObj.Alert_Message;
-            alertBanner.style.display = 'block';
-            document.getElementById('search-container').style.top = '108px';
-            document.getElementById('menu-toggle-btn').style.top = '108px';
-          }
-
-          renderTicker(dataNews);
+          renderNewsTicker();
+          renderMarketTicker();
+          renderEventTicker();
+          renderSeaLabels();
         }
         return fetch(geojsonUrl);
       })
@@ -1895,45 +1353,8 @@ dataCalendar = data.dataCalendar || [];
         if (!geo) return;
         mapGeoJsonLayer = L.geoJson(geo, { style: styleNegara, onEachFeature: onEachFeature }).addTo(map);
         addMicroStates(); 
-        addStrategicPoints();
-        addOceanLabels();
-        checkZoomAndToggleLabels(); 
       })
       .catch(e => console.error('Error:', e));
-
-    function handleDossierAccess(isoCode, lat, lng) {
-      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-      
-      if (checkUserProActive(loggedUser)) {
-        openModal(isoCode, lat, lng);
-      } else {
-        openPaywallModal();
-      }
-    }
-
-    function openPaywallModal() {
-      var modalBody = document.getElementById('modal-body');
-      modalBody.innerHTML = `
-        <div class="modal-box-center" style="padding: 10px;">
-          <div style="font-size: 40px; margin-bottom: 10px;">🔒</div>
-          <h2 class="modal-header-title" style="border:none; text-align:center; color:#38bdf8;">Akses Informasi Penuh</h2>
-          <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 20px;">
-            Fitur ini menyajikan data makro mendalam, analisis wilayah komprehensif, dan rekap arsip berita tanpa batas.<br><br>
-            Masuk ke akun Anda atau berlangganan sekarang untuk membuka seluruh informasi dengan <b>diskon spesial</b>!
-          </p>
-          <div style="display: flex; gap: 10px; flex-direction: column;">
-            <button class="btn-action" style="background: #0284c7; padding: 12px; font-size: 13px;" onclick="closeModal(); toggleDrawer();">🔑 Masuk Akun</button>
-            <button class="btn-action" style="background: #10b981; padding: 12px; font-size: 13px; margin:0;" onclick="closeModal(); openPaymentModalFromOutside();">💳 Berlangganan (Klaim Diskon)</button>
-          </div>
-        </div>
-      `;
-      document.getElementById('news-modal').style.display = 'flex';
-    }
-
-    function openPaymentModalFromOutside() {
-      toggleDrawer();
-      openPaymentModal();
-    }
   </script>
 </body>
 </html>
