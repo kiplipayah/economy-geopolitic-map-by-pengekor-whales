@@ -36,7 +36,7 @@
 
     /* ALERT BANNER */
     #alert-banner {
-      display: none; position: fixed; top: 68px; left: 0; width: 100%;
+      display: none; position: fixed; top: 98px; left: 0; width: 100%;
       background: #f59e0b; color: #0f172a; font-weight: bold; font-size: 12px;
       text-align: center; padding: 6px 10px; z-index: 998; box-sizing: border-box;
       border-bottom: 1px solid #d97706; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
@@ -44,7 +44,7 @@
 
     /* MENU TOGGLE BUTTON (POJOK KIRI ATAS) */
     #menu-toggle-btn {
-      position: fixed; top: 78px; left: 20px; z-index: 997;
+      position: fixed; top: 108px; left: 20px; z-index: 997;
       background: rgba(15, 23, 42, 0.92); border: 1px solid #38bdf8;
       color: #f8fafc; padding: 8px 14px; border-radius: 8px;
       cursor: pointer; font-weight: bold; font-size: 13px;
@@ -55,7 +55,7 @@
 
     /* SEARCH BAR */
     #search-container {
-      position: fixed; top: 78px; right: 20px; z-index: 997; width: 320px;
+      position: fixed; top: 108px; right: 20px; z-index: 997; width: 320px;
       background: rgba(15, 23, 42, 0.92); padding: 8px 12px; border-radius: 8px;
       backdrop-filter: blur(8px); border: 1px solid #334155; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
       transition: top 0.3s ease;
@@ -350,7 +350,30 @@
   padding: 5px 8px; border-radius: 6px; font-size: 11px; margin-top: 4px; outline: none; cursor: pointer; width: 100%;
 }
 
-
+/* ==========================================
+   EVENT TICKER BAR (COUNTDOWN BINTANG 3 G20)
+   ========================================== */
+#event-ticker-container {
+  position: fixed; top: 68px; left: 0; width: 100%; height: 30px;
+  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+  border-bottom: 1px solid #ef4444; z-index: 997; display: flex; align-items: center; overflow: hidden;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.event-badge {
+  background: #ef4444; color: #fff; padding: 0 12px; height: 100%;
+  display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2; gap: 6px;
+}
+.event-wrap { flex: 1; padding: 0 12px; font-size: 12px; color: #f1f2f6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-time-highlight { color: #facc15; font-weight: bold; font-family: monospace; }
+.event-pulse-dot {
+  width: 7px; height: 7px; background-color: #ffffff; border-radius: 50%;
+  animation: eventPulse 1.2s infinite;
+}
+@keyframes eventPulse {
+  0% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0.3; transform: scale(0.8); }
+}
 </style>
 </head>
 <body>
@@ -394,6 +417,16 @@
       <span class="market-item">Bitcoin (BTC): $65,400 <span class="market-up">+2.4%</span></span> &bull;
       <span class="market-item">USD/IDR: Rp 16,250 <span class="market-up">+0.1%</span></span>
     </div>
+  </div>
+</div>
+
+<!-- EVENT TICKER BAR (COUNTDOWN BINTANG 3 G20) -->
+<div id="event-ticker-container">
+  <div class="event-badge">
+    <span class="event-pulse-dot"></span> 🔴 NEXT BIG EVENT
+  </div>
+  <div class="event-wrap" id="event-ticker-content">
+    <span style="color:#94a3b8;">Memuat jadwal event terdekat...</span>
   </div>
 </div>
 
@@ -536,6 +569,8 @@
     var dataNews = []; 
     var dataConfig = [];
     var databasePerairan = []; 
+    var dataCalendar = []; 
+    var tickerCountdownInterval = null; 
     var mapGeoJsonLayer = null;
     var seaLabelsLayerGroup = L.layerGroup(); 
     var countryLabelsLayerGroup = L.layerGroup(); 
@@ -1506,7 +1541,97 @@ function changeHeatmapMode(mode) {
       document.getElementById('news-modal').style.display = 'none'; 
       if (chatInterval) clearInterval(chatInterval);
     }
+// HELPER PARSER TANGGAL FORMAT HARIAN / ISO
+    function parseEventDate(val) {
+      if (!val) return null;
+      if (val instanceof Date) return val;
+      var str = String(val).trim();
+      if (str.includes('-')) {
+        var d = new Date(str.replace(/-/g, '/'));
+        if (!isNaN(d.getTime())) return d;
+      }
+      var parts = str.split(/[\/\s:-]/);
+      if (parts.length >= 3) {
+        var day = parseInt(parts[0], 10);
+        var month = parseInt(parts[1], 10) - 1;
+        var year = parseInt(parts[2], 10);
+        if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+          if (year < 100) year += 2000;
+          var hour = parts[3] ? parseInt(parts[3], 10) : 0;
+          var min = parts[4] ? parseInt(parts[4], 10) : 0;
+          return new Date(year, month, day, hour, min);
+        }
+      }
+      var fallback = new Date(str);
+      return isNaN(fallback.getTime()) ? null : fallback;
+    }
 
+    // ENGINE COUNTDOWN TICKER REAL-TIME (BINTANG 3)
+    function initCountdownTicker(calendarData) {
+      var container = document.getElementById('event-ticker-content');
+      if (!container) return;
+
+      if (!calendarData || calendarData.length === 0) {
+        container.innerHTML = '<span style="color:#94a3b8;">Tidak ada kalender event terdaftar.</span>';
+        return;
+      }
+
+      var now = new Date().getTime();
+
+      // 1. Filter khusus event bintang 3 yang belum lewat
+      var upcomingEvents = calendarData.filter(function(item) {
+        var star = String(item.Dampak_Star || item.dampak_star || "").trim();
+        if (star !== "3") return false;
+
+        var rawDate = item.Tanggal_Waktu || item.tanggal_waktu || "";
+        var dateObj = parseEventDate(rawDate);
+        return dateObj && dateObj.getTime() > now;
+      });
+
+      if (upcomingEvents.length === 0) {
+        container.innerHTML = '<span style="color:#10b981;">🟢 Tidak ada event ⭐⭐⭐ terdekat dalam waktu dekat.</span>';
+        return;
+      }
+
+      // 2. Sort urutan event paling dekat
+      upcomingEvents.sort(function(a, b) {
+        var dateA = parseEventDate(a.Tanggal_Waktu || a.tanggal_waktu).getTime();
+        var dateB = parseEventDate(b.Tanggal_Waktu || b.tanggal_waktu).getTime();
+        return dateA - dateB;
+      });
+
+      var target = upcomingEvents[0];
+      var targetTime = parseEventDate(target.Tanggal_Waktu || target.tanggal_waktu).getTime();
+
+      if (tickerCountdownInterval) clearInterval(tickerCountdownInterval);
+
+      function updateCountdown() {
+        var currentTime = new Date().getTime();
+        var diff = targetTime - currentTime;
+
+        if (diff <= 0) {
+          container.innerHTML = `🚨 <b style="color:#ef4444;">[${escapeHtml(target.Kode_ISO)}] ${escapeHtml(target.Judul_Event)}</b> — <span class="event-time-highlight">SEDANG BERLANGSUNG / RILIS!</span>`;
+          clearInterval(tickerCountdownInterval);
+          return;
+        }
+
+        var hours = Math.floor(diff / (1000 * 60 * 60));
+        var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        var hStr = hours < 10 ? "0" + hours : hours;
+        var mStr = minutes < 10 ? "0" + minutes : minutes;
+        var sStr = seconds < 10 ? "0" + seconds : seconds;
+
+        var forecastInfo = target.Forecast ? ` (Est: ${escapeHtml(target.Forecast)})` : '';
+        var iso = target.Kode_ISO ? `[${escapeHtml(target.Kode_ISO)}] ` : '';
+
+        container.innerHTML = `<b style="color:#38bdf8;">${iso}${escapeHtml(target.Judul_Event)}</b>${forecastInfo} rilis dalam <span class="event-time-highlight">${hStr}j ${mStr}m ${sStr}d</span>`;
+      }
+
+      updateCountdown();
+      tickerCountdownInterval = setInterval(updateCountdown, 1000);
+    }
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
       if (!newsList || newsList.length === 0) return;
@@ -1632,6 +1757,10 @@ function changeHeatmapMode(mode) {
           dataNews = data.dataNews || [];
           dataConfig = data.dataConfig || [];
           databasePerairan = data.dataPerairan || []; 
+dataCalendar = data.dataCalendar || []; 
+
+          // Jalankan countdown ticker saat data diterima
+          initCountdownTicker(dataCalendar); // <--- TAMBAHAN
 
           var configObj = {};
           dataConfig.forEach(item => {
@@ -1653,8 +1782,8 @@ function changeHeatmapMode(mode) {
             var alertBanner = document.getElementById('alert-banner');
             alertBanner.innerText = "📢 " + configObj.Alert_Message;
             alertBanner.style.display = 'block';
-            document.getElementById('search-container').style.top = '108px';
-            document.getElementById('menu-toggle-btn').style.top = '108px';
+            document.getElementById('search-container').style.top = '138px';
+            document.getElementById('menu-toggle-btn').style.top = '138px';
           }
 
           renderTicker(dataNews);
