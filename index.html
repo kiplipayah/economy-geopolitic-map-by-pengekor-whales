@@ -325,6 +325,12 @@
   display: flex; align-items: center; font-weight: bold; font-size: 11px; white-space: nowrap; z-index: 2;
 }
 
+/* Styling & Animasi Running Text Khusus Mode OFF (Super Ringan) */
+.market-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
+.market-move { display: inline-block; animation: marketTicker 35s linear infinite; padding-left: 100%; font-size: 12px; color: #f1f2f6; }
+.market-move:hover { animation-play-state: paused; }
+@keyframes marketTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+
 /* ==========================================
    HEATMAP SWITCHER (DROP DOWN MODE PETA)
    ========================================== */
@@ -403,29 +409,9 @@
     <div class="ticker-wrap"><div class="ticker-move" id="ticker-content"><span class="ticker-item">Menghubungkan ke jaringan intelijen berita...</span></div></div>
   </div>
 
-<!-- MARKET TICKER BAR (TRADINGVIEW LIVE WIDGET) -->
+<!-- MARKET TICKER BAR -->
 <div id="market-ticker-container">
   <div class="market-badge">📈 MARKET LIVE</div>
-  <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
-    <div class="tradingview-widget-container__widget"></div>
-    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-    {
-      "symbols": [
-        { "proName": "TVC:USOIL", "title": "Minyak WTI" },
-        { "proName": "TVC:UKOIL", "title": "Minyak Brent" },
-        { "proName": "TVC:GOLD", "title": "Emas (XAU/USD)" },
-        { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
-        { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin (BTC)" },
-        { "proName": "FX_IDC:USDIDR", "title": "USD/IDR" }
-      ],
-      "showSymbolLogo": true,
-      "isTransparent": true,
-      "displayMode": "adaptive",
-      "colorTheme": "dark",
-      "locale": "id"
-    }
-    </script>
-  </div>
 </div>
 
 <!-- EVENT TICKER BAR (COUNTDOWN BINTANG 3 G20) -->
@@ -1770,10 +1756,58 @@ dataCalendar = data.dataCalendar || [];
           // Jalankan countdown ticker saat data diterima
           initCountdownTicker(dataCalendar); // <--- TAMBAHAN
 
+          // 1. Ekstrak data config dulu sampai selesai
           var configObj = {};
           dataConfig.forEach(item => {
             if (item.Parameter) configObj[item.Parameter.trim()] = item.Value ? item.Value.trim() : "";
           });
+
+          // 2. Baru eksekusi logic sakelar (DI LUAR forEach)
+          var modeMarket = (configObj.Market_Live_Mode || "ON").toUpperCase();
+          var pesanMarket = configObj.Market_Live_Message || "Fitur Market Live sedang diistirahatkan sementara.";
+          var marketContainer = document.getElementById('market-ticker-container');
+
+          if (marketContainer) {
+            if (modeMarket === 'OFF') {
+              marketContainer.innerHTML = `
+                <div class="market-badge">📈 MARKET LIVE</div>
+                <div class="market-wrap">
+                  <div class="market-move">
+                    <span>${escapeHtml(pesanMarket)}</span>
+                  </div>
+                </div>
+              `;
+            } else {
+              marketContainer.innerHTML = `
+                <div class="market-badge">📈 MARKET LIVE</div>
+                <div class="tradingview-widget-container" style="width: 100%; height: 100%;">
+                  <div class="tradingview-widget-container__widget"></div>
+                </div>
+              `;
+              
+              var widgetContainer = marketContainer.querySelector('.tradingview-widget-container');
+              var tvScript = document.createElement('script');
+              tvScript.type = 'text/javascript';
+              tvScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js';
+              tvScript.async = true;
+              tvScript.text = JSON.stringify({
+                "symbols": [
+                  { "proName": "TVC:USOIL", "title": "Minyak WTI" },
+                  { "proName": "TVC:UKOIL", "title": "Minyak Brent" },
+                  { "proName": "TVC:GOLD", "title": "Emas (XAU/USD)" },
+                  { "proName": "FOREXCOM:SPXUSD", "title": "S&P 500" },
+                  { "proName": "BINANCE:BTCUSDT", "title": "Bitcoin (BTC)" },
+                  { "proName": "FX_IDC:USDIDR", "title": "USD/IDR" }
+                ],
+                "showSymbolLogo": true,
+                "isTransparent": true,
+                "displayMode": "adaptive",
+                "colorTheme": "dark",
+                "locale": "id"
+              });
+              widgetContainer.appendChild(tvScript);
+            }
+          }
 
           if (configObj.Maintenance_Mode && configObj.Maintenance_Mode.toUpperCase() === 'ON') {
             var mDesc = document.getElementById('maintenance-desc');
