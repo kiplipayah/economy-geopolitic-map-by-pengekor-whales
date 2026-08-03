@@ -1604,10 +1604,22 @@ sgpLayerInstance.bindPopup(`
       var fallback = new Date(str);
       return isNaN(fallback.getTime()) ? null : fallback;
     }
-
-   function formatTimeDiff(diff) {
-      if (diff <= 0) return `<span class="event-time-highlight" style="color:#ef4444;">SEDANG BERLANGSUNG / RILIS!</span>`;
+         
+// ==========================================
+    // REVISI 1: FORMAT TIME DIFF (BISA ALL-DAY / EVENT TANPA JAM)
+    // ==========================================
+    function formatTimeDiff(diff, isAllDay) {
+      // 1. Jika event hari libur / perayaan (tanpa jam spesifik)
+      if (isAllDay) {
+        return `<span class="event-time-highlight" style="color:#fbbf24;">[HARI INI / ALL-DAY]</span>`;
+      }
       
+      // 2. Jika event berjam spesifik dan jam rilisnya sudah lewat hari ini
+      if (diff <= 0) {
+        return `<span class="event-time-highlight" style="color:#ef4444;">SEDANG BERLANGSUNG / RILIS HARI INI</span>`;
+      }
+      
+      // 3. Jika event berjam spesifik dan masih di masa depan
       var days = Math.floor(diff / (1000 * 60 * 60 * 24));
       var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -1624,7 +1636,9 @@ sgpLayerInstance.bindPopup(`
       }
     }
 
-    // ENGINE COUNTDOWN TICKER REAL-TIME (FILTER 7 HARI & RUNNING TEXT)
+    // ==========================================
+    // REVISI 2: ENGINE COUNTDOWN TICKER REAL-TIME
+    // ==========================================
     function initCountdownTicker(calendarData) {
       var container = document.getElementById('event-ticker-content');
       if (!container) return;
@@ -1634,10 +1648,13 @@ sgpLayerInstance.bindPopup(`
         return;
       }
 
-      var now = new Date().getTime();
-      var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      var nowObj = new Date();
 
-      // Filter: Bintang 3 + Belum Lewat + Maksimal 7 Hari ke Depan
+      // Hitung Titik Awal Hari Ini (Jam 00:00:00) & Akhir 7 Hari ke Depan (Jam 23:59:59)
+      var startOfToday = new Date(nowObj.getFullYear(), nowObj.getMonth(), nowObj.getDate(), 0, 0, 0).getTime();
+      var endOf7Days = new Date(nowObj.getFullYear(), nowObj.getMonth(), nowObj.getDate() + 7, 23, 59, 59).getTime();
+
+      // PERBAIKAN LOGIKA: Tampilkan dari Jam 00:00:00 HARI INI sampai 7 hari ke depan
       var upcomingEvents = calendarData.filter(function(item) {
         var star = String(item.Dampak_Star || item.dampak_star || "").trim();
         if (star !== "3") return false;
@@ -1646,8 +1663,9 @@ sgpLayerInstance.bindPopup(`
         var dateObj = parseEventDate(rawDate);
         if (!dateObj) return false;
 
-        var diff = dateObj.getTime() - now;
-        return diff > 0 && diff <= sevenDaysMs;
+        var eventTime = dateObj.getTime();
+        // Syarat: Tanggal event HARUS >= jam 00:00 pagi ini
+        return eventTime >= startOfToday && eventTime <= endOf7Days;
       });
 
       if (upcomingEvents.length === 0) {
@@ -1655,6 +1673,7 @@ sgpLayerInstance.bindPopup(`
         return;
       }
 
+      // Urutkan event terdekat
       upcomingEvents.sort(function(a, b) {
         var dateA = parseEventDate(a.Tanggal_Waktu || a.tanggal_waktu).getTime();
         var dateB = parseEventDate(b.Tanggal_Waktu || b.tanggal_waktu).getTime();
@@ -1668,14 +1687,20 @@ sgpLayerInstance.bindPopup(`
         var htmlParts = [];
 
         upcomingEvents.forEach(function(target) {
-          var targetTime = parseEventDate(target.Tanggal_Waktu || target.tanggal_waktu).getTime();
+          var rawDateStr = String(target.Tanggal_Waktu || target.tanggal_waktu || "");
+          var targetDateObj = parseEventDate(rawDateStr);
+          var targetTime = targetDateObj.getTime();
           var diff = targetTime - currentTime;
 
-          var forecastInfo = target.Forecast ? ` (Est: ${escapeHtml(target.Forecast)})` : '';
-          var iso = target.Kode_ISO ? `[${escapeHtml(target.Kode_ISO)}] ` : '';
-          var timeText = formatTimeDiff(diff);
+          // Deteksi otomatis jika event berbentuk Tanggal saja / Hari Libur (tanpa format jam :)
+          var isAllDay = !rawDateStr.includes(":") || (targetDateObj.getHours() === 0 && targetDateObj.getMinutes() === 0);
 
-          htmlParts.push(`<span><b style="color:#38bdf8;">${iso}${escapeHtml(target.Judul_Event)}</b>${forecastInfo} rilis dalam ${timeText}</span>`);
+          var forecastInfo = target.Forecast && target.Forecast !== "-" ? ` (Est: ${escapeHtml(target.Forecast)})` : '';
+          var iso = target.Kode_ISO ? `[${escapeHtml(target.Kode_ISO)}] ` : '';
+          var timeText = formatTimeDiff(diff, isAllDay);
+
+          var title = target.Judul_Event || target.title || "Event";
+          htmlParts.push(`<span><b style="color:#38bdf8;">${iso}${escapeHtml(title)}</b>${forecastInfo} status: ${timeText}</span>`);
         });
 
         container.innerHTML = htmlParts.join(' &nbsp;&nbsp;&bull;&nbsp;&nbsp; ');
