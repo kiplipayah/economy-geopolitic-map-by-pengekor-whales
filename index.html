@@ -349,21 +349,37 @@
    EVENT TICKER BAR (RUNNING COUNTDOWN BINTANG 3)
    ========================================== */
 /* ==========================================
-   QUICK WATCHLIST BAR (VIP PRO)
+   MODAL TAB NAVIGATION (REKAP BERITA)
    ========================================== */
-#watchlist-bar-container {
-  position: fixed; top: 68px; left: 0; width: 100%; height: 32px;
-  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
-  border-bottom: 1px solid #38bdf8; z-index: 998; display: none; align-items: center; overflow-x: auto; padding: 0 10px; box-sizing: border-box; gap: 8px;
+.modal-tab-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 10px;
 }
-.watchlist-badge-item {
-  background: #1e293b; border: 1px solid #38bdf8; color: #f8fafc; padding: 2px 10px; border-radius: 12px; font-size: 11px; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s;
+.modal-tab-btn {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+  text-align: center;
+  transition: all 0.2s ease;
 }
-.watchlist-badge-item:hover { background: #38bdf8; color: #0f172a; }
-.watchlist-badge-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.status-dot-high { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
-.status-dot-medium { background: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
-.status-dot-low { background: #10b981; box-shadow: 0 0 5px #10b981; }
+.modal-tab-btn:hover {
+  border-color: #38bdf8;
+  color: #f8fafc;
+}
+.modal-tab-btn.active {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+}
 
 #event-ticker-container {
   position: fixed; 
@@ -446,12 +462,6 @@
 
   <!-- ALERT BANNER -->
   <div id="alert-banner"></div>
-
-<!-- QUICK WATCHLIST BAR (VIP PRO) -->
-  <div id="watchlist-bar-container">
-    <div style="font-size:10px; font-weight:bold; color:#fbbf24; white-space:nowrap; margin-right:4px;">⭐ WATCHLIST LIVE:</div>
-    <div id="watchlist-items-wrapper" style="display:flex; gap:6px;"></div>
-  </div>
 
   <!-- TOMBOL TOGGLE MENU SIDEBAR (POJOK KIRI ATAS) -->
   <button id="menu-toggle-btn" onclick="toggleDrawer()">👤 Menu Akun</button>
@@ -678,20 +688,10 @@ var customCenters = {
 var telegramSec = document.getElementById('telegram-section');
         if (telegramSec) telegramSec.style.display = isActivePro ? 'block' : 'none';
 
-        var watchlistBar = document.getElementById('watchlist-bar-container');
-        if (watchlistBar) {
-          if (isActivePro) {
-            watchlistBar.style.display = 'flex';
-            renderWatchlistBar();
-            if (loggedUser.telegramChatId) {
-              var tgInput = document.getElementById('telegram-chat-id-input');
-              if (tgInput) tgInput.value = loggedUser.telegramChatId;
-            }
-          } else {
-            watchlistBar.style.display = 'none';
-          }
+        if (isActivePro && loggedUser.telegramChatId) {
+          var tgInput = document.getElementById('telegram-chat-id-input');
+          if (tgInput) tgInput.value = loggedUser.telegramChatId;
         }
-
         var displayName = escapeHtml(loggedUser.nama || loggedUser.email.split('@')[0]);
         var displayEmail = escapeHtml(loggedUser.email);
 
@@ -1434,23 +1434,105 @@ sgpLayerInstance.bindPopup(`
       document.getElementById('news-modal').style.display = 'flex';
       fetchLiveWeather(latVal, lngVal, modalWeatherElemId);
     }
-
-    function openAllNewsArchive() {
+function openAllNewsArchive(activeTab) {
+      activeTab = activeTab || 'global';
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var isPro = checkUserProActive(loggedUser);
       var modalBody = document.getElementById('modal-body');
-      var listBerita = [...dataNews].reverse(); 
-      var beritaHtml = "";
 
-      if (listBerita.length > 0) {
-        listBerita.forEach(b => {
+      var tabGlobalClass = activeTab === 'global' ? 'active' : '';
+      var tabWatchlistClass = activeTab === 'watchlist' ? 'active' : '';
+
+      var headerTabsHtml = `
+        <div class="modal-tab-container">
+          <button class="modal-tab-btn ${tabGlobalClass}" onclick="switchArchiveTab('global')">🌐 Semua Berita Global</button>
+          <button class="modal-tab-btn ${tabWatchlistClass}" onclick="switchArchiveTab('watchlist')">⭐ Feed Watchlist Saya ${isPro ? '' : '🔒'}</button>
+        </div>
+      `;
+
+      var contentHtml = "";
+
+      if (activeTab === 'global') {
+        var listBerita = [...dataNews].reverse();
+        if (listBerita.length > 0) {
+          listBerita.forEach(b => {
+            let link = (b.Link_Berita || "").trim();
+            if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
+            
+            var threat = (b.Threat_Level || "LOW").toUpperCase();
+            var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
+            var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
+            var country = b.Negara || "GLOBAL";
+
+            contentHtml += `
+              <div class="news-card" style="${border}">
+                <div class="news-header-flex">
+                  <h4 class="news-title"><span class="ticker-country">[${escapeHtml(country)}]</span> ${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>
+                  ${tag}
+                </div>
+                <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
+                ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
+              </div>
+            `;
+          });
+        } else {
+          contentHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP</h4><p class="news-desc">Belum ada data berita yang termuat di sistem.</p></div>`;
+        }
+      } else if (activeTab === 'watchlist') {
+        if (!isPro) {
+          contentHtml = `
+            <div class="modal-box-center" style="padding: 20px 10px;">
+              <div style="font-size: 38px; margin-bottom: 10px;">🔒</div>
+              <h3 style="color:#38bdf8; margin: 0 0 8px 0;">Fitur Khusus Member VIP Pro</h3>
+              <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px;">
+                Pantau krisis & berita pilihan khusus dari negara-negara yang ada di dalam watchlist kamu secara terfokus tanpa terdistraksi isu lain.
+              </p>
+              <button class="btn-action" style="background:#10b981; padding: 10px 16px; font-size: 12px; width: auto;" onclick="closeModal(); openPaymentModalFromOutside();">👑 Upgrade ke VIP Pro Sekarang</button>
+            </div>
+          `;
+        } else {
+          contentHtml = renderWatchlistNewsFeed(loggedUser);
+        }
+      }
+
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">📰 REKAPITULASI ARSIP BERITA & INTELIJEN</h2>
+        ${headerTabsHtml}
+        ${contentHtml}
+      `;
+
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
+    function switchArchiveTab(tabName) {
+      openAllNewsArchive(tabName);
+    }
+
+    function renderWatchlistNewsFeed(loggedUser) {
+      if (!loggedUser || !loggedUser.watchlist || loggedUser.watchlist.trim() === "") {
+        return `
+          <div class="risk-box" style="border-left: 4px solid #f59e0b; text-align: center;">
+            <div style="font-weight: bold; color: #fbbf24; margin-bottom: 4px;">⭐ Watchlist Kamu Masih Kosong</div>
+            <div style="font-size: 11px; color: #cbd5e1;">Klik salah satu negara di peta, lalu pilih tombol <b>"⭐ Tambah ke Watchlist VIP"</b> untuk memasukkan wilayah tersebut ke dalam pemantauan khusus di sini.</div>
+          </div>
+        `;
+      }
+
+      var watchIsoList = loggedUser.watchlist.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
+      var filteredNews = dataNews.filter(b => watchIsoList.includes((b.Kode_ISO || "").toUpperCase())).reverse();
+
+      var html = `<div class="risk-box" style="border-left: 4px solid #10b981; margin-bottom: 12px;">Memantau isu dari <b>${watchIsoList.length} negara watchlist</b>: [${watchIsoList.join(', ')}]</div>`;
+
+      if (filteredNews.length > 0) {
+        filteredNews.forEach(b => {
           let link = (b.Link_Berita || "").trim();
           if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-          
           var threat = (b.Threat_Level || "LOW").toUpperCase();
           var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
           var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
-          var country = b.Negara || "GLOBAL";
+          var country = b.Negara || b.Kode_ISO || "WATCHLIST";
 
-          beritaHtml += `
+          html += `
             <div class="news-card" style="${border}">
               <div class="news-header-flex">
                 <h4 class="news-title"><span class="ticker-country">[${escapeHtml(country)}]</span> ${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>
@@ -1462,16 +1544,15 @@ sgpLayerInstance.bindPopup(`
           `;
         });
       } else {
-        beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP</h4><p class="news-desc">Belum ada data berita yang termuat di sistem.</p></div>`;
+        html += `
+          <div class="news-card" style="border-left: 4px solid #38bdf8;">
+            <h4 class="news-title">KONDISI STABIL / BELUM ADA ISU BARU</h4>
+            <p class="news-desc">Belum ada laporan berita aktif untuk negara-negara yang ada di daftar watchlist kamu.</p>
+          </div>
+        `;
       }
 
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">📰 REKAPITULASI SEMUA ARSIP BERITA & INTELIJEN</h2>
-        <div class="risk-box">Menampilkan seluruh daftar berita geopolitik dan ekonomi global. Artikel terbaru otomatis tersusun di urutan paling atas. Total arsip aktif: <b>${listBerita.length} berita</b>.</div>
-        ${beritaHtml}
-      `;
-
-      document.getElementById('news-modal').style.display = 'flex';
+      return html;
     }
 
     // ✅ TEMPELKAN FUNGSI PERBAIKAN INI
@@ -2026,39 +2107,7 @@ dataCalendar = data.dataCalendar || [];
       openPaymentModal();
     }
 
-function renderWatchlistBar() {
-      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
-      var wrapper = document.getElementById('watchlist-items-wrapper');
-      if (!wrapper) return;
 
-      if (!loggedUser || !loggedUser.watchlist || loggedUser.watchlist.trim() === "") {
-        wrapper.innerHTML = `<span style="font-size:11px; color:#94a3b8; font-style:italic;">Belum ada wilayah di-pin. Klik negara di peta & tambahkan!</span>`;
-        return;
-      }
-
-      var items = loggedUser.watchlist.split(',').map(s => s.trim()).filter(Boolean);
-      var html = "";
-
-      items.forEach(iso => {
-        var newsForCountry = dataNews.filter(b => (b.Kode_ISO || "").toUpperCase() === iso.toUpperCase());
-        var dotClass = "status-dot-low";
-        if (newsForCountry.some(b => (b.Threat_Level || "").toUpperCase() === 'HIGH')) {
-          dotClass = "status-dot-high";
-        } else if (newsForCountry.some(b => (b.Threat_Level || "").toUpperCase() === 'MEDIUM')) {
-          dotClass = "status-dot-medium";
-        }
-
-        html += `
-          <div class="watchlist-badge-item" onclick="selectSearchCountry('${iso}')">
-            <span class="watchlist-badge-status ${dotClass}"></span>
-            <b>[${escapeHtml(iso)}]</b>
-            <span style="font-size:9px; color:#ef4444; margin-left:4px;" onclick="event.stopPropagation(); toggleWatchlistPin('${iso}')">❌</span>
-          </div>
-        `;
-      });
-
-      wrapper.innerHTML = html;
-    }
 
     function toggleWatchlistPin(isoCode) {
       var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
@@ -2080,7 +2129,11 @@ function renderWatchlistBar() {
       loggedUser.watchlist = newListStr;
       localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
 
-      renderWatchlistBar();
+      var modalEl = document.getElementById('news-modal');
+      var activeTabBtn = document.querySelector('.modal-tab-btn.active');
+      if (modalEl && modalEl.style.display === 'flex' && activeTabBtn && activeTabBtn.innerText.includes('Watchlist')) {
+        openAllNewsArchive('watchlist');
+      }
 
       fetch(apiUrl, {
         method: "POST",
