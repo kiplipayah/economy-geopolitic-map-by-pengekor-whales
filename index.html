@@ -551,7 +551,7 @@
 
     <div class="drawer-footer">
       Created by <b>Pengekor Whales</b><br>
-      System Version 1.0
+      System Version 1.1
     </div>
   </div>
 
@@ -1674,10 +1674,10 @@ function toggleWatchlist(isoCode) {
       var isWatched = userWatchlist.map(w => w.toUpperCase()).includes(isoCode.toUpperCase());
 
       modalBody.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 12px; flex-wrap:wrap; gap:8px;">
-          <h2 class="modal-header-title" style="border:none; padding:0; margin:0;">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #334155; padding-bottom: 8px; padding-right: 35px; margin-bottom: 12px; flex-wrap:wrap; gap:8px;">
+          <h2 class="modal-header-title" style="border:none; padding:0; margin:0; font-size:18px;">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>
           ${isPro ? `
-            <button onclick="toggleWatchlist('${isoCode}')" class="btn-action" style="width:auto; margin:0; padding:5px 12px; background:${isWatched ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; color:${isWatched ? '#f87171' : '#facc15'}; border:1px solid ${isWatched ? '#ef4444' : '#f59e0b'};">
+            <button onclick="toggleWatchlist('${isoCode}')" class="btn-action" style="width:auto; margin:0; padding:5px 12px; background:${isWatched ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; color:${isWatched ? '#f87171' : '#facc15'}; border:1px solid ${isWatched ? '#ef4444' : '#f59e0b'}; font-size:11px;">
               ${isWatched ? '⭐ Hapus dari Watchlist' : '⭐ + Tambahkan ke Watchlist'}
             </button>
           ` : ''}
