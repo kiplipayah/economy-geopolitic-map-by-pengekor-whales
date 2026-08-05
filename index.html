@@ -756,6 +756,7 @@ var telegramSec = document.getElementById('telegram-section');
 
       fetch(apiUrl, {
         method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action: "login", email: email, password: pass })
       })
       .then(r => r.json())
@@ -833,6 +834,7 @@ var telegramSec = document.getElementById('telegram-section');
 
       fetch(apiUrl, {
         method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ 
           action: "updateProfile", 
           email: email, 
@@ -938,6 +940,7 @@ function loadVIPMessages() {
 
       fetch(apiUrl, {
         method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({ action: "getChat" })
       })
       .then(r => r.json())
@@ -977,6 +980,7 @@ function loadVIPMessages() {
 
       fetch(apiUrl, {
         method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "sendChat",
           email: loggedUser.email,
@@ -1106,16 +1110,38 @@ function loadVIPMessages() {
 
   // MODE 1: RISIKO KONFLIK (DEFAULT)
   if (currentHeatmapMode === 'risk') {
+    // Prioritas 1: Sakelar Manual
     if (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON') {
       return '#ef4444'; // Merah
     }
+
+    var now = new Date().getTime();
+    var limit7DaysMs = 7 * 24 * 60 * 60 * 1000; // 168 Jam (7 Hari)
     var newsForCountry = dataNews.filter(b => b.Kode_ISO === isoCode);
-    if (newsForCountry.length > 0) {
-      if (newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'HIGH'))) return '#ef4444';
-      if (newsForCountry.some(b => ((b.Threat_Level || b.threat_level || "").toUpperCase() === 'MEDIUM'))) return '#f59e0b';
-    }
-    return '#10b981'; // Hijau
-  } 
+
+    // Prioritas 2: Cek apakah ada berita HIGH aktif (< 7 hari)
+    var hasActiveHigh = newsForCountry.some(b => {
+      var threat = (b.Threat_Level || b.threat_level || "").toUpperCase();
+      var d = parseEventDate(b.Tanggal_Input || b.tanggal_input);
+      var isWithin7Days = d ? ((now - d.getTime()) <= limit7DaysMs) : true;
+      return threat === 'HIGH' && isWithin7Days;
+    });
+
+    if (hasActiveHigh) return '#ef4444'; // Merah
+
+    // Prioritas 3: Cek apakah ada berita MEDIUM aktif (< 7 hari)
+    var hasActiveMedium = newsForCountry.some(b => {
+      var threat = (b.Threat_Level || b.threat_level || "").toUpperCase();
+      var d = parseEventDate(b.Tanggal_Input || b.tanggal_input);
+      var isWithin7Days = d ? ((now - d.getTime()) <= limit7DaysMs) : true;
+      return threat === 'MEDIUM' && isWithin7Days;
+    });
+
+    if (hasActiveMedium) return '#f59e0b'; // Kuning
+
+    // Prioritas 4: Fallback ke Hijau jika berita HIGH/MEDIUM kedaluwarsa atau hanya ada berita LOW
+    return '#10b981'; // Hijau (Normal)
+  }
 
  // MODE 2: SUKU BUNGA ACUAN
   else if (currentHeatmapMode === 'interest') {
@@ -1519,7 +1545,7 @@ function openAllNewsArchive(activeTab) {
       }
 
       var watchIsoList = loggedUser.watchlist.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-      var filteredNews = dataNews.filter(b => watchIsoList.includes((b.Kode_ISO || "").toUpperCase())).reverse();
+      var filteredNews = dataNews.filter(b => watchIsoList.includes((b.Kode_ISO || b.kode_iso || b.ISO || "").toUpperCase())).reverse();
 
       var html = `<div class="risk-box" style="border-left: 4px solid #10b981; margin-bottom: 12px;">Memantau isu dari <b>${watchIsoList.length} negara watchlist</b>: [${watchIsoList.join(', ')}]</div>`;
 
@@ -1732,26 +1758,51 @@ function openModal(isoCode, lat, lng) {
       if (!val) return null;
       if (val instanceof Date) return val;
       var str = String(val).trim();
-      if (str.includes('-')) {
-        var d = new Date(str.replace(/-/g, '/'));
-        if (!isNaN(d.getTime())) return d;
-      }
+
+      var bulanIndo = {
+        "jan": 0, "januari": 0, "feb": 1, "februari": 1, "mar": 2, "maret": 2,
+        "apr": 3, "april": 3, "mei": 4, "jun": 5, "juni": 5, "jul": 6, "juli": 6,
+        "agu": 7, "agustus": 7, "agst": 7, "sep": 8, "september": 8, "okt": 9, "oktober": 9,
+        "nov": 10, "november": 10, "des": 11, "desember": 11
+      };
+
+      var d = new Date(str.replace(/-/g, '/'));
+      if (!isNaN(d.getTime())) return d;
+
       var parts = str.split(/[\/\s:-]/);
       if (parts.length >= 3) {
-        var day = parseInt(parts[0], 10);
-        var month = parseInt(parts[1], 10) - 1;
-        var year = parseInt(parts[2], 10);
+        var p0 = parts[0].toLowerCase();
+        var p1 = parts[1].toLowerCase();
+        var p2 = parts[2].toLowerCase();
+
+        var day, month, year;
+
+        if (bulanIndo.hasOwnProperty(p1)) {
+          day = parseInt(p0, 10);
+          month = bulanIndo[p1];
+          year = parseInt(p2, 10);
+        } else if (bulanIndo.hasOwnProperty(p0)) {
+          month = bulanIndo[p0];
+          day = parseInt(p1, 10);
+          year = parseInt(p2, 10);
+        } else {
+          var n0 = parseInt(p0, 10);
+          var n1 = parseInt(p1, 10);
+          var n2 = parseInt(p2, 10);
+          if (n0 > 1000) { year = n0; month = n1 - 1; day = n2; }
+          else { day = n0; month = n1 - 1; year = n2; }
+        }
+
+        if (year < 100) year += 2000;
+
         if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-          if (year < 100) year += 2000;
           var hour = parts[3] ? parseInt(parts[3], 10) : 0;
           var min = parts[4] ? parseInt(parts[4], 10) : 0;
           return new Date(year, month, day, hour, min);
         }
       }
-      var fallback = new Date(str);
-      return isNaN(fallback.getTime()) ? null : fallback;
-    }
-         
+      return null;
+    }         
 // ==========================================
     // REVISI 1: FORMAT TIME DIFF (BISA ALL-DAY / EVENT TANPA JAM)
     // ==========================================
@@ -2116,7 +2167,8 @@ dataCalendar = data.dataCalendar || [];
         return;
       }
 
-      var currentList = loggedUser.watchlist ? loggedUser.watchlist.split(',').map(s => s.trim()).filter(Boolean) : [];
+      var rawWatchlist = (loggedUser && loggedUser.watchlist) ? String(loggedUser.watchlist) : "";
+      var currentList = rawWatchlist.split(',').map(s => s.trim()).filter(Boolean);
       var index = currentList.indexOf(isoCode);
 
       if (index !== -1) {
@@ -2137,6 +2189,7 @@ dataCalendar = data.dataCalendar || [];
 
       fetch(apiUrl, {
         method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "updateWatchlist",
           email: loggedUser.email,
@@ -2155,6 +2208,7 @@ dataCalendar = data.dataCalendar || [];
 
       fetch(apiUrl, {
         method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "updateTelegram",
           email: loggedUser.email,
@@ -2204,7 +2258,7 @@ dataCalendar = data.dataCalendar || [];
           });
           newsContainer.innerHTML = html;
         } else {
-          newsContainer.innerHTML = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU MENDESAK</h4><p class="news-desc">Tidak ada berita HIGH/MEDIUM untuk wilayah ini dalam 30 hari terakhir.</p></div>`;
+          newsContainer.innerHTML = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP BERITA</h4><p class="news-desc">Belum ada catatan berita untuk wilayah ini dalam 30 hari terakhir.</p></div>`;
         }
       })
       .catch(e => {
