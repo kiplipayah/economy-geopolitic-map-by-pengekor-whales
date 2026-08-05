@@ -1510,6 +1510,35 @@ function switchNewsTab(tab) {
       renderNewsArchiveList();
     }
 
+function toggleWatchlist(isoCode) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var isPro = checkUserProActive(loggedUser);
+
+      if (!isPro) {
+        alert("🔒 Fitur Tambah Watchlist khusus untuk Member PRO/VIP Aktif!");
+        openPaywallModal();
+        return;
+      }
+
+      if (!loggedUser.watchlist || !Array.isArray(loggedUser.watchlist)) {
+        loggedUser.watchlist = ["USA", "RUS", "IRN"];
+      }
+
+      var isoUpper = isoCode.toUpperCase();
+      var index = loggedUser.watchlist.findIndex(item => item.toUpperCase() === isoUpper);
+
+      if (index > -1) {
+        loggedUser.watchlist.splice(index, 1);
+        alert(`❌ ${getCountryName(isoUpper)} telah dihapus dari Watchlist.`);
+      } else {
+        loggedUser.watchlist.push(isoUpper);
+        alert(`⭐ ${getCountryName(isoUpper)} berhasil ditambahkan ke Watchlist!`);
+      }
+
+      localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
+      openModal(isoUpper);
+    }
+
     function renderNewsArchiveList() {
       var newsContainer = document.getElementById('news-archive-list-container');
       var pillsContainer = document.getElementById('watchlist-pills-container');
@@ -1639,8 +1668,20 @@ function switchNewsTab(tab) {
       var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
       var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
 
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var isPro = checkUserProActive(loggedUser);
+      var userWatchlist = (loggedUser && loggedUser.watchlist && Array.isArray(loggedUser.watchlist)) ? loggedUser.watchlist : ["USA", "RUS", "IRN"];
+      var isWatched = userWatchlist.map(w => w.toUpperCase()).includes(isoCode.toUpperCase());
+
       modalBody.innerHTML = `
-        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #334155; padding-bottom: 8px; margin-bottom: 12px; flex-wrap:wrap; gap:8px;">
+          <h2 class="modal-header-title" style="border:none; padding:0; margin:0;">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>
+          ${isPro ? `
+            <button onclick="toggleWatchlist('${isoCode}')" class="btn-action" style="width:auto; margin:0; padding:5px 12px; background:${isWatched ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)'}; color:${isWatched ? '#f87171' : '#facc15'}; border:1px solid ${isWatched ? '#ef4444' : '#f59e0b'};">
+              ${isWatched ? '⭐ Hapus dari Watchlist' : '⭐ + Tambahkan ke Watchlist'}
+            </button>
+          ` : ''}
+        </div>
         
         <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
           <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
