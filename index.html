@@ -1425,6 +1425,13 @@ sgpLayerInstance.bindPopup(`
     }
 function openAllNewsArchive() {
       var modalBody = document.getElementById('modal-body');
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var isPro = checkUserProActive(loggedUser);
+
+      // Reset ke tab global jika user tidak memiliki akses PRO aktif
+      if (!isPro) {
+        currentNewsTab = 'global';
+      }
       
       modalBody.innerHTML = `
         <h2 class="modal-header-title">📰 REKAPITULASI ARSIP BERITA & INTELIJEN</h2>
@@ -1432,7 +1439,7 @@ function openAllNewsArchive() {
         <!-- NAVIGASI TAB -->
         <div class="news-tab-container">
           <button id="tab-btn-global" class="news-tab-btn ${currentNewsTab === 'global' ? 'active' : ''}" onclick="switchNewsTab('global')">🌐 Semua Berita Global</button>
-          <button id="tab-btn-watchlist" class="news-tab-btn ${currentNewsTab === 'watchlist' ? 'active' : ''}" onclick="switchNewsTab('watchlist')">⭐ Feed Watchlist Saya</button>
+          <button id="tab-btn-watchlist" class="news-tab-btn ${currentNewsTab === 'watchlist' ? 'active' : ''}" onclick="switchNewsTab('watchlist')">${isPro ? '⭐ Feed Watchlist Saya' : '🔒 Feed Watchlist Saya (PRO)'}</button>
         </div>
 
         <!-- FILTER RISIKO CEPAT (THREAT LEVEL) -->
@@ -1454,8 +1461,17 @@ function openAllNewsArchive() {
       document.getElementById('news-modal').style.display = 'flex';
       renderNewsArchiveList();
     }
+function switchNewsTab(tab) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var isPro = checkUserProActive(loggedUser);
 
-    function switchNewsTab(tab) {
+      // Kunci akses tab Watchlist khusus Member PRO yang masih aktif
+      if (tab === 'watchlist' && !isPro) {
+        alert("🔒 Fitur Feed Watchlist khusus untuk Member PRO/VIP dengan status aktif!");
+        openPaywallModal();
+        return;
+      }
+
       currentNewsTab = tab;
       currentPillIsoFilter = 'ALL';
       
