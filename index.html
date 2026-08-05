@@ -378,6 +378,20 @@
 @keyframes eventTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 @keyframes eventPulse { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.8); } }
 
+/* STYLING TAB & FILTER REKAP BERITA MODAL */
+.news-tab-container { display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+.news-tab-btn { flex: 1; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; transition: all 0.2s ease; }
+.news-tab-btn.active { background: #0284c7; color: #ffffff; border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.3); }
+
+.filter-bar { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
+.filter-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; background: #0f172a; border: 1px solid #334155; color: #cbd5e1; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+.filter-pill:hover, .filter-pill.active { background: #38bdf8; color: #0f172a; border-color: #38bdf8; font-weight: bold; }
+
+.watchlist-pills-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; background: #0f172a; padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; }
+.watchlist-pill { display: inline-flex; align-items: center; gap: 6px; background: #1e293b; border: 1px solid #38bdf8; color: #f8fafc; font-size: 11px; padding: 3px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; }
+.watchlist-pill.active { background: #38bdf8; color: #0f172a; font-weight: bold; }
+.watchlist-remove { font-size: 12px; color: #ef4444; font-weight: bold; cursor: pointer; margin-left: 2px; }
+.watchlist-remove:hover { color: #f87171; }
 </style>
 </head>
 <body>
@@ -572,6 +586,29 @@
     var countryLabelsLayerGroup = L.layerGroup(); 
     var sgpLayerInstance = null; 
 var currentHeatmapMode = 'interest'; // Default awal diganti ke Suku Bunga Acuan
+
+// KAMUS KONVERSI ISO KE NAMA INDONESIA
+var isoToIndonesianMap = {
+  "USA": "Amerika Serikat", "RUS": "Rusia", "CHN": "Tiongkok", "IDN": "Indonesia",
+  "IRN": "Iran", "UKR": "Ukraina", "ISR": "Israel", "JPN": "Jepang",
+  "DEU": "Jerman", "FRA": "Prancis", "GBR": "Inggris", "SGP": "Singapura",
+  "MYS": "Malaysia", "AUS": "Australia", "BRA": "Brasil", "SAU": "Arab Saudi",
+  "TWN": "Taiwan", "PRK": "Korea Utara", "KOR": "Korea Selatan", "TUR": "Turki",
+  "IND": "India", "EGY": "Mesir", "CAN": "Kanada", "MEX": "Meksiko", "SYR": "Suriah",
+  "YEM": "Yaman", "IRQ": "Irak", "LBN": "Lebanon", "PAK": "Pakistan", "AFG": "Afganistan"
+};
+
+function getCountryName(iso) {
+  if (!iso) return "Global";
+  var cleanIso = String(iso).trim().toUpperCase();
+  if (cleanIso === "GLOBAL") return "Global";
+  return isoToIndonesianMap[cleanIso] || cleanIso;
+}
+
+// STATE FILTER REKAP BERITA
+var currentNewsTab = 'global';      // 'global' atau 'watchlist'
+var currentThreatFilter = 'ALL';    // 'ALL', 'HIGH', 'MEDIUM', 'LOW'
+var currentPillIsoFilter = 'ALL';   // 'ALL' atau Kode ISO spesifik
 
 // HELPER: Cek apakah Akun Pro masih aktif (Belum Kadaluarsa/Expired)
 function checkUserProActive(loggedUser) {
@@ -1386,26 +1423,144 @@ sgpLayerInstance.bindPopup(`
       document.getElementById('news-modal').style.display = 'flex';
       fetchLiveWeather(latVal, lngVal, modalWeatherElemId);
     }
-
-    function openAllNewsArchive() {
+function openAllNewsArchive() {
       var modalBody = document.getElementById('modal-body');
-      var listBerita = [...dataNews].reverse(); 
-      var beritaHtml = "";
+      
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title">📰 REKAPITULASI ARSIP BERITA & INTELIJEN</h2>
+        
+        <!-- NAVIGASI TAB -->
+        <div class="news-tab-container">
+          <button id="tab-btn-global" class="news-tab-btn ${currentNewsTab === 'global' ? 'active' : ''}" onclick="switchNewsTab('global')">🌐 Semua Berita Global</button>
+          <button id="tab-btn-watchlist" class="news-tab-btn ${currentNewsTab === 'watchlist' ? 'active' : ''}" onclick="switchNewsTab('watchlist')">⭐ Feed Watchlist Saya</button>
+        </div>
 
-      if (listBerita.length > 0) {
-        listBerita.forEach(b => {
+        <!-- FILTER RISIKO CEPAT (THREAT LEVEL) -->
+        <div class="filter-bar">
+          <span style="font-size:11px; color:#94a3b8; font-weight:bold; margin-right:4px;">Filter Risiko:</span>
+          <button class="filter-pill ${currentThreatFilter === 'ALL' ? 'active' : ''}" onclick="setThreatFilter('ALL')">Semua</button>
+          <button class="filter-pill ${currentThreatFilter === 'HIGH' ? 'active' : ''}" onclick="setThreatFilter('HIGH')">🔴 High Risk</button>
+          <button class="filter-pill ${currentThreatFilter === 'MEDIUM' ? 'active' : ''}" onclick="setThreatFilter('MEDIUM')">🟡 Medium Risk</button>
+          <button class="filter-pill ${currentThreatFilter === 'LOW' ? 'active' : ''}" onclick="setThreatFilter('LOW')">🟢 Stabil</button>
+        </div>
+
+        <!-- CONTAINER PILLS WATCHLIST INTERAKTIF -->
+        <div id="watchlist-pills-container" style="display: ${currentNewsTab === 'watchlist' ? 'block' : 'none'};"></div>
+
+        <!-- CONTAINER DAFTAR BERITA -->
+        <div id="news-archive-list-container"></div>
+      `;
+
+      document.getElementById('news-modal').style.display = 'flex';
+      renderNewsArchiveList();
+    }
+
+    function switchNewsTab(tab) {
+      currentNewsTab = tab;
+      currentPillIsoFilter = 'ALL';
+      
+      document.getElementById('tab-btn-global').classList.toggle('active', tab === 'global');
+      document.getElementById('tab-btn-watchlist').classList.toggle('active', tab === 'watchlist');
+      
+      var pillsContainer = document.getElementById('watchlist-pills-container');
+      if (pillsContainer) pillsContainer.style.display = (tab === 'watchlist') ? 'block' : 'none';
+
+      renderNewsArchiveList();
+    }
+
+    function setThreatFilter(level) {
+      currentThreatFilter = level;
+      var buttons = document.querySelectorAll('.filter-pill');
+      buttons.forEach(btn => {
+        btn.classList.toggle('active', btn.innerText.toUpperCase().includes(level) || (level === 'ALL' && btn.innerText === 'Semua'));
+      });
+      renderNewsArchiveList();
+    }
+
+    function setPillIsoFilter(iso) {
+      currentPillIsoFilter = iso;
+      renderNewsArchiveList();
+    }
+
+    function removeWatchlistCountry(iso, event) {
+      if (event) event.stopPropagation();
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!loggedUser || !loggedUser.watchlist) return;
+
+      loggedUser.watchlist = loggedUser.watchlist.filter(item => item.toUpperCase() !== iso.toUpperCase());
+      localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
+
+      if (currentPillIsoFilter === iso) currentPillIsoFilter = 'ALL';
+      renderNewsArchiveList();
+    }
+
+    function renderNewsArchiveList() {
+      var newsContainer = document.getElementById('news-archive-list-container');
+      var pillsContainer = document.getElementById('watchlist-pills-container');
+      if (!newsContainer) return;
+
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var watchlist = (loggedUser && loggedUser.watchlist && Array.isArray(loggedUser.watchlist)) ? loggedUser.watchlist : ["USA", "RUS", "IRN"];
+
+      // RENDER PILLS WATCHLIST DENGAN NAMA INDONESIA
+      if (pillsContainer && currentNewsTab === 'watchlist') {
+        if (watchlist.length === 0) {
+          pillsContainer.innerHTML = `<div class="risk-box" style="margin-bottom:8px;">Belum ada negara yang ditambahkan ke Watchlist.</div>`;
+        } else {
+          var pillsHtml = `<div class="watchlist-pills-bar"><span style="font-size:11px; color:#94a3b8; font-weight:bold;">Negara Pantauan:</span>`;
+          pillsHtml += `<span class="watchlist-pill ${currentPillIsoFilter === 'ALL' ? 'active' : ''}" onclick="setPillIsoFilter('ALL')">Semua (${watchlist.length})</span>`;
+          
+          watchlist.forEach(iso => {
+            var isoUpper = iso.toUpperCase();
+            var countryName = getCountryName(isoUpper);
+            var isActive = (currentPillIsoFilter === isoUpper);
+            pillsHtml += `
+              <span class="watchlist-pill ${isActive ? 'active' : ''}" onclick="setPillIsoFilter('${isoUpper}')">
+                ${escapeHtml(countryName)}
+                <span class="watchlist-remove" onclick="removeWatchlistCountry('${isoUpper}', event)" title="Hapus dari watchlist">&times;</span>
+              </span>
+            `;
+          });
+          pillsHtml += `</div>`;
+          pillsContainer.innerHTML = pillsHtml;
+        }
+      }
+
+      // SANGAT FLEKSIBEL: PENYARINGAN BERITA
+      var filteredNews = [...dataNews].reverse().filter(b => {
+        var rowIso = String(b.Kode_ISO || b.kode_iso || b.ISO || "").trim().toUpperCase();
+        var threat = (b.Threat_Level || b.threat_level || "LOW").toUpperCase();
+
+        // 1. Filter Tab
+        if (currentNewsTab === 'watchlist') {
+          if (!watchlist.map(w => w.toUpperCase()).includes(rowIso)) return false;
+          if (currentPillIsoFilter !== 'ALL' && rowIso !== currentPillIsoFilter) return false;
+        }
+
+        // 2. Filter Threat Level
+        if (currentThreatFilter !== 'ALL' && threat !== currentThreatFilter) return false;
+
+        return true;
+      });
+
+      // RENDER CARD BERITA
+      if (filteredNews.length > 0) {
+        var beritaHtml = "";
+        filteredNews.forEach(b => {
           let link = (b.Link_Berita || "").trim();
           if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-          
+
           var threat = (b.Threat_Level || "LOW").toUpperCase();
           var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
           var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
-          var country = b.Negara || "GLOBAL";
+          
+          var rawIso = String(b.Kode_ISO || b.kode_iso || b.ISO || "").trim();
+          var displayName = getCountryName(rawIso || b.Negara);
 
           beritaHtml += `
             <div class="news-card" style="${border}">
               <div class="news-header-flex">
-                <h4 class="news-title"><span class="ticker-country">[${escapeHtml(country)}]</span> ${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>
+                <h4 class="news-title"><span class="ticker-country">[${escapeHtml(displayName)}]</span> ${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>
                 ${tag}
               </div>
               <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
@@ -1413,17 +1568,10 @@ sgpLayerInstance.bindPopup(`
             </div>
           `;
         });
+        newsContainer.innerHTML = beritaHtml;
       } else {
-        beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP</h4><p class="news-desc">Belum ada data berita yang termuat di sistem.</p></div>`;
+        newsContainer.innerHTML = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ARSIP BERITA</h4><p class="news-desc">Tidak ada berita yang cocok dengan kriteria filter saat ini.</p></div>`;
       }
-
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">📰 REKAPITULASI SEMUA ARSIP BERITA & INTELIJEN</h2>
-        <div class="risk-box">Menampilkan seluruh daftar berita geopolitik dan ekonomi global. Artikel terbaru otomatis tersusun di urutan paling atas. Total arsip aktif: <b>${listBerita.length} berita</b>.</div>
-        ${beritaHtml}
-      `;
-
-      document.getElementById('news-modal').style.display = 'flex';
     }
 
     function openModal(isoCode, lat, lng) {
