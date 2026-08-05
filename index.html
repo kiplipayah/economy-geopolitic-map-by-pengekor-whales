@@ -348,6 +348,23 @@
 /* ==========================================
    EVENT TICKER BAR (RUNNING COUNTDOWN BINTANG 3)
    ========================================== */
+/* ==========================================
+   QUICK WATCHLIST BAR (VIP PRO)
+   ========================================== */
+#watchlist-bar-container {
+  position: fixed; top: 68px; left: 0; width: 100%; height: 32px;
+  background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px);
+  border-bottom: 1px solid #38bdf8; z-index: 998; display: none; align-items: center; overflow-x: auto; padding: 0 10px; box-sizing: border-box; gap: 8px;
+}
+.watchlist-badge-item {
+  background: #1e293b; border: 1px solid #38bdf8; color: #f8fafc; padding: 2px 10px; border-radius: 12px; font-size: 11px; white-space: nowrap; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s;
+}
+.watchlist-badge-item:hover { background: #38bdf8; color: #0f172a; }
+.watchlist-badge-status { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-dot-high { background: #ef4444; box-shadow: 0 0 5px #ef4444; }
+.status-dot-medium { background: #f59e0b; box-shadow: 0 0 5px #f59e0b; }
+.status-dot-low { background: #10b981; box-shadow: 0 0 5px #10b981; }
+
 #event-ticker-container {
   position: fixed; 
   bottom: 0; 
@@ -430,6 +447,12 @@
   <!-- ALERT BANNER -->
   <div id="alert-banner"></div>
 
+<!-- QUICK WATCHLIST BAR (VIP PRO) -->
+  <div id="watchlist-bar-container">
+    <div style="font-size:10px; font-weight:bold; color:#fbbf24; white-space:nowrap; margin-right:4px;">⭐ WATCHLIST LIVE:</div>
+    <div id="watchlist-items-wrapper" style="display:flex; gap:6px;"></div>
+  </div>
+
   <!-- TOMBOL TOGGLE MENU SIDEBAR (POJOK KIRI ATAS) -->
   <button id="menu-toggle-btn" onclick="toggleDrawer()">👤 Menu Akun</button>
 
@@ -508,6 +531,14 @@
       <div id="security-section" class="user-section" style="display: none;">
         <div class="section-label">🔒 Keamanan Akun</div>
         <button class="btn-action" style="background:#334155;" onclick="openPasswordModal()">🔑 Ganti Password</button>
+      </div>
+
+<!-- NOTIFIKASI TELEGRAM BOT (VIP PRO) -->
+      <div id="telegram-section" class="user-section" style="display: none;">
+        <div class="section-label">🤖 Notifikasi Telegram Bot (VIP)</div>
+        <label style="font-size:10px; color:#94a3b8;">Chat ID Telegram Kamu:</label>
+        <input type="text" id="telegram-chat-id-input" class="input-field" placeholder="Contoh: 123456789" />
+        <button class="btn-action" style="background:#0284c7; margin-top:4px;" onclick="saveTelegramSettings()">💾 Simpan Chat ID Telegram</button>
       </div>
 
       <!-- VIP LIVE CHAT -->
@@ -643,6 +674,23 @@ var customCenters = {
 
         // Kunci VIP Chat jika akun sudah Expired
         if (chatSection) chatSection.style.display = isActivePro ? 'block' : 'none';
+
+var telegramSec = document.getElementById('telegram-section');
+        if (telegramSec) telegramSec.style.display = isActivePro ? 'block' : 'none';
+
+        var watchlistBar = document.getElementById('watchlist-bar-container');
+        if (watchlistBar) {
+          if (isActivePro) {
+            watchlistBar.style.display = 'flex';
+            renderWatchlistBar();
+            if (loggedUser.telegramChatId) {
+              var tgInput = document.getElementById('telegram-chat-id-input');
+              if (tgInput) tgInput.value = loggedUser.telegramChatId;
+            }
+          } else {
+            watchlistBar.style.display = 'none';
+          }
+        }
 
         var displayName = escapeHtml(loggedUser.nama || loggedUser.email.split('@')[0]);
         var displayEmail = escapeHtml(loggedUser.email);
@@ -1426,12 +1474,14 @@ sgpLayerInstance.bindPopup(`
       document.getElementById('news-modal').style.display = 'flex';
     }
 
-    function openModal(isoCode, lat, lng) {
-      if (isoCode === "GLOBAL") { openGlobalModal(); return; }
+    // ✅ TEMPELKAN FUNGSI PERBAIKAN INI
+function openModal(isoCode, lat, lng) {
+  if (isoCode === "GLOBAL") { openGlobalModal(); return; }
 
-      var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
-      if (!negara) return;
-// AUTO-LOOKUP KOORDINAT JIKA LAT/LNG TIDAK DIPASSING
+  var negara = dataMakro.find(n => n.Kode_ISO === isoCode);
+  if (!negara) return;
+
+  // 1. Auto-lookup koordinat jika lat/lng kosong
   if (!lat || !lng) {
     if (customCenters[isoCode]) {
       lat = customCenters[isoCode][0];
@@ -1447,112 +1497,128 @@ sgpLayerInstance.bindPopup(`
     }
   }
 
-      var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode).reverse();
-      var beritaHtml = "";
+  // 2. Olah data berita & status
+  var listBerita = dataNews.filter(b => b.Kode_ISO === isoCode).reverse();
+  var beritaHtml = "";
 
-      if (listBerita.length > 0) {
-        listBerita.forEach(b => {
-          let link = (b.Link_Berita || "").trim();
-          if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
-          var threat = (b.Threat_Level || "LOW").toUpperCase();
-          var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
-          var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
+  if (listBerita.length > 0) {
+    listBerita.forEach(b => {
+      let link = (b.Link_Berita || "").trim();
+      if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
+      var threat = (b.Threat_Level || "LOW").toUpperCase();
+      var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
+      var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
 
-          beritaHtml += `
-            <div class="news-card" style="${border}">
-              <div class="news-header-flex"><h4 class="news-title">${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>${tag}</div>
-              <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
-              ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
-            </div>
-          `;
-        });
-      } else {
-        beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU AKTIF</h4><p class="news-desc">Belum ada laporan krisis mendesak untuk wilayah ini.</p></div>`;
-      }
-
-      var modalWeatherElemId = `modal-weather-${isoCode}`;
-      var modalBody = document.getElementById('modal-body');
-      var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
-      var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
-
-      modalBody.innerHTML = `
-        <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>
-        
-        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
-          <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
-          ${isConflict 
-            ? '<span style="font-size: 11px; font-weight: bold; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444;">⚔️ KONFLIK AKTIF / WASPADA</span>' 
-            : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
+      beritaHtml += `
+        <div class="news-card" style="${border}">
+          <div class="news-header-flex"><h4 class="news-title">${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>${tag}</div>
+          <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
+          ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
         </div>
-
-       <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
-          <div style="margin-bottom: 4px;">📌 <strong>Status Musim & Iklim:</strong> <span style="color:#fbbf24; font-weight:bold;">${formatZonaIklim(negara.Tipe_Zona_Iklim)}</span></div>
-          <div style="margin-bottom: 4px;">🔗 <strong>Korelasi Rantai Pasok:</strong> ${escapeHtml(negara.Korelasi_Rantai_Pasok || '-')}</div>
-          <div style="margin-bottom: 4px;">📍 <strong>Region Acuan:</strong> ${escapeHtml(negara.Region_Acuan || negara.Catatan_Geografi || '-')}</div>
-        </div>
-       
-
-        <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
-        <div class="macro-grid-4card">
-          <div class="macro-card">
-            <div class="macro-label">PDB (GDP) NOMINAL</div>
-            <div class="macro-val-main">${escapeHtml(negara.GDP_Nominal || 'N/A')}</div>
-            <div class="macro-val-sub">YoY: <strong>${escapeHtml(negara.GDP_YoY || '-')}</strong> | QoQ: <strong>${escapeHtml(negara.GDP_QoQ || '-')}</strong></div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">INFLASI (CPI)</div>
-            <div class="macro-val-main">${escapeHtml(negara.Inflasi_YoY || 'N/A')} <span style="font-size:10px; color:#94a3b8;">YoY</span></div>
-            <div class="macro-val-sub">MoM: <strong>${escapeHtml(negara.Inflasi_MoM || '-')}</strong></div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">SUKU BUNGA ACUAN</div>
-            <div class="macro-val-main">${escapeHtml(negara.Suku_Bunga || 'N/A')}</div>
-            <div class="macro-val-sub">Acuan Bank Sentral</div>
-          </div>
-          <div class="macro-card">
-            <div class="macro-label">PENGANGGURAN</div>
-            <div class="macro-val-main" style="color:#f59e0b;">${escapeHtml(pengangguranVal)}</div>
-            <div class="macro-val-sub">Tingkat Tenaga Kerja</div>
-          </div>
-        </div>
-
-        <div class="dossier-section-title">👥 DEMOGRAFI & STRUKTUR KELAS SOSIAL</div>
-        <div class="demo-grid">
-          <div class="demo-card">
-            <div class="macro-label">KEMISKINAN</div>
-            <div class="macro-val-main" style="color:#ef4444;">${escapeHtml(negara.Kemiskinan_Pct || 'N/A')}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">KELAS MENENGAH</div>
-            <div class="macro-val-main" style="color:#38bdf8;">${escapeHtml(negara.Kelas_Menengah_Pct || 'N/A')}</div>
-          </div>
-          <div class="demo-card">
-            <div class="macro-label">KELAS ATAS / KAYA</div>
-            <div class="macro-val-main" style="color:#fbbf24;">${escapeHtml(negara.Kelas_Atas_Pct || 'N/A')}</div>
-          </div>
-        </div>
-
-        <div class="dossier-section-title">🌍 CUACA REAL-TIME STASIUN TERDEKAT</div>
-        <div class="weather-live-box" id="${modalWeatherElemId}">
-          <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
-        </div>
-
-        <div class="risk-box">
-          <strong style="color:#fbbf24;">⚠️ REALITA SOSIAL & RISIKO LAPANGAN:</strong><br>
-          ${escapeHtml(negara.Realita_Sosial || 'Data analisis sosial tidak tersedia.')}
-        </div>
-
-        <div class="dossier-section-title">📰 ARSIP BERITA & ISU STRATEGIS TERKINI</div>
-        ${beritaHtml}
       `;
+    });
+  } else {
+    beritaHtml = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU AKTIF</h4><p class="news-desc">Belum ada laporan krisis mendesak untuk wilayah ini.</p></div>`;
+  }
 
-      document.getElementById('news-modal').style.display = 'flex';
+  var modalWeatherElemId = `modal-weather-${isoCode}`;
+  var modalBody = document.getElementById('modal-body');
+  var pengangguranVal = negara.Tingkat_Pengangguran || negara.Pengangguran_Pct || 'N/A';
+  var isConflict = (negara.Status_Konflik === 'ON' || negara.status_konflik === 'ON');
 
-      if (lat && lng) {
-        fetchLiveWeather(lat, lng, modalWeatherElemId);
-      }
-    }
+  // 3. Pengecekan user PRO & Watchlist (Diletakkan SEBELUM innerHTML)
+  var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+  var isPro = checkUserProActive(loggedUser);
+  var isPinned = loggedUser && loggedUser.watchlist && loggedUser.watchlist.split(',').includes(isoCode);
+  var pinBtnText = isPinned ? "⭐ Hapus dari Watchlist VIP" : "⭐ Tambah ke Watchlist VIP";
 
+  var vipPinHtml = isPro ? `
+    <button class="btn-action" style="background:#f59e0b; color:#0f172a; margin-bottom:12px;" onclick="toggleWatchlistPin('${isoCode}'); closeModal();">${pinBtnText}</button>
+  ` : '';
+
+  // 4. Render tampilan modal
+  modalBody.innerHTML = `
+    <h2 class="modal-header-title">📊 ANALISIS GEOPOLITIK & IKLIM: ${escapeHtml(negara.Negara)}</h2>${vipPinHtml}
+    
+    <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155;">
+      <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Status Geopolitik Wilayah:</span>
+      ${isConflict 
+        ? '<span style="font-size: 11px; font-weight: bold; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #ef4444;">⚔️ KONFLIK AKTIF / WASPADA</span>' 
+        : '<span style="font-size: 11px; font-weight: bold; color: #10b981; background: rgba(16, 185, 129, 0.15); padding: 4px 10px; border-radius: 4px; border: 1px solid #10b981;">🟢 AMAN & KONDUSIF</span>'}
+    </div>
+
+    <div class="risk-box" style="border-left: 4px solid #38bdf8; margin-bottom: 12px;">
+      <div style="margin-bottom: 4px;">📌 <strong>Status Musim & Iklim:</strong> <span style="color:#fbbf24; font-weight:bold;">${formatZonaIklim(negara.Tipe_Zona_Iklim)}</span></div>
+      <div style="margin-bottom: 4px;">🔗 <strong>Korelasi Rantai Pasok:</strong> ${escapeHtml(negara.Korelasi_Rantai_Pasok || '-')}</div>
+      <div style="margin-bottom: 4px;">📍 <strong>Region Acuan:</strong> ${escapeHtml(negara.Region_Acuan || negara.Catatan_Geografi || '-')}</div>
+    </div>
+
+    <div class="dossier-section-title">🏛️ INDIKATOR EKONOMI MAKRO</div>
+    <div class="macro-grid-4card">
+      <div class="macro-card">
+        <div class="macro-label">PDB (GDP) NOMINAL</div>
+        <div class="macro-val-main">${escapeHtml(negara.GDP_Nominal || 'N/A')}</div>
+        <div class="macro-val-sub">YoY: <strong>${escapeHtml(negara.GDP_YoY || '-')}</strong> | QoQ: <strong>${escapeHtml(negara.GDP_QoQ || '-')}</strong></div>
+      </div>
+      <div class="macro-card">
+        <div class="macro-label">INFLASI (CPI)</div>
+        <div class="macro-val-main">${escapeHtml(negara.Inflasi_YoY || 'N/A')} <span style="font-size:10px; color:#94a3b8;">YoY</span></div>
+        <div class="macro-val-sub">MoM: <strong>${escapeHtml(negara.Inflasi_MoM || '-')}</strong></div>
+      </div>
+      <div class="macro-card">
+        <div class="macro-label">SUKU BUNGA ACUAN</div>
+        <div class="macro-val-main">${escapeHtml(negara.Suku_Bunga || 'N/A')}</div>
+        <div class="macro-val-sub">Acuan Bank Sentral</div>
+      </div>
+      <div class="macro-card">
+        <div class="macro-label">PENGANGGURAN</div>
+        <div class="macro-val-main" style="color:#f59e0b;">${escapeHtml(pengangguranVal)}</div>
+        <div class="macro-val-sub">Tingkat Tenaga Kerja</div>
+      </div>
+    </div>
+
+    <div class="dossier-section-title">👥 DEMOGRAFI & STRUKTUR KELAS SOSIAL</div>
+    <div class="demo-grid">
+      <div class="demo-card">
+        <div class="macro-label">KEMISKINAN</div>
+        <div class="macro-val-main" style="color:#ef4444;">${escapeHtml(negara.Kemiskinan_Pct || 'N/A')}</div>
+      </div>
+      <div class="demo-card">
+        <div class="macro-label">KELAS MENENGAH</div>
+        <div class="macro-val-main" style="color:#38bdf8;">${escapeHtml(negara.Kelas_Menengah_Pct || 'N/A')}</div>
+      </div>
+      <div class="demo-card">
+        <div class="macro-label">KELAS ATAS / KAYA</div>
+        <div class="macro-val-main" style="color:#fbbf24;">${escapeHtml(negara.Kelas_Atas_Pct || 'N/A')}</div>
+      </div>
+    </div>
+
+    <div class="dossier-section-title">🌍 CUACA REAL-TIME STASIUN TERDEKAT</div>
+    <div class="weather-live-box" id="${modalWeatherElemId}">
+      <span style="font-size:11px; color:#94a3b8;">🔄 Memuat cuaca real-time...</span>
+    </div>
+
+    <div class="risk-box">
+      <strong style="color:#fbbf24;">⚠️ REALITA SOSIAL & RISIKO LAPANGAN:</strong><br>
+      ${escapeHtml(negara.Realita_Sosial || 'Data analisis sosial tidak tersedia.')}
+    </div>
+
+    <div class="dossier-section-title">📰 ARSIP BERITA & ISU STRATEGIS TERKINI (30 HARI)</div>
+    <div id="country-news-list-container">
+      ${beritaHtml}
+    </div>
+  `;
+
+  document.getElementById('news-modal').style.display = 'flex';
+
+  if (lat && lng) {
+    fetchLiveWeather(lat, lng, modalWeatherElemId);
+  }
+
+  if (isPro) {
+    setTimeout(function() { fetchExtendedCountryNews(isoCode); }, 200);
+  }
+}
     function openGlobalModal() {
       var listBerita = dataNews.filter(b => b.Kode_ISO === "GLOBAL").reverse();
       var beritaHtml = "";
@@ -1958,6 +2024,139 @@ dataCalendar = data.dataCalendar || [];
     function openPaymentModalFromOutside() {
       toggleDrawer();
       openPaymentModal();
+    }
+
+function renderWatchlistBar() {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      var wrapper = document.getElementById('watchlist-items-wrapper');
+      if (!wrapper) return;
+
+      if (!loggedUser || !loggedUser.watchlist || loggedUser.watchlist.trim() === "") {
+        wrapper.innerHTML = `<span style="font-size:11px; color:#94a3b8; font-style:italic;">Belum ada wilayah di-pin. Klik negara di peta & tambahkan!</span>`;
+        return;
+      }
+
+      var items = loggedUser.watchlist.split(',').map(s => s.trim()).filter(Boolean);
+      var html = "";
+
+      items.forEach(iso => {
+        var newsForCountry = dataNews.filter(b => (b.Kode_ISO || "").toUpperCase() === iso.toUpperCase());
+        var dotClass = "status-dot-low";
+        if (newsForCountry.some(b => (b.Threat_Level || "").toUpperCase() === 'HIGH')) {
+          dotClass = "status-dot-high";
+        } else if (newsForCountry.some(b => (b.Threat_Level || "").toUpperCase() === 'MEDIUM')) {
+          dotClass = "status-dot-medium";
+        }
+
+        html += `
+          <div class="watchlist-badge-item" onclick="selectSearchCountry('${iso}')">
+            <span class="watchlist-badge-status ${dotClass}"></span>
+            <b>[${escapeHtml(iso)}]</b>
+            <span style="font-size:9px; color:#ef4444; margin-left:4px;" onclick="event.stopPropagation(); toggleWatchlistPin('${iso}')">❌</span>
+          </div>
+        `;
+      });
+
+      wrapper.innerHTML = html;
+    }
+
+    function toggleWatchlistPin(isoCode) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!checkUserProActive(loggedUser)) {
+        openPaywallModal();
+        return;
+      }
+
+      var currentList = loggedUser.watchlist ? loggedUser.watchlist.split(',').map(s => s.trim()).filter(Boolean) : [];
+      var index = currentList.indexOf(isoCode);
+
+      if (index !== -1) {
+        currentList.splice(index, 1);
+      } else {
+        currentList.push(isoCode);
+      }
+
+      var newListStr = currentList.join(',');
+      loggedUser.watchlist = newListStr;
+      localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
+
+      renderWatchlistBar();
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateWatchlist",
+          email: loggedUser.email,
+          watchlist: newListStr
+        })
+      }).catch(e => console.error("Gagal sync watchlist:", e));
+    }
+
+    function saveTelegramSettings() {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!checkUserProActive(loggedUser)) return alert("Akses ditolak.");
+
+      var chatId = document.getElementById('telegram-chat-id-input').value.trim();
+      loggedUser.telegramChatId = chatId;
+      localStorage.setItem('geo_logged_user', JSON.stringify(loggedUser));
+
+      fetch(apiUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "updateTelegram",
+          email: loggedUser.email,
+          telegramChatId: chatId,
+          telegramAlert: "HIGH_ONLY"
+        })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.status === "success") {
+          alert("✅ Telegram Chat ID berhasil disimpan! Anda akan menerima alert breaking news.");
+        } else {
+          alert("❌ Gagal menyimpan Telegram Chat ID.");
+        }
+      })
+      .catch(e => alert("❌ Koneksi gagal."));
+    }
+
+    function fetchExtendedCountryNews(isoCode) {
+      var loggedUser = JSON.parse(localStorage.getItem('geo_logged_user'));
+      if (!checkUserProActive(loggedUser)) return;
+
+      var newsContainer = document.getElementById('country-news-list-container');
+      if (!newsContainer) return;
+
+      newsContainer.innerHTML = `<div style="color:#38bdf8; text-align:center; padding:10px; font-size:12px;">⏳ Mengambil seluruh berita 30 hari terakhir...</div>`;
+
+      fetch(apiUrl + "?action=getCountryNews&iso=" + isoCode)
+      .then(r => r.json())
+      .then(res => {
+        if (res && res.status === "success" && res.data && res.data.length > 0) {
+          var html = "";
+          res.data.reverse().forEach(b => {
+            let link = (b.Link_Berita || "").trim();
+            if (link && link !== "#" && !link.startsWith("http")) link = "https://" + link;
+            var threat = (b.Threat_Level || "LOW").toUpperCase();
+            var border = threat === "HIGH" ? "border-left: 4px solid #ef4444;" : threat === "MEDIUM" ? "border-left: 4px solid #f59e0b;" : "border-left: 4px solid #10b981;";
+            var tag = threat === "HIGH" ? `<span class="threat-tag threat-high">🔴 HIGH RISK</span>` : threat === "MEDIUM" ? `<span class="threat-tag threat-medium">🟡 MEDIUM RISK</span>` : `<span class="threat-tag threat-low">🟢 STABIL</span>`;
+
+            html += `
+              <div class="news-card" style="${border}">
+                <div class="news-header-flex"><h4 class="news-title">${escapeHtml(b.Judul_Berita || "Tanpa Judul")}</h4>${tag}</div>
+                <p class="news-desc">${escapeHtml(b.Ringkasan_Berita || "")}</p>
+                ${link ? `<a href="${escapeHtml(link)}" target="_blank" class="news-link">Baca Artikel Sumber &rarr;</a>` : ''}
+              </div>
+            `;
+          });
+          newsContainer.innerHTML = html;
+        } else {
+          newsContainer.innerHTML = `<div class="news-card" style="border-left: 4px solid #38bdf8;"><h4 class="news-title">TIDAK ADA ISU MENDESAK</h4><p class="news-desc">Tidak ada berita HIGH/MEDIUM untuk wilayah ini dalam 30 hari terakhir.</p></div>`;
+        }
+      })
+      .catch(e => {
+        newsContainer.innerHTML = `<div style="color:#ef4444; font-size:12px;">Gagal memuat berita extended.</div>`;
+      });
     }
   </script>
 </body>
