@@ -587,6 +587,9 @@
     var sgpLayerInstance = null; 
 var currentHeatmapMode = 'interest'; // Default awal diganti ke Suku Bunga Acuan
 
+// DAFTAR 15 NEGARA UTAMA (SISTEMIK / G20)
+var MAJOR_COUNTRIES = ["IDN", "USA", "CHN", "JPN", "DEU", "GBR", "FRA", "IND", "BRA", "CAN", "KOR", "AUS", "RUS", "MEX", "SAU"];
+
 // KAMUS KONVERSI ISO KE NAMA INDONESIA
 var isoToIndonesianMap = {
   "USA": "Amerika Serikat", "RUS": "Rusia", "CHN": "Tiongkok", "IDN": "Indonesia",
@@ -1710,10 +1713,11 @@ function toggleWatchlist(isoCode) {
             <div class="macro-val-sub">MoM: <strong>${escapeHtml(negara.Inflasi_MoM || '-')}</strong></div>
           </div>
           <div class="macro-card">
-            <div class="macro-label">SUKU BUNGA ACUAN</div>
+            <div class="macro-label">${MAJOR_COUNTRIES.includes(isoCode.toUpperCase()) ? "SUKU BUNGA ACUAN" : "SUKU BUNGA KREDIT"}</div>
             <div class="macro-val-main">${escapeHtml(negara.Suku_Bunga || 'N/A')}</div>
-            <div class="macro-val-sub">Acuan Bank Sentral</div>
+            <div class="macro-val-sub">${MAJOR_COUNTRIES.includes(isoCode.toUpperCase()) ? "Acuan Bank Sentral" : "Pinjaman Komersial"}</div>
           </div>
+
           <div class="macro-card">
             <div class="macro-label">PENGANGGURAN</div>
             <div class="macro-val-main" style="color:#f59e0b;">${escapeHtml(pengangguranVal)}</div>
