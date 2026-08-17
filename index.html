@@ -369,7 +369,10 @@
 }
 .event-wrap { flex: 1; overflow: hidden; white-space: nowrap; }
 .event-move { display: inline-block; animation: eventTicker 45s linear infinite; padding-left: 100%; font-size: 12px; color: #f1f2f6; }
+
 .event-move:hover { animation-play-state: paused; }
+.event-ticker-item { cursor: pointer; display: inline-block; padding-right: 65px; transition: color 0.2s; }
+.event-ticker-item:hover { color: #38bdf8; text-decoration: underline; }
 .event-time-highlight { color: #facc15; font-weight: bold; font-family: monospace; }
 .event-pulse-dot {
   width: 7px; height: 7px; background-color: #ffffff; border-radius: 50%;
@@ -377,7 +380,6 @@
 }
 @keyframes eventTicker { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 @keyframes eventPulse { 0% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } 100% { opacity: 0.3; transform: scale(0.8); } }
-
 /* STYLING TAB & FILTER REKAP BERITA MODAL */
 .news-tab-container { display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
 .news-tab-btn { flex: 1; padding: 8px 12px; background: #0f172a; border: 1px solid #334155; color: #94a3b8; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; text-align: center; transition: all 0.2s ease; }
@@ -723,6 +725,7 @@ var currentHeatmapMode = 'interest'; // Default awal diganti ke Suku Bunga Acuan
 // DAFTAR 15 NEGARA UTAMA (SISTEMIK / G20)
 var MAJOR_COUNTRIES = ["IDN", "USA", "CHN", "JPN", "DEU", "GBR", "FRA", "IND", "BRA", "CAN", "KOR", "AUS", "RUS", "MEX", "SAU"];
 
+
 // KAMUS KONVERSI ISO KE NAMA INDONESIA
 var isoToIndonesianMap = {
   "USA": "Amerika Serikat", "RUS": "Rusia", "CHN": "Tiongkok", "IDN": "Indonesia",
@@ -731,7 +734,9 @@ var isoToIndonesianMap = {
   "MYS": "Malaysia", "AUS": "Australia", "BRA": "Brasil", "SAU": "Arab Saudi",
   "TWN": "Taiwan", "PRK": "Korea Utara", "KOR": "Korea Selatan", "TUR": "Turki",
   "IND": "India", "EGY": "Mesir", "CAN": "Kanada", "MEX": "Meksiko", "SYR": "Suriah",
-  "YEM": "Yaman", "IRQ": "Irak", "LBN": "Lebanon", "PAK": "Pakistan", "AFG": "Afganistan"
+  "YEM": "Yaman", "IRQ": "Irak", "LBN": "Lebanon", "PAK": "Pakistan", "AFG": "Afganistan",
+  "ESP": "Spanyol", "ZWE": "Zimbabwe", "SDN": "Sudan", "ETH": "Ethiopia", "NGA": "Nigeria",
+  "ZAF": "Afrika Selatan", "ITA": "Italia", "CHE": "Swiss"
 };
 
 function getCountryName(iso) {
@@ -740,6 +745,8 @@ function getCountryName(iso) {
   if (cleanIso === "GLOBAL") return "Global";
   return isoToIndonesianMap[cleanIso] || cleanIso;
 }
+
+
 
 // STATE FILTER REKAP BERITA
 var currentNewsTab = 'global';      // 'global' atau 'watchlist'
@@ -1982,8 +1989,8 @@ function toggleWatchlist(isoCode) {
       }
     }
 
-    // ==========================================
-    // REVISI 2: ENGINE COUNTDOWN TICKER REAL-TIME
+              // ==========================================
+    // ENGINE COUNTDOWN TICKER & EVENT INTERACTIVE MODAL
     // ==========================================
     function initCountdownTicker(calendarData) {
       var container = document.getElementById('event-ticker-content');
@@ -1995,12 +2002,9 @@ function toggleWatchlist(isoCode) {
       }
 
       var nowObj = new Date();
-
-      // Hitung Titik Awal Hari Ini (Jam 00:00:00) & Akhir 7 Hari ke Depan (Jam 23:59:59)
       var startOfToday = new Date(nowObj.getFullYear(), nowObj.getMonth(), nowObj.getDate(), 0, 0, 0).getTime();
       var endOf7Days = new Date(nowObj.getFullYear(), nowObj.getMonth(), nowObj.getDate() + 7, 23, 59, 59).getTime();
 
-      // PERBAIKAN LOGIKA: Tampilkan dari Jam 00:00:00 HARI INI sampai 7 hari ke depan
       var upcomingEvents = calendarData.filter(function(item) {
         var star = String(item.Dampak_Star || item.dampak_star || "").trim();
         if (star !== "3") return false;
@@ -2010,7 +2014,6 @@ function toggleWatchlist(isoCode) {
         if (!dateObj) return false;
 
         var eventTime = dateObj.getTime();
-        // Syarat: Tanggal event HARUS >= jam 00:00 pagi ini
         return eventTime >= startOfToday && eventTime <= endOf7Days;
       });
 
@@ -2019,7 +2022,6 @@ function toggleWatchlist(isoCode) {
         return;
       }
 
-      // Urutkan event terdekat
       upcomingEvents.sort(function(a, b) {
         var dateA = parseEventDate(a.Tanggal_Waktu || a.tanggal_waktu).getTime();
         var dateB = parseEventDate(b.Tanggal_Waktu || b.tanggal_waktu).getTime();
@@ -2028,33 +2030,118 @@ function toggleWatchlist(isoCode) {
 
       if (tickerCountdownInterval) clearInterval(tickerCountdownInterval);
 
+      window.activeUpcomingEvents = upcomingEvents;
+
       function updateCountdown() {
         var currentTime = new Date().getTime();
         var htmlParts = [];
 
-        upcomingEvents.forEach(function(target) {
+        upcomingEvents.forEach(function(target, index) {
           var rawDateStr = String(target.Tanggal_Waktu || target.tanggal_waktu || "");
           var targetDateObj = parseEventDate(rawDateStr);
           var targetTime = targetDateObj.getTime();
           var diff = targetTime - currentTime;
 
-          // Deteksi otomatis jika event berbentuk Tanggal saja / Hari Libur (tanpa format jam :)
           var isAllDay = !rawDateStr.includes(":") || (targetDateObj.getHours() === 0 && targetDateObj.getMinutes() === 0);
-
           var forecastInfo = target.Forecast && target.Forecast !== "-" ? ` (Est: ${escapeHtml(target.Forecast)})` : '';
-          var iso = target.Kode_ISO ? `[${escapeHtml(target.Kode_ISO)}] ` : '';
-          var timeText = formatTimeDiff(diff, isAllDay);
+          
+          var isoRaw = target.Kode_ISO || target.kode_iso || "";
+          var countryDisplayName = getCountryName(isoRaw);
+          var countryTag = countryDisplayName ? `[${escapeHtml(countryDisplayName)}] ` : '';
 
+          var timeText = formatTimeDiff(diff, isAllDay);
           var title = target.Judul_Event || target.title || "Event";
-          htmlParts.push(`<span><b style="color:#38bdf8;">${iso}${escapeHtml(title)}</b>${forecastInfo} status: ${timeText}</span>`);
+
+          htmlParts.push(`<span class="event-ticker-item" onclick="handleEventTickerClick(${index})"><b style="color:#38bdf8;">${countryTag}${escapeHtml(title)}</b>${forecastInfo} status: ${timeText}</span>`);
         });
 
-        container.innerHTML = htmlParts.join(' &nbsp;&nbsp;&bull;&nbsp;&nbsp; ');
+        container.innerHTML = htmlParts.join('&nbsp;&nbsp;&bull;&nbsp;&nbsp;');
       }
 
       updateCountdown();
       tickerCountdownInterval = setInterval(updateCountdown, 1000);
     }
+
+    // FUNGSI AKSI KLIK EVENT (ZOOM PETA + POPUP MODAL ELEGAN)
+    function handleEventTickerClick(index) {
+      if (!window.activeUpcomingEvents || !window.activeUpcomingEvents[index]) return;
+      var eventData = window.activeUpcomingEvents[index];
+
+      var isoCode = String(eventData.Kode_ISO || eventData.kode_iso || "GLOBAL").trim().toUpperCase();
+      var countryName = getCountryName(isoCode);
+
+      if (isoCode !== "GLOBAL") {
+        if (isoCode === 'SGP' && sgpLayerInstance) {
+          map.setView([1.3521, 103.8198], 6, { animate: true, duration: 1.5 });
+        } else if (customCenters[isoCode]) {
+          map.flyTo(customCenters[isoCode], 5, { duration: 1.5 });
+        } else if (mapGeoJsonLayer) {
+          var foundLayer = false;
+          mapGeoJsonLayer.eachLayer(function(layer) {
+            if (layer.feature && layer.feature.id === isoCode) {
+              map.flyToBounds(layer.getBounds(), { maxZoom: 5, duration: 1.5 });
+              foundLayer = true;
+            }
+          });
+          if (!foundLayer) map.setView([20, 0], 3);
+        }
+      }
+
+      var rawDate = eventData.Tanggal_Waktu || eventData.tanggal_waktu || "-";
+      var title = eventData.Judul_Event || eventData.title || "Economic Event";
+      var starCount = parseInt(eventData.Dampak_Star || eventData.star || "3", 10);
+      var starDisplay = "⭐".repeat(starCount);
+
+      var actual = eventData.Actual || eventData.actual || "-";
+      var forecast = eventData.Forecast || eventData.forecast || "-";
+      var previous = eventData.Previous || eventData.previous || "-";
+      var description = eventData.Deskripsi || eventData.description || "Tidak ada deskripsi tambahan untuk event ini.";
+
+      var modalBody = document.getElementById('modal-body');
+      modalBody.innerHTML = `
+        <h2 class="modal-header-title" style="color:#f59e0b;">🔴 NEXT BIG EVENT: ${escapeHtml(title)}</h2>
+        
+        <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #0f172a; padding: 10px 14px; border-radius: 6px; border: 1px solid #334155; flex-wrap: wrap; gap: 6px;">
+          <div>
+            <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Lokasi Negara:</span>
+            <span style="font-size: 12px; font-weight: bold; color: #38bdf8; margin-left:6px;">🌐 ${escapeHtml(countryName)} [${escapeHtml(isoCode)}]</span>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase;">Tingkat Dampak:</span>
+            <span style="font-size: 12px; margin-left: 6px;">${starDisplay}</span>
+          </div>
+        </div>
+
+        <div class="risk-box" style="border-left: 4px solid #f59e0b; margin-bottom: 12px;">
+          <div style="margin-bottom: 4px;">📅 <strong>Waktu Rilis Data:</strong> <span style="color:#fbbf24; font-weight:bold;">${escapeHtml(rawDate)} WIB</span></div>
+          <div>📝 <strong>Kategori:</strong> <span style="color:#cbd5e1;">${escapeHtml(eventData.Kategori || "Economic Event")}</span></div>
+        </div>
+
+        <div class="dossier-section-title">📊 INDIKATOR ANGKA EKONOMI</div>
+        <div class="demo-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 14px;">
+          <div class="demo-card">
+            <div class="macro-label">ACTUAL (AKTUAL)</div>
+            <div class="macro-val-main" style="color:#10b981;">${escapeHtml(actual)}</div>
+          </div>
+          <div class="demo-card">
+            <div class="macro-label">FORECAST (ESTIMASI)</div>
+            <div class="macro-val-main" style="color:#38bdf8;">${escapeHtml(forecast)}</div>
+          </div>
+          <div class="demo-card">
+            <div class="macro-label">PREVIOUS (SEBELUMNYA)</div>
+            <div class="macro-val-main" style="color:#cbd5e1;">${escapeHtml(previous)}</div>
+          </div>
+        </div>
+
+        <div class="dossier-section-title">ℹ️ DESKRIPSI & PENJELASAN EVENT</div>
+        <div class="news-card" style="border-left: 4px solid #38bdf8; background:#0f172a;">
+          <p class="news-desc" style="font-size:13px; color:#f8fafc; line-height:1.6;">${escapeHtml(description)}</p>
+        </div>
+      `;
+
+      document.getElementById('news-modal').style.display = 'flex';
+    }
+
     function renderTicker(newsList) {
       var tickerContent = document.getElementById('ticker-content');
       if (!newsList || newsList.length === 0) return;
